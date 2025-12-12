@@ -1,16 +1,92 @@
-# React + Vite
+# MIIO360 Admin Panel
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Panel de administración para la gestión de categorías de MIIO360.
 
-Currently, two official plugins are available:
+## 🚀 Características
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- ✅ Autenticación con Firebase
+- ✅ Gestión completa de categorías (CRUD)
+- ✅ Búsqueda de categorías
+- ✅ Protección de rutas para usuarios admin
+- ✅ TypeScript + React + Vite
+- ✅ Tailwind CSS + shadcn/ui
+- ✅ CI/CD con GitHub Actions
 
-## React Compiler
+## 🎨 Tecnologías
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- TypeScript
+- Vite
+- Firebase (Auth + Firestore)
+- React Router DOM
+- Tailwind CSS
+- shadcn/ui
 
-## Expanding the ESLint configuration
+## 📦 Instalación
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+\`\`\`bash
+# Instalar dependencias
+npm install
+
+# Ejecutar en desarrollo
+npm run dev
+
+# Build para producción
+npm run build
+\`\`\`
+
+## 🔐 Credenciales de Acceso
+
+### Para crear un nuevo usuario Admin:
+
+1. Ve a \`http://localhost:5173/signup\` en el navegador
+2. Registra un nuevo usuario:
+
+\`\`\`
+Email: admin@miio360.com
+Password: Admin123!
+Nombre Completo: Gabriela Garcia Villalobos
+Teléfono: +59176435692
+\`\`\`
+
+3. El usuario se creará automáticamente con rol de \`admin\`
+
+**Nota:** Solo los usuarios con rol \`admin\` pueden acceder al panel.
+
+## 📁 Estructura del Proyecto
+
+\`\`\`
+src/
+├── features/           # Módulos de funcionalidades
+│   ├── auth/          # Login y Signup
+│   └── categories/    # Gestión de categorías
+├── shared/            # Código compartido
+│   ├── components/    # Componentes reutilizables
+│   ├── hooks/         # Custom hooks
+│   ├── services/      # Servicios de Firebase
+│   ├── types/         # TypeScript types
+│   └── lib/           # Utilidades
+└── App.tsx            # Configuración de rutas
+\`\`\`
+
+## 🎯 Funcionalidades
+
+### Autenticación
+- Sign up con validación
+- Login con email/password
+- Protección de rutas por rol
+- Logout
+
+### Gestión de Categorías
+- Listar todas las categorías
+- Buscar categorías por nombre/descripción
+- Crear nueva categoría
+- Editar categoría existente
+- Eliminar categoría
+- Estados: Activo/Inactivo
+
+## 🎨 Paleta de Colores
+
+- Primary: #FECD1B (Amarillo MIIO360)
+- Background: #FDF3DA (Crema suave)
+- Dark: #011611 (Verde oscuro)
