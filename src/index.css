@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  /* MIIO360 Brand Colors */
-  --color-background: 44 95% 95%; /* #FDF3DA más claro */
-  --color-foreground: 159 91% 4%; /* #011611 - Verde oscuro */
+  /* MIIO360 Brand Colors - Balanced Design */
+  --color-background: 0 0% 98%; /* Blanco limpio con toque gris */
+  --color-foreground: 159 91% 4%; /* #011611 - Verde oscuro para textos */
   --color-card: 0 0% 100%; /* Blanco puro */
   --color-card-foreground: 159 91% 4%;
   --color-popover: 0 0% 100%;
   --color-popover-foreground: 159 91% 4%;
-  --color-primary: 48 99% 56%; /* #FECD1B - Amarillo MIIO360 */
+  --color-primary: 48 99% 56%; /* #FECD1B - Amarillo MIIO360 (solo acentos) */
   --color-primary-foreground: 159 91% 4%;
-  --color-secondary: 159 60% 20%; /* Verde medio */
-  --color-secondary-foreground: 44 95% 92%;
-  --color-muted: 44 50% 88%;
-  --color-muted-foreground: 159 40% 30%;
+  --color-secondary: 159 76% 8%; /* #011611 - Verde oscuro para sidebar */
+  --color-secondary-foreground: 44 95% 95%;
+  --color-muted: 44 70% 96%; /* #FDF3DA muy suave para fondos sutiles */
+  --color-muted-foreground: 159 30% 35%;
   --color-accent: 48 99% 56%;
   --color-accent-foreground: 159 91% 4%;
   --color-destructive: 0 84.2% 60.2%;
   --color-destructive-foreground: 0 0% 100%;
-  --color-border: 44 40% 85%;
+  --color-border: 0 0% 90%; /* Bordes grises neutros */
   --color-input: 0 0% 100%;
   --color-ring: 48 99% 56%;
   --radius: 0.75rem;

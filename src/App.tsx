@@ -4,6 +4,7 @@ import { ProtectedRoute } from "./shared/components/ProtectedRoute";
 import { AdminLayout } from "./shared/components/AdminLayout";
 import { LoginPage } from "./features/auth/LoginPage";
 import { SignUpPage } from "./features/auth/SignUpPage";
+import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { CategoriesPage } from "./features/categories/CategoriesPage";
 import { CategoryFormPage } from "./features/categories/CategoryFormPage";
 
@@ -25,14 +26,15 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Navigate to="/categories" replace />} />
+            <Route index element={<DashboardPage />} />
+            <Route path="dashboard" element={<DashboardPage />} />
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="categories/new" element={<CategoryFormPage />} />
             <Route path="categories/edit/:id" element={<CategoryFormPage />} />
           </Route>
 
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/categories" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
