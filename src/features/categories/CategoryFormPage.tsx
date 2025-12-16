@@ -1,7 +1,44 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { categoryService } from "../../shared/services/categoryService";
 import { useAuth } from "../../shared/hooks/useAuth";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Textarea } from "../../components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../../components/ui/form";
+import { Badge } from "../../components/ui/badge";
+import { ArrowLeft, Save, X, Plus, Tag as TagIcon } from "lucide-react";
+
+const categorySchema = z.object({
+  name: z.string().min(1, "El nombre es requerido").max(100),
+  slug: z.string().min(1, "El slug es requerido"),
+  description: z.string().optional(),
+  tags: z.array(z.string()).default([]),
+  status: z.enum(["active", "inactive"]),
+  icon: z.string().optional(),
+  imageUrl: z.string().url("Debe ser una URL válida").optional().or(z.literal("")),
+  order: z.coerce.number().int().min(0).default(0),
+});
+
+type CategoryFormData = z.infer<typeof categorySchema>;
 
 export const CategoryFormPage = () => {
   const { id } = useParams();
@@ -9,19 +46,23 @@ export const CategoryFormPage = () => {
   const { user } = useAuth();
   const isEditMode = Boolean(id);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    description: "",
-    tags: [] as string[],
-    status: "active" as "active" | "inactive",
-    icon: "",
-    imageUrl: "",
-    order: 0,
-  });
   const [tagInput, setTagInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const form = useForm({
+    resolver: zodResolver(categorySchema),
+    defaultValues: {
+      name: "",
+      slug: "",
+      description: "",
+      tags: [],
+      status: "active" as const,
+      icon: "",
+      imageUrl: "",
+      order: 0,
+    },
+  });
 
   useEffect(() => {
     if (isEditMode && id) {
@@ -34,7 +75,7 @@ export const CategoryFormPage = () => {
       setLoading(true);
       const category = await categoryService.getById(categoryId);
       if (category) {
-        setFormData({
+        form.reset({
           name: category.name,
           slug: category.slug,
           description: category.description || "",
@@ -53,53 +94,29 @@ export const CategoryFormPage = () => {
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    
-    // Auto-generar slug cuando cambia el nombre
-    if (name === "name") {
-      setFormData({ 
-        ...formData, 
-        name: value,
-        slug: categoryService.generateSlug(value)
-      });
-    } else if (name === "order") {
-      setFormData({ ...formData, [name]: parseInt(value) || 0 });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
-
   const handleAddTag = () => {
-    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData({ ...formData, tags: [...formData.tags, tagInput.trim()] });
+    const currentTags = form.getValues("tags") || [];
+    if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
+      form.setValue("tags", [...currentTags, tagInput.trim()]);
       setTagInput("");
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setFormData({ ...formData, tags: formData.tags.filter(tag => tag !== tagToRemove) });
+    const currentTags = form.getValues("tags") || [];
+    form.setValue("tags", currentTags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: CategoryFormData) => {
     setError("");
-
-    if (!formData.name.trim()) {
-      setError("El nombre es requerido");
-      return;
-    }
-
     setLoading(true);
 
     try {
       if (isEditMode && id) {
-        await categoryService.update(id, formData);
+        await categoryService.update(id, data);
       } else {
         await categoryService.create({
-          ...formData,
+          ...data,
           createdBy: user?.id || "",
         });
       }
@@ -121,14 +138,13 @@ export const CategoryFormPage = () => {
       {/* Page Header */}
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-4">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleCancel}
-            className="p-2 rounded-lg hover:bg-muted transition-colors"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
+            <ArrowLeft className="w-6 h-6" />
+          </Button>
           <div>
             <h1 className="text-3xl font-bold text-foreground">
               {isEditMode ? "Editar Categoría" : "Nueva Categoría"}
@@ -157,227 +173,248 @@ export const CategoryFormPage = () => {
           <p className="text-sm text-muted-foreground mt-1">Completa todos los campos requeridos</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-semibold mb-3 text-foreground">
-              Nombre de la Categoría <span className="text-destructive">*</span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
-              </div>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3 border-2 border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                required
-                disabled={loading}
-                placeholder="Ej: Electrónica, Hogar, Deportes..."
-              />
-            </div>
-          </div>
-
-          {/* Slug (auto-generado) */}
-          <div>
-            <label htmlFor="slug" className="block text-sm font-semibold mb-3 text-foreground">
-              Slug (URL amigable) <span className="text-muted-foreground text-xs">- Se genera automáticamente</span>
-            </label>
-            <input
-              id="slug"
-              name="slug"
-              type="text"
-              value={formData.slug}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border-2 border-border rounded-xl bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-              disabled={loading}
-              placeholder="electronica-y-tecnologia"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="description" className="block text-sm font-semibold mb-3 text-foreground">
-              Descripción
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={5}
-              className="w-full px-4 py-3 border-2 border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all resize-none"
-              disabled={loading}
-              placeholder="Describe brevemente esta categoría y qué tipo de productos o servicios incluye..."
-            />
-          </div>
-
-          {/* Tags */}
-          <div>
-            <label className="block text-sm font-semibold mb-3 text-foreground">
-              Tags / Sinónimos
-              <span className="text-muted-foreground text-xs font-normal ml-2">- Para mejorar búsquedas</span>
-            </label>
-            <div className="flex gap-2 mb-3">
-              <input
-                type="text"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag())}
-                className="flex-1 px-4 py-3 border-2 border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                disabled={loading}
-                placeholder="Ej: celulares, smartphones, móviles..."
-              />
-              <button
-                type="button"
-                onClick={handleAddTag}
-                disabled={loading}
-                className="bg-secondary text-secondary-foreground px-6 py-3 rounded-xl font-semibold hover:bg-secondary/90 transition-all"
-              >
-                Agregar
-              </button>
-            </div>
-            {formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {formData.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary border border-primary/30 rounded-lg text-sm font-medium"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTag(tag)}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="p-8 space-y-6">
+            {/* Nombre */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nombre de la Categoría *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Ej: Electrónica, Hogar, Deportes..." 
                       disabled={loading}
-                      className="hover:text-destructive transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Icon and Image in Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="icon" className="block text-sm font-semibold mb-3 text-foreground">
-                Icono / Emoji
-              </label>
-              <input
-                id="icon"
-                name="icon"
-                type="text"
-                value={formData.icon}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border-2 border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                disabled={loading}
-                placeholder="📱 o nombre de icono"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="order" className="block text-sm font-semibold mb-3 text-foreground">
-                Orden de Prioridad
-              </label>
-              <input
-                id="order"
-                name="order"
-                type="number"
-                value={formData.order}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border-2 border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                disabled={loading}
-                placeholder="0"
-                min="0"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="imageUrl" className="block text-sm font-semibold mb-3 text-foreground">
-              URL de Imagen
-            </label>
-            <input
-              id="imageUrl"
-              name="imageUrl"
-              type="url"
-              value={formData.imageUrl}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border-2 border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-              disabled={loading}
-              placeholder="https://ejemplo.com/imagen.jpg"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="status" className="block text-sm font-semibold mb-3 text-foreground">
-              Estado <span className="text-destructive">*</span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3 border-2 border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer"
-                required
-                disabled={loading}
-              >
-                <option value="active">✓ Activo - Visible para usuarios</option>
-                <option value="inactive">✗ Inactivo - Oculto para usuarios</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-4 pt-6 border-t-2 border-border">
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={loading}
-              className="flex-1 bg-muted text-foreground py-3 rounded-xl font-semibold hover:bg-muted/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Guardando...
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  {isEditMode ? "Actualizar Categoría" : "Crear Categoría"}
-                </>
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        // Auto-generar slug
+                        form.setValue("slug", categoryService.generateSlug(e.target.value));
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </button>
-          </div>
-        </form>
+            />
+
+            {/* Slug */}
+            <FormField
+              control={form.control}
+              name="slug"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Slug (URL amigable)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="electronica-y-tecnologia" 
+                      disabled={loading}
+                      className="bg-muted"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Se genera automáticamente del nombre
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Descripción */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descripción</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Describe brevemente esta categoría y qué tipo de productos o servicios incluye..."
+                      disabled={loading}
+                      rows={5}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Tags */}
+            <FormField
+              control={form.control}
+              name="tags"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tags / Sinónimos</FormLabel>
+                  <FormDescription>
+                    Ayudan a mejorar las búsquedas
+                  </FormDescription>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Ej: celulares, smartphones, móviles..."
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                      disabled={loading}
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={handleAddTag}
+                      disabled={loading}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Agregar
+                    </Button>
+                  </div>
+                  {field.value && field.value.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {field.value.map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="gap-2">
+                          <TagIcon className="w-3 h-3" />
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTag(tag)}
+                            disabled={loading}
+                            className="hover:text-destructive transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Icon y Order en Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="icon"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Icono / Emoji</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="📱 o nombre de icono"
+                        disabled={loading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="order"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Orden de Prioridad</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number"
+                        placeholder="0"
+                        disabled={loading}
+                        value={typeof field.value === 'number' ? field.value : 0}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* URL de Imagen */}
+            <FormField
+              control={form.control}
+              name="imageUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL de Imagen</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="url"
+                      placeholder="https://ejemplo.com/imagen.jpg"
+                      disabled={loading}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Estado */}
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estado *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loading}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un estado" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="active">✓ Activo - Visible para usuarios</SelectItem>
+                      <SelectItem value="inactive">✗ Inactivo - Oculto para usuarios</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Botones */}
+            <div className="flex gap-4 pt-6 border-t-2 border-border">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+                disabled={loading}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex-1"
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    {isEditMode ? "Actualizar Categoría" : "Crear Categoría"}
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
     </div>
   );
