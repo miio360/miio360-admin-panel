@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { categoryService } from "../../shared/services/categoryService";
 import { Category } from "../../shared/types";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
-import { Badge } from "../../components/ui/badge";
+import { Button } from "../../shared/components/ui/button";
+import { Input } from "../../shared/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "../../shared/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../shared/components/ui/table";
+import { Badge } from "../../shared/components/ui/badge";
 import { Plus, Search, RefreshCw, Edit2, Trash2, Tag, AlertCircle, Package } from "lucide-react";
 
 export const CategoriesPage = () => {

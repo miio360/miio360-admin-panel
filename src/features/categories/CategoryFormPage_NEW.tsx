@@ -35,7 +35,7 @@ const categorySchema = z.object({
   status: z.enum(["active", "inactive"]),
   icon: z.string().optional(),
   imageUrl: z.string().url("Debe ser una URL válida").optional().or(z.literal("")),
-  order: z.coerce.number().int().min(0).default(0),
+  order: z.number().int().min(0).default(0),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
@@ -50,14 +50,14 @@ export const CategoryFormPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const form = useForm({
+  const form = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: "",
       slug: "",
       description: "",
       tags: [],
-      status: "active" as const,
+      status: "active",
       icon: "",
       imageUrl: "",
       order: 0,
@@ -95,7 +95,7 @@ export const CategoryFormPage = () => {
   };
 
   const handleAddTag = () => {
-    const currentTags = form.getValues("tags") || [];
+    const currentTags = form.getValues("tags");
     if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
       form.setValue("tags", [...currentTags, tagInput.trim()]);
       setTagInput("");
@@ -103,7 +103,7 @@ export const CategoryFormPage = () => {
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    const currentTags = form.getValues("tags") || [];
+    const currentTags = form.getValues("tags");
     form.setValue("tags", currentTags.filter(tag => tag !== tagToRemove));
   };
 
@@ -329,7 +329,7 @@ export const CategoryFormPage = () => {
                         type="number"
                         placeholder="0"
                         disabled={loading}
-                        value={typeof field.value === 'number' ? field.value : 0}
+                        {...field}
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
                     </FormControl>
