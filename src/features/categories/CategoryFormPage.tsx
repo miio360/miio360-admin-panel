@@ -11,9 +11,15 @@ export const CategoryFormPage = () => {
 
   const [formData, setFormData] = useState({
     name: "",
+    slug: "",
     description: "",
+    tags: [] as string[],
     status: "active" as "active" | "inactive",
+    icon: "",
+    imageUrl: "",
+    order: 0,
   });
+  const [tagInput, setTagInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -30,8 +36,13 @@ export const CategoryFormPage = () => {
       if (category) {
         setFormData({
           name: category.name,
+          slug: category.slug,
           description: category.description || "",
+          tags: category.tags || [],
           status: category.status,
+          icon: category.icon || "",
+          imageUrl: category.imageUrl || "",
+          order: category.order || 0,
         });
       }
     } catch (err: any) {
@@ -45,7 +56,31 @@ export const CategoryFormPage = () => {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Auto-generar slug cuando cambia el nombre
+    if (name === "name") {
+      setFormData({ 
+        ...formData, 
+        name: value,
+        slug: categoryService.generateSlug(value)
+      });
+    } else if (name === "order") {
+      setFormData({ ...formData, [name]: parseInt(value) || 0 });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+      setFormData({ ...formData, tags: [...formData.tags, tagInput.trim()] });
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setFormData({ ...formData, tags: formData.tags.filter(tag => tag !== tagToRemove) });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -147,6 +182,23 @@ export const CategoryFormPage = () => {
             </div>
           </div>
 
+          {/* Slug (auto-generado) */}
+          <div>
+            <label htmlFor="slug" className="block text-sm font-semibold mb-3 text-foreground">
+              Slug (URL amigable) <span className="text-muted-foreground text-xs">- Se genera automáticamente</span>
+            </label>
+            <input
+              id="slug"
+              name="slug"
+              type="text"
+              value={formData.slug}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border-2 border-border rounded-xl bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+              disabled={loading}
+              placeholder="electronica-y-tecnologia"
+            />
+          </div>
+
           <div>
             <label htmlFor="description" className="block text-sm font-semibold mb-3 text-foreground">
               Descripción
@@ -160,6 +212,107 @@ export const CategoryFormPage = () => {
               className="w-full px-4 py-3 border-2 border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all resize-none"
               disabled={loading}
               placeholder="Describe brevemente esta categoría y qué tipo de productos o servicios incluye..."
+            />
+          </div>
+
+          {/* Tags */}
+          <div>
+            <label className="block text-sm font-semibold mb-3 text-foreground">
+              Tags / Sinónimos
+              <span className="text-muted-foreground text-xs font-normal ml-2">- Para mejorar búsquedas</span>
+            </label>
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag())}
+                className="flex-1 px-4 py-3 border-2 border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                disabled={loading}
+                placeholder="Ej: celulares, smartphones, móviles..."
+              />
+              <button
+                type="button"
+                onClick={handleAddTag}
+                disabled={loading}
+                className="bg-secondary text-secondary-foreground px-6 py-3 rounded-xl font-semibold hover:bg-secondary/90 transition-all"
+              >
+                Agregar
+              </button>
+            </div>
+            {formData.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {formData.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary border border-primary/30 rounded-lg text-sm font-medium"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTag(tag)}
+                      disabled={loading}
+                      className="hover:text-destructive transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Icon and Image in Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="icon" className="block text-sm font-semibold mb-3 text-foreground">
+                Icono / Emoji
+              </label>
+              <input
+                id="icon"
+                name="icon"
+                type="text"
+                value={formData.icon}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border-2 border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                disabled={loading}
+                placeholder="📱 o nombre de icono"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="order" className="block text-sm font-semibold mb-3 text-foreground">
+                Orden de Prioridad
+              </label>
+              <input
+                id="order"
+                name="order"
+                type="number"
+                value={formData.order}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border-2 border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                disabled={loading}
+                placeholder="0"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="imageUrl" className="block text-sm font-semibold mb-3 text-foreground">
+              URL de Imagen
+            </label>
+            <input
+              id="imageUrl"
+              name="imageUrl"
+              type="url"
+              value={formData.imageUrl}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border-2 border-border rounded-xl bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+              disabled={loading}
+              placeholder="https://ejemplo.com/imagen.jpg"
             />
           </div>
 

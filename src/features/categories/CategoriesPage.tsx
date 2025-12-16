@@ -220,12 +220,28 @@ export const CategoriesPage = () => {
                   <tr key={category.id} className="hover:bg-primary/5 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                          </svg>
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-2xl">
+                          {category.icon || (
+                            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                            </svg>
+                          )}
                         </div>
-                        <span className="font-semibold text-foreground">{category.name}</span>
+                        <div>
+                          <span className="font-semibold text-foreground block">{category.name}</span>
+                          {category.tags && category.tags.length > 0 && (
+                            <div className="flex gap-1 mt-1">
+                              {category.tags.slice(0, 2).map((tag, i) => (
+                                <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                                  {tag}
+                                </span>
+                              ))}
+                              {category.tags.length > 2 && (
+                                <span className="text-xs text-muted-foreground">+{category.tags.length - 2}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-muted-foreground text-sm">

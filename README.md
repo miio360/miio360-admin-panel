@@ -28,11 +28,29 @@ Panel de administración para la gestión de categorías de MIIO360.
 # Instalar dependencias
 npm install
 
+# Configurar variables de entorno
+cp .env.example .env
+# Edita el archivo .env con tus credenciales de Firebase
+
 # Ejecutar en desarrollo
 npm run dev
 
 # Build para producción
 npm run build
+\`\`\`
+
+## ⚙️ Configuración de Firebase
+
+1. Crea un proyecto en [Firebase Console](https://console.firebase.google.com)
+2. Habilita Authentication (Email/Password)
+3. Crea una base de datos Firestore
+4. Copia las credenciales a tu archivo \`.env\`:
+
+\`\`\`env
+VITE_FIREBASE_API_KEY=tu_api_key
+VITE_FIREBASE_AUTH_DOMAIN=tu_proyecto.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=tu_proyecto_id
+# ... etc
 \`\`\`
 
 ## 🔐 Credenciales de Acceso
@@ -53,7 +71,14 @@ Teléfono: +59176435692
 
 **Nota:** Solo los usuarios con rol \`admin\` pueden acceder al panel.
 
-## 📁 Estructura del Proyecto
+## � Configuración de Firestore
+
+Después de crear tu proyecto en Firebase, revisa el archivo \`FIRESTORE_SETUP.md\` para:
+- Crear los índices compuestos necesarios
+- Configurar las reglas de seguridad
+- Ver ejemplos de la estructura de datos
+
+## �📁 Estructura del Proyecto
 
 \`\`\`
 src/
@@ -70,6 +95,14 @@ src/
 \`\`\`
 
 ## 🎯 Funcionalidades
+
+### Categorías Mejoradas
+- **Slug automático**: URLs amigables generadas automáticamente
+- **Tags/Sinónimos**: Mejora las búsquedas con palabras clave
+- **Orden de prioridad**: Controla qué categorías aparecen primero
+- **Iconos y emojis**: Representación visual de cada categoría
+- **Imágenes**: URL de imagen para cada categoría
+- **Búsqueda avanzada**: Busca por nombre, slug, descripción o tags
 
 ### Autenticación
 - Sign up con validación

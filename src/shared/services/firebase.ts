@@ -4,13 +4,13 @@ import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCWcx7byQrGtbTZCivpsS-iYfXPKq0OHOw",
-  authDomain: "miio360.firebaseapp.com",
-  projectId: "miio360",
-  storageBucket: "miio360.firebasestorage.app",
-  messagingSenderId: "256233957354",
-  appId: "1:256233957354:web:4dbab69e37dcec78567493",
-  measurementId: "G-D7SZGLFHR0"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase

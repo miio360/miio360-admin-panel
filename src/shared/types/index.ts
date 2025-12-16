@@ -20,8 +20,14 @@ export interface User {
 export interface Category {
   id: string;
   name: string;
+  slug: string; // Nombre sin espacios para URLs amigables
   description?: string;
+  tags?: string[]; // Tags para búsqueda con sinónimos
   status: 'active' | 'inactive';
+  parentId?: string | null; // Para categorías anidadas/subcategorías
+  icon?: string; // Nombre del icono o emoji
+  imageUrl?: string; // URL de imagen de la categoría
+  order?: number; // Para ordenar/priorizar categorías
   createdAt: Date;
   updatedAt: Date;
   createdBy: string;
