@@ -79,61 +79,61 @@ export const CategoriesPage = () => {
   const inactiveCategories = categories.filter(c => c.status === 'inactive').length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestión de Categorías</h1>
-          <p className="text-muted-foreground mt-1">Administra y organiza las categorías del sistema</p>
+          <h1 className="text-2xl font-bold text-foreground">Gestión de Categorías</h1>
+          <p className="text-sm text-muted-foreground mt-1">Administra y organiza las categorías del sistema</p>
         </div>
-        <Button asChild size="lg" className="gap-2">
+        <Button asChild className="gap-2">
           <Link to="/categories/new">
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
             Nueva Categoría
           </Link>
         </Button>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="hover:shadow-xl transition-all">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              Total Categorías
-            </CardTitle>
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
-              <Package className="w-6 h-6 text-primary-foreground" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="border-gray-200">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Total Categorías</p>
+                <p className="text-3xl font-bold text-foreground">{categories.length}</p>
+              </div>
+              <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
+                <Package className="w-6 h-6 text-gray-600" />
+              </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground">{categories.length}</div>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-xl transition-all border-green-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              Activas
-            </CardTitle>
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
-              <Tag className="w-6 h-6 text-white" />
+        <Card className="bg-gradient-to-br from-green-50 to-green-100/50 border-green-200">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Activas</p>
+                <p className="text-3xl font-bold text-foreground">{activeCategories}</p>
+              </div>
+              <div className="w-12 h-12 rounded-lg bg-green-500 flex items-center justify-center">
+                <Tag className="w-6 h-6 text-white" />
+              </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-green-600">{activeCategories}</div>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-xl transition-all border-orange-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              Inactivas
-            </CardTitle>
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
-              <AlertCircle className="w-6 h-6 text-white" />
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Inactivas</p>
+                <p className="text-3xl font-bold text-foreground">{inactiveCategories}</p>
+              </div>
+              <div className="w-12 h-12 rounded-lg bg-orange-500 flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-white" />
+              </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-orange-600">{inactiveCategories}</div>
           </CardContent>
         </Card>
       </div>
@@ -149,24 +149,24 @@ export const CategoriesPage = () => {
 
       {/* Search and Table Section */}
       <Card>
-        <CardHeader className="bg-muted/30 border-b">
+        <CardHeader className="border-b bg-white">
           <div className="flex gap-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               <Input
                 type="text"
                 placeholder="Buscar por nombre o descripción..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                className="pl-10"
+                className="pl-10 border-gray-200"
               />
             </div>
-            <Button onClick={handleSearch} className="gap-2">
+            <Button onClick={handleSearch} variant="outline" className="gap-2">
               <Search className="w-4 h-4" />
               Buscar
             </Button>
-            <Button onClick={loadCategories} variant="secondary" className="gap-2">
+            <Button onClick={loadCategories} variant="outline" className="gap-2">
               <RefreshCw className="w-4 h-4" />
               Limpiar
             </Button>
@@ -176,12 +176,12 @@ export const CategoriesPage = () => {
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50 hover:bg-muted/50">
-                <TableHead className="font-bold">Nombre</TableHead>
-                <TableHead className="font-bold">Descripción</TableHead>
-                <TableHead className="font-bold">Estado</TableHead>
-                <TableHead className="font-bold">Fecha Creación</TableHead>
-                <TableHead className="text-right font-bold">Acciones</TableHead>
+              <TableRow className="border-b hover:bg-transparent">
+                <TableHead className="text-xs font-medium text-muted-foreground">Nombre</TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">Descripción</TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">Estado</TableHead>
+                <TableHead className="text-xs font-medium text-muted-foreground">Fecha Creación</TableHead>
+                <TableHead className="text-right text-xs font-medium text-muted-foreground">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -203,60 +203,66 @@ export const CategoriesPage = () => {
                 </TableRow>
               ) : (
                 categories.map((category) => (
-                  <TableRow key={category.id} className="group">
-                    <TableCell>
+                  <TableRow key={category.id} className="border-b last:border-0 hover:bg-gray-50">
+                    <TableCell className="py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-2xl">
-                          {category.icon || <Tag className="w-5 h-5 text-primary" />}
-                        </div>
+                        {category.icon ? (
+                          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-xl">
+                            {category.icon}
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                            <Tag className="w-5 h-5 text-gray-600" />
+                          </div>
+                        )}
                         <div>
-                          <span className="font-semibold text-foreground block">{category.name}</span>
+                          <span className="text-sm font-medium text-foreground block">{category.name}</span>
                           {category.tags && category.tags.length > 0 && (
                             <div className="flex gap-1 mt-1">
-                              {category.tags.slice(0, 2).map((tag, i) => (
-                                <Badge key={i} variant="secondary" className="text-xs">
+                              {category.tags.slice(0, 3).map((tag, i) => (
+                                <span key={i} className="text-xs text-muted-foreground">
                                   {tag}
-                                </Badge>
+                                  {i < Math.min((category.tags?.length ?? 0) - 1, 2) && ", "}
+                                </span>
                               ))}
-                              {category.tags.length > 2 && (
-                                <span className="text-xs text-muted-foreground">+{category.tags.length - 2}</span>
+                              {(category.tags?.length ?? 0) > 3 && (
+                                <span className="text-xs text-muted-foreground">+{(category.tags?.length ?? 0) - 3}</span>
                               )}
                             </div>
                           )}
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-muted-foreground max-w-xs truncate">
+                    <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
                       {category.description || "-"}
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={category.status === "active" ? "default" : "secondary"}
                         className={`${
                           category.status === "active"
-                            ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-100"
-                            : "bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100"
+                            ? "bg-green-100 text-green-700 border-0"
+                            : "bg-gray-100 text-gray-700 border-0"
                         }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${category.status === "active" ? "bg-green-500" : "bg-orange-500"}`}></span>
+                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${category.status === "active" ? "bg-green-500" : "bg-gray-500"}`}></span>
                         {category.status === "active" ? "Activo" : "Inactivo"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="text-sm text-muted-foreground">
                       {category.createdAt.toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                      <div className="flex justify-end gap-1">
+                        <Button asChild variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100">
                           <Link to={`/categories/edit/${category.id}`} title="Editar">
-                            <Edit2 className="w-4 h-4" />
+                            <Edit2 className="w-4 h-4 text-gray-600" />
                           </Link>
                         </Button>
                         <Button
                           onClick={() => handleDelete(category.id, category.name)}
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
                           title="Eliminar"
                         >
                           <Trash2 className="w-4 h-4" />

@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  /* MIIO360 Brand Colors - Balanced Design */
-  --color-background: 0 0% 98%; /* Blanco limpio con toque gris */
-  --color-foreground: 159 91% 4%; /* #011611 - Verde oscuro para textos */
-  --color-card: 0 0% 100%; /* Blanco puro */
-  --color-card-foreground: 159 91% 4%;
+  /* Modern SaaS Design - Inspired by Shopzy */
+  --color-background: 220 20% 97%; /* Fondo gris muy claro */
+  --color-foreground: 222 47% 11%; /* Texto oscuro */
+  --color-card: 0 0% 100%; /* Blanco puro para cards */
+  --color-card-foreground: 222 47% 11%;
   --color-popover: 0 0% 100%;
-  --color-popover-foreground: 159 91% 4%;
-  --color-primary: 48 99% 56%; /* #FECD1B - Amarillo MIIO360 (solo acentos) */
-  --color-primary-foreground: 159 91% 4%;
-  --color-secondary: 159 76% 8%; /* #011611 - Verde oscuro para sidebar */
-  --color-secondary-foreground: 44 95% 95%;
-  --color-muted: 44 70% 96%; /* #FDF3DA muy suave para fondos sutiles */
-  --color-muted-foreground: 159 30% 35%;
-  --color-accent: 48 99% 56%;
-  --color-accent-foreground: 159 91% 4%;
-  --color-destructive: 0 84.2% 60.2%;
+  --color-popover-foreground: 222 47% 11%;
+  --color-primary: 221 83% 53%; /* Azul vibrante moderno */
+  --color-primary-foreground: 0 0% 100%;
+  --color-secondary: 217 91% 60%; /* Azul más claro */
+  --color-secondary-foreground: 0 0% 100%;
+  --color-muted: 220 14% 96%; /* Gris muy suave */
+  --color-muted-foreground: 220 9% 46%;
+  --color-accent: 221 83% 53%;
+  --color-accent-foreground: 0 0% 100%;
+  --color-destructive: 0 72% 51%;
   --color-destructive-foreground: 0 0% 100%;
-  --color-border: 0 0% 90%; /* Bordes grises neutros */
+  --color-border: 220 13% 91%; /* Bordes sutiles */
   --color-input: 0 0% 100%;
-  --color-ring: 48 99% 56%;
+  --color-ring: 221 83% 53%;
   --radius: 0.75rem;
 }
 
