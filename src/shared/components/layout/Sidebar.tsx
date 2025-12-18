@@ -40,40 +40,9 @@ const navItems: NavItem[] = [
     section: "GENERAL",
   },
   {
-    title: "Productos",
-    href: "/products",
-    icon: Package,
-    section: "GENERAL",
-  },
-  {
-    title: "Inventario",
-    href: "/inventory",
-    icon: Store,
-    section: "GENERAL",
-  },
-  {
     title: "Clientes",
     href: "/customers",
     icon: Users,
-    section: "GENERAL",
-  },
-  {
-    title: "Reseñas",
-    href: "/review",
-    icon: MessageSquare,
-    badge: "02",
-    section: "GENERAL",
-  },
-  {
-    title: "Pagos",
-    href: "/payment",
-    icon: CreditCard,
-    section: "GENERAL",
-  },
-  {
-    title: "Integraciones",
-    href: "/integration",
-    icon: LinkIcon,
     section: "GENERAL",
   },
   {
