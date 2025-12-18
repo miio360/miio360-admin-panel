@@ -3,7 +3,6 @@ import { AuthProvider } from "./shared/hooks/useAuth";
 import { ProtectedRoute } from "./shared/components/ProtectedRoute";
 import { AdminLayout } from "./shared/components/AdminLayout";
 import { LoginPage } from "./features/auth/LoginPage";
-import { SignUpPage } from "./features/auth/SignUpPage";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { CategoriesPage } from "./features/categories/CategoriesPage";
 import { CategoryFormPage } from "./features/categories/CategoryFormPage";
@@ -15,7 +14,6 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
 
           {/* Protected Routes */}
           <Route

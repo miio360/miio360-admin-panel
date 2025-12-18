@@ -100,7 +100,7 @@ export const Sidebar = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-64 bg-[#1a1d23] text-white border-r border-gray-800">
+    <div className="flex flex-col sticky top-0 h-screen w-64 bg-[#1a1d23] text-white border-r border-gray-800 z-20">
       {/* Logo Section */}
       <div className="flex items-center gap-3 h-16 px-4 border-b border-gray-800">
         <img 
