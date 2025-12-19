@@ -1,51 +1,53 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: 0 0% 100%;
-  --color-foreground: 222.2 84% 4.9%;
-  --color-card: 0 0% 100%;
-  --color-card-foreground: 222.2 84% 4.9%;
+  /* Modern SaaS Design - Inspired by Shopzy */
+  --color-background: 220 20% 97%; /* Fondo gris muy claro */
+  --color-foreground: 222 47% 11%; /* Texto oscuro */
+  --color-card: 0 0% 100%; /* Blanco puro para cards */
+  --color-card-foreground: 222 47% 11%;
   --color-popover: 0 0% 100%;
-  --color-popover-foreground: 222.2 84% 4.9%;
-  --color-primary: 222.2 47.4% 11.2%;
-  --color-primary-foreground: 210 40% 98%;
-  --color-secondary: 210 40% 96.1%;
-  --color-secondary-foreground: 222.2 47.4% 11.2%;
-  --color-muted: 210 40% 96.1%;
-  --color-muted-foreground: 215.4 16.3% 46.9%;
-  --color-accent: 210 40% 96.1%;
-  --color-accent-foreground: 222.2 47.4% 11.2%;
-  --color-destructive: 0 84.2% 60.2%;
-  --color-destructive-foreground: 210 40% 98%;
-  --color-border: 214.3 31.8% 91.4%;
-  --color-input: 214.3 31.8% 91.4%;
-  --color-ring: 222.2 84% 4.9%;
-  --radius: 0.5rem;
+  --color-popover-foreground: 222 47% 11%;
+  --color-primary: 221 83% 53%; /* Azul vibrante moderno */
+  --color-primary-foreground: 0 0% 100%;
+  --color-secondary: 217 91% 60%; /* Azul más claro */
+  --color-secondary-foreground: 0 0% 100%;
+  --color-muted: 220 14% 96%; /* Gris muy suave */
+  --color-muted-foreground: 220 9% 46%;
+  --color-accent: 221 83% 53%;
+  --color-accent-foreground: 0 0% 100%;
+  --color-destructive: 0 72% 51%;
+  --color-destructive-foreground: 0 0% 100%;
+  --color-border: 220 13% 91%; /* Bordes sutiles */
+  --color-input: 0 0% 100%;
+  --color-ring: 221 83% 53%;
+  --radius: 0.75rem;
 }
 
 .dark {
-  --color-background: 222.2 84% 4.9%;
-  --color-foreground: 210 40% 98%;
-  --color-card: 222.2 84% 4.9%;
-  --color-card-foreground: 210 40% 98%;
-  --color-popover: 222.2 84% 4.9%;
-  --color-popover-foreground: 210 40% 98%;
-  --color-primary: 210 40% 98%;
-  --color-primary-foreground: 222.2 47.4% 11.2%;
-  --color-secondary: 217.2 32.6% 17.5%;
-  --color-secondary-foreground: 210 40% 98%;
-  --color-muted: 217.2 32.6% 17.5%;
-  --color-muted-foreground: 215 20.2% 65.1%;
-  --color-accent: 217.2 32.6% 17.5%;
-  --color-accent-foreground: 210 40% 98%;
+  --color-background: 159 91% 4%; /* #011611 - Verde oscuro */
+  --color-foreground: 44 95% 92%; /* #FDF3DA - Crema suave */
+  --color-card: 159 80% 8%;
+  --color-card-foreground: 44 95% 92%;
+  --color-popover: 159 80% 8%;
+  --color-popover-foreground: 44 95% 92%;
+  --color-primary: 48 99% 56%; /* #FECD1B - Amarillo MIIO360 */
+  --color-primary-foreground: 159 91% 4%;
+  --color-secondary: 159 70% 12%;
+  --color-secondary-foreground: 44 95% 92%;
+  --color-muted: 159 60% 15%;
+  --color-muted-foreground: 44 75% 70%;
+  --color-accent: 48 99% 56%;
+  --color-accent-foreground: 159 91% 4%;
   --color-destructive: 0 62.8% 30.6%;
-  --color-destructive-foreground: 210 40% 98%;
-  --color-border: 217.2 32.6% 17.5%;
-  --color-input: 217.2 32.6% 17.5%;
-  --color-ring: 212.7 26.8% 83.9%;
+  --color-destructive-foreground: 44 95% 92%;
+  --color-border: 159 50% 20%;
+  --color-input: 159 50% 20%;
+  --color-ring: 48 99% 56%;
 }
 
 body {
   background-color: hsl(var(--color-background));
   color: hsl(var(--color-foreground));
+  font-family: system-ui, -apple-system, sans-serif;
 }
