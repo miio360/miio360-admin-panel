@@ -29,8 +29,8 @@ export const categoryService = {
       return {
         id: doc.id,
         ...data,
-        createdAt: (data.createdAt as Timestamp)?.toDate() || new Date(),
-        updatedAt: (data.updatedAt as Timestamp)?.toDate() || new Date(),
+        createdAt: data.createdAt as Timestamp,
+        updatedAt: data.updatedAt as Timestamp,
       } as Category;
     });
 
@@ -51,8 +51,7 @@ export const categoryService = {
       (category) =>
         category.name.toLowerCase().includes(term) ||
         category.slug.toLowerCase().includes(term) ||
-        category.description?.toLowerCase().includes(term) ||
-        category.tags?.some(tag => tag.toLowerCase().includes(term))
+        category.description?.toLowerCase().includes(term)
     );
   },
 
@@ -78,8 +77,8 @@ export const categoryService = {
       return {
         id: docSnap.id,
         ...data,
-        createdAt: (data.createdAt as Timestamp)?.toDate() || new Date(),
-        updatedAt: (data.updatedAt as Timestamp)?.toDate() || new Date(),
+        createdAt: data.createdAt as Timestamp,
+        updatedAt: data.updatedAt as Timestamp,
       } as Category;
     }
     return null;
@@ -114,7 +113,7 @@ export const categoryService = {
   async getActive(): Promise<Category[]> {
     const q = query(
       collection(db, COLLECTION_NAME),
-      where("status", "==", "active"),
+      where("isActive", "==", true),
       orderBy("name")
     );
     const querySnapshot = await getDocs(q);
@@ -124,8 +123,8 @@ export const categoryService = {
       return {
         id: doc.id,
         ...data,
-        createdAt: (data.createdAt as Timestamp)?.toDate() || new Date(),
-        updatedAt: (data.updatedAt as Timestamp)?.toDate() || new Date(),
+        createdAt: data.createdAt as Timestamp,
+        updatedAt: data.updatedAt as Timestamp,
       } as Category;
     });
   },

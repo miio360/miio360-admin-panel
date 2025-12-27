@@ -1,0 +1,23 @@
+/* Estilos para los contenedores de características en el editor */
+.feature-box {
+  background: var(--color-card);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 12px oklch(85% 0.15 85 / 0.06);
+  border: 1.5px solid var(--color-border);
+  margin-bottom: 1.5rem;
+  padding: 1.25rem 1rem;
+}
+
+.feature-input {
+  background: oklch(98% 0.08 220 / 0.35);
+  border: 1.5px solid var(--color-accent);
+  border-radius: var(--radius);
+  height: 2.5rem;
+  font-size: 1rem;
+  color: var(--color-foreground);
+  transition: box-shadow 0.2s;
+}
+.feature-input:focus {
+  box-shadow: 0 0 0 2px var(--color-ring);
+  border-color: var(--color-primary);
+}

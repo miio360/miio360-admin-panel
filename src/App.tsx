@@ -2,10 +2,11 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./shared/hooks/useAuth";
 import { ProtectedRoute } from "./shared/components/ProtectedRoute";
 import { AdminLayout } from "./shared/components/AdminLayout";
-import { LoginPage } from "./features/auth/LoginPage";
-import { DashboardPage } from "./features/dashboard/DashboardPage";
-import { CategoriesPage } from "./features/categories/CategoriesPage";
-import { CategoryFormPage } from "./features/categories/CategoryFormPage";
+import { LoginPage } from "./features/auth/login-page";
+import { DashboardPage } from "./features/dashboard/dashboard-page";
+import { CategoriesPage } from "./features/categories/categories-page";
+import { CategoryFormPage } from "./features/categories/category-form-page";
+import { SubcategoryFormPage } from "./features/categories/subcategory-form-page";
 
 function App() {
   return (
@@ -28,7 +29,10 @@ function App() {
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="categories/new" element={<CategoryFormPage />} />
-            <Route path="categories/edit/:id" element={<CategoryFormPage />} />
+            <Route path="categories/:id/edit" element={<CategoryFormPage />} />
+            <Route path="categories/:categoryId/subcategory/new" element={<SubcategoryFormPage />} />
+            <Route path="subcategories/:id/edit" element={<SubcategoryFormPage />} />
+
           </Route>
 
           {/* Fallback */}
