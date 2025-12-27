@@ -1,0 +1,67 @@
+/* Estilos personalizados para el formulario de subcategoría */
+.subcategory-card {
+  background: var(--color-card);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 24px 0 oklch(85% 0.15 85 / 0.08);
+  border: 1px solid var(--color-border);
+}
+
+.subcategory-input {
+  background: oklch(98% 0.08 220 / 0.35); /* azul MUY suave */
+  border: 1.5px solid var(--color-accent);
+  border-radius: var(--radius);
+  height: 3rem;
+  font-size: 1.1rem;
+  color: var(--color-foreground);
+  transition: box-shadow 0.2s;
+}
+.subcategory-input:focus {
+  box-shadow: 0 0 0 2px var(--color-ring);
+  border-color: var(--color-primary);
+}
+
+.subcategory-select {
+  background: oklch(98% 0.08 220 / 0.35); /* azul MUY suave */
+  border: 1.5px solid var(--color-accent);
+  border-radius: var(--radius);
+  height: 3rem;
+  font-size: 1.1rem;
+  color: var(--color-foreground);
+  transition: box-shadow 0.2s;
+}
+.subcategory-select:focus {
+  box-shadow: 0 0 0 2px var(--color-ring);
+  border-color: var(--color-primary);
+}
+
+.subcategory-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-foreground);
+}
+
+.subcategory-btn-primary {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px oklch(85% 0.15 85 / 0.12);
+  transition: background 0.2s;
+}
+.subcategory-btn-primary:hover {
+  background: oklch(85% 0.15 85 / 0.92);
+}
+
+.subcategory-btn-outline {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  border: 1.5px solid var(--color-accent);
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 1rem;
+  transition: border 0.2s;
+}
+.subcategory-btn-outline:hover {
+  border-color: var(--color-primary);
+}

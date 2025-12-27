@@ -5,7 +5,7 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
 } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { User } from "../types";
 
@@ -15,7 +15,7 @@ export const authService = {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const userId = userCredential.user.uid;
 
-    const newUser: Omit<User, 'id'> = {
+    const newUser = {
       email,
       emailVerified: false,
       phoneVerified: false,
@@ -27,15 +27,11 @@ export const authService = {
         phone: '',
       },
       addresses: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    await setDoc(doc(db, "users", userId), {
-      ...newUser,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    });
+    };
+
+    await setDoc(doc(db, "users", userId), newUser);
   },
 
   // Sign in
@@ -56,8 +52,8 @@ export const authService = {
       return {
         id: userDoc.id,
         ...data,
-        createdAt: data.createdAt?.toDate() || new Date(),
-        updatedAt: data.updatedAt?.toDate() || new Date(),
+        createdAt: data.createdAt as Timestamp,
+        updatedAt: data.updatedAt as Timestamp,
       } as User;
     }
     return null;
