@@ -148,14 +148,27 @@ export function FeatureDefinitionEditor({
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center w-full space-x-3 py-2">
                 <Switch
                   checked={feature.required}
                   onCheckedChange={(checked) =>
                     updateFeature(index, 'required', checked)
                   }
+                  className={
+                    feature.required
+                      ? 'bg-primary border border-primary'
+                      : 'bg-gray-300 border border-gray-400 !bg-gray-300'
+                  }
                 />
-                <Label>Campo requerido</Label>
+                <Label
+                  className={
+                    !feature.required
+                      ? 'text-muted-foreground underline underline-offset-2'
+                      : 'text-foreground font-medium'
+                  }
+                >
+                  Campo requerido
+                </Label>
               </div>
 
               <div className="flex gap-2 pt-2">

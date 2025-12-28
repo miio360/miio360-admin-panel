@@ -168,7 +168,7 @@ export function SubcategoryFormPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="px-4 py-10 max-w-3xl mx-auto flex flex-col gap-8">
+      <div className="px-6 py-8 max-w-7xl mx-auto flex flex-col gap-8">
         {/* Botón Volver en esquina superior izquierda */}
         <div className="mb-4">
           <Button
@@ -182,7 +182,7 @@ export function SubcategoryFormPage() {
         </div>
 
         {/* Header sin ícono */}
-        <div className="mb-8 bg-card border border-border rounded-lg p-8 shadow-sm flex flex-col gap-2">
+        <div className="mb-6 bg-card border border-border rounded-lg p-8 shadow-sm flex flex-col gap-2">
           <h1 className="text-4xl font-bold text-foreground">
             {isEditing ? "Editar Subcategoría" : "Nueva Subcategoría"}
           </h1>
