@@ -31,7 +31,7 @@ function App() {
             <Route path="categories/new" element={<CategoryFormPage />} />
             <Route path="categories/:id/edit" element={<CategoryFormPage />} />
             <Route path="categories/:categoryId/subcategory/new" element={<SubcategoryFormPage />} />
-            <Route path="subcategories/:id/edit" element={<SubcategoryFormPage />} />
+            <Route path="categories/:categoryId/subcategories/:id/edit" element={<SubcategoryFormPage />} />
 
           </Route>
 

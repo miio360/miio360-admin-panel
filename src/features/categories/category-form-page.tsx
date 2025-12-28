@@ -18,7 +18,7 @@ const categoryFormSchema = z.object({
   description: z.string().min(1, "La descripción es obligatoria"),
   icon: z.string().min(1, "El icono es obligatorio"),
   isActive: z.boolean(),
-  order: z.number().int().min(0),
+  // 'order' ya no es requerido ni visible en el formulario
 });
 
 export type CategoryFormData = z.infer<typeof categoryFormSchema>;
@@ -36,7 +36,7 @@ export function CategoryFormPage() {
       description: "",
       icon: "",
       isActive: true,
-      order: 0,
+      // order eliminado de defaultValues
     },
   });
 
@@ -59,7 +59,7 @@ export function CategoryFormPage() {
           description: category.description,
           icon: category.icon,
           isActive: category.isActive,
-          order: category.order,
+          // order ya no se maneja en el formulario
         });
       }
     } catch (error) {
@@ -81,8 +81,12 @@ export function CategoryFormPage() {
         });
         alert("Categoría actualizada exitosamente");
       } else {
+        // Obtener el número de categorías existentes para asignar el order automáticamente
+        const categories = await categoryService.getAll();
+        const order = categories.length + 1;
         await categoryService.create({
           ...data,
+          order,
           createdBy: user.id,
         });
         alert("Categoría creada exitosamente");
@@ -156,6 +160,7 @@ export function CategoryFormPage() {
               </div>
               <div className="p-6">
                 <CategoryAppearanceFields form={form} loading={isSubmitting} />
+                {/* El campo 'order' ya no se muestra en el formulario */}
               </div>
             </Card>
 

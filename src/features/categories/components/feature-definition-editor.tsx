@@ -15,11 +15,13 @@ import type { FeatureDefinition, FeatureType } from '@/shared/types';
 interface FeatureDefinitionEditorProps {
   featureDefinitions: FeatureDefinition[];
   onChange: (definitions: FeatureDefinition[]) => void;
+  inputClassName?: string;
 }
 
 export function FeatureDefinitionEditor({
   featureDefinitions,
   onChange,
+  inputClassName = '',
 }: FeatureDefinitionEditorProps) {
   const addFeature = () => {
     const newFeature: FeatureDefinition = {
@@ -70,7 +72,7 @@ export function FeatureDefinitionEditor({
       </CardHeader>
       <CardContent className="space-y-4">
         {featureDefinitions.map((feature, index) => (
-          <div key={index} className="feature-box">
+          <div key={feature.key ? feature.key : `feature-${index}`} className="feature-box">
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -79,7 +81,7 @@ export function FeatureDefinitionEditor({
                     value={feature.key}
                     onChange={(e) => updateFeature(index, 'key', e.target.value)}
                     placeholder="ej: color, memoria, peso"
-                    className="feature-input"
+                    className={inputClassName}
                   />
                 </div>
 
@@ -89,7 +91,7 @@ export function FeatureDefinitionEditor({
                     value={feature.label}
                     onChange={(e) => updateFeature(index, 'label', e.target.value)}
                     placeholder="ej: Color, Memoria, Peso"
-                    className="feature-input"
+                    className={inputClassName}
                   />
                 </div>
               </div>
@@ -103,7 +105,7 @@ export function FeatureDefinitionEditor({
                       updateFeature(index, 'type', value)
                     }
                   >
-                    <SelectTrigger className="feature-input">
+                    <SelectTrigger className={inputClassName}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -119,7 +121,7 @@ export function FeatureDefinitionEditor({
                     value={feature.unit || ''}
                     onChange={(e) => updateFeature(index, 'unit', e.target.value)}
                     placeholder="ej: kg, cm, GB"
-                    className="feature-input"
+                    className={inputClassName}
                   />
                 </div>
 
@@ -131,7 +133,7 @@ export function FeatureDefinitionEditor({
                     onChange={(e) =>
                       updateFeature(index, 'order', Number(e.target.value))
                     }
-                    className="feature-input"
+                    className={inputClassName}
                   />
                 </div>
               </div>
@@ -142,7 +144,7 @@ export function FeatureDefinitionEditor({
                   value={feature.placeholder || ''}
                   onChange={(e) => updateFeature(index, 'placeholder', e.target.value)}
                   placeholder="Texto de ayuda para el usuario"
-                  className="feature-input"
+                  className={inputClassName}
                 />
               </div>
 

@@ -58,7 +58,7 @@ export function CategoryTableExpandable({
           const isEven = index % 2 === 0;
 
           return (
-            <>
+            <React.Fragment key={category.id}>
               <TableRow 
                 key={category.id}
                 className={`transition-colors border-b group ${
@@ -173,7 +173,7 @@ export function CategoryTableExpandable({
                       <TableCell className="text-right w-[18%]">
                         <div className="flex justify-end gap-1">
                           <Button variant="ghost" size="icon" asChild className="hover:bg-gray-100 h-8 w-8">
-                            <Link to={`/subcategories/${sub.id}/edit`}>
+                            <Link to={`/categories/${category.id}/subcategories/${sub.id}/edit`}>
                               <Edit className="h-3.5 w-3.5 text-gray-600" />
                             </Link>
                           </Button>
@@ -219,7 +219,7 @@ export function CategoryTableExpandable({
                   </TableCell>
                 </TableRow>
               )}
-            </>
+            </React.Fragment>
           );
         })}
       </TableBody>

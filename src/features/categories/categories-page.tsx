@@ -17,8 +17,6 @@ import {
 } from "@/shared/components/ui/pagination";
 import { useCategoriesWithSubcategories } from "./hooks/useCategoriesWithSubcategories";
 
-const ITEMS_PER_PAGE = 6;
-
 export const CategoriesPage = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,11 +41,19 @@ export const CategoriesPage = () => {
       return;
     }
     try {
-      // Aquí podrías agregar lógica para borrar subcolecciones si es necesario
-      // Por ahora solo borra la categoría o subcategoría
-      // TODO: Implementar borrado en cascada si se requiere
-      // await categoryService.delete(id);
-      // await subcategoryService.delete(id);
+      if (type === "category") {
+        await import("@/shared/services/categoryService").then(m => m.categoryService.delete(id));
+      } else {
+        // Buscar la categoría a la que pertenece la subcategoría
+        const categoryId = Object.keys(subcategories).find(catId =>
+          subcategories[catId].some(sub => sub.id === id)
+        );
+        if (categoryId) {
+          await import("@/shared/services/subcategoryService").then(m => m.subcategoryService.delete(categoryId, id));
+        } else {
+          alert("No se pudo encontrar la categoría de la subcategoría");
+        }
+      }
       refetch();
     } catch (error) {
       console.error("Error deleting:", error);

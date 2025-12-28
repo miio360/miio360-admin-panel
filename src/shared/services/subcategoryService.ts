@@ -15,56 +15,27 @@ import {
 import { db } from "./firebase";
 import { Subcategory } from "../types";
 
-const COLLECTION_NAME = "subcategories";
+const CATEGORY_COLLECTION = "categories";
+const SUBCOLLECTION_NAME = "subcategories";
 
 export const subcategoryService = {
-  // Obtener todas las subcategorías
-  async getAll(): Promise<Subcategory[]> {
-    const q = query(collection(db, COLLECTION_NAME), orderBy("name", "asc"));
-    const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        createdAt: data.createdAt as Timestamp,
-        updatedAt: data.updatedAt as Timestamp,
-      } as Subcategory;
-    });
-  },
 
-  // Obtener subcategorías por categoría padre
+  // Obtener todas las subcategorías de una categoría
   async getByCategoryId(categoryId: string): Promise<Subcategory[]> {
-    const q = query(
-      collection(db, COLLECTION_NAME),
-      where("categoryId", "==", categoryId),
-      orderBy("name", "asc")
-    );
+    const subcatRef = collection(db, CATEGORY_COLLECTION, categoryId, SUBCOLLECTION_NAME);
+    const q = query(subcatRef, orderBy("name", "asc"));
     const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map((doc) => {
-      const data = doc.data();
+    return querySnapshot.docs.map((docSnap) => {
+      const data = docSnap.data() as Omit<Subcategory, "id">;
       return {
-        id: doc.id,
+        id: docSnap.id,
         ...data,
         createdAt: data.createdAt as Timestamp,
         updatedAt: data.updatedAt as Timestamp,
-      } as Subcategory;
+      } satisfies Subcategory;
     });
   },
 
-  // Buscar subcategorías
-  async search(searchTerm: string): Promise<Subcategory[]> {
-    const subcategories = await this.getAll();
-    const term = searchTerm.toLowerCase();
-    
-    return subcategories.filter(
-      (subcategory) =>
-        subcategory.name.toLowerCase().includes(term) ||
-        subcategory.slug.toLowerCase().includes(term)
-    );
-  },
 
   // Generar slug desde nombre
   generateSlug(name: string): string {
@@ -78,26 +49,28 @@ export const subcategoryService = {
       .trim();
   },
 
-  // Obtener subcategoría por ID
-  async getById(id: string): Promise<Subcategory | null> {
-    const docRef = doc(db, COLLECTION_NAME, id);
-    const docSnap = await getDoc(docRef);
 
+  // Obtener subcategoría por ID (requiere categoryId y subcategoryId)
+  async getById(categoryId: string, subcategoryId: string): Promise<Subcategory | null> {
+    const docRef = doc(db, CATEGORY_COLLECTION, categoryId, SUBCOLLECTION_NAME, subcategoryId);
+    const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      const data = docSnap.data();
+      const data = docSnap.data() as Omit<Subcategory, "id">;
       return {
         id: docSnap.id,
         ...data,
         createdAt: data.createdAt as Timestamp,
         updatedAt: data.updatedAt as Timestamp,
-      } as Subcategory;
+      } satisfies Subcategory;
     }
     return null;
   },
 
-  // Crear subcategoría
-  async create(subcategoryData: Omit<Subcategory, "id" | "createdAt" | "updatedAt">): Promise<string> {
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+
+  // Crear subcategoría (en subcolección de la categoría)
+  async create(categoryId: string, subcategoryData: Omit<Subcategory, "id" | "createdAt" | "updatedAt">): Promise<string> {
+    const subcatRef = collection(db, CATEGORY_COLLECTION, categoryId, SUBCOLLECTION_NAME);
+    const docRef = await addDoc(subcatRef, {
       ...subcategoryData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -105,18 +78,20 @@ export const subcategoryService = {
     return docRef.id;
   },
 
-  // Actualizar subcategoría
-  async update(id: string, subcategoryData: Partial<Subcategory>): Promise<void> {
-    const docRef = doc(db, COLLECTION_NAME, id);
+
+  // Actualizar subcategoría (en subcolección de la categoría)
+  async update(categoryId: string, subcategoryId: string, subcategoryData: Partial<Subcategory>): Promise<void> {
+    const docRef = doc(db, CATEGORY_COLLECTION, categoryId, SUBCOLLECTION_NAME, subcategoryId);
     await updateDoc(docRef, {
       ...subcategoryData,
       updatedAt: serverTimestamp(),
     });
   },
 
-  // Eliminar subcategoría
-  async delete(id: string): Promise<void> {
-    const docRef = doc(db, COLLECTION_NAME, id);
+
+  // Eliminar subcategoría (en subcolección de la categoría)
+  async delete(categoryId: string, subcategoryId: string): Promise<void> {
+    const docRef = doc(db, CATEGORY_COLLECTION, categoryId, SUBCOLLECTION_NAME, subcategoryId);
     await deleteDoc(docRef);
   },
 };
