@@ -33,27 +33,6 @@ export function CategoryAppearanceFields({ form, loading }: CategoryAppearanceFi
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="order"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium text-foreground">Orden de Prioridad *</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  disabled={loading}
-                  className="h-11 border border-secondary/40 focus-visible:border-secondary focus-visible:ring-0 bg-secondary/5 focus:bg-background transition-all"
-                  value={typeof field.value === "number" ? field.value : 0}
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                />
-              </FormControl>
-              <FormDescription>Menor número = mayor prioridad</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
       </div>
 
       <FormField

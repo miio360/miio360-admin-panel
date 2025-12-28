@@ -61,8 +61,6 @@ export interface Subcategory {
   id: string;
   name: string;
   slug: string;
-  categoryId: string;
-  categoryName: string;
   description?: string;
   icon?: string;
   order?: number;
@@ -71,6 +69,7 @@ export interface Subcategory {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   createdBy: string;
+  // Nota: Ya no se requiere categoryId ni categoryName porque la subcategoría está anidada bajo la categoría en Firestore
 }
 
 // ====================================

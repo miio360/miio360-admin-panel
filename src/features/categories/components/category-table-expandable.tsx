@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Category, Subcategory } from "@/shared/types";
 import {
@@ -58,9 +58,9 @@ export function CategoryTableExpandable({
           const isEven = index % 2 === 0;
 
           return (
-            <>
+            <React.Fragment key={category.id}>
               <TableRow 
-                key={category.id} 
+                key={category.id}
                 className={`transition-colors border-b group ${
                   isEven 
                     ? 'bg-primary/5 hover:bg-primary/10' 
@@ -134,7 +134,7 @@ export function CategoryTableExpandable({
               </TableRow>
 
               {isExpanded && categorySubs.length > 0 && (
-                <>
+                <React.Fragment key={category.id + "-subs"}>
                   {categorySubs.map((sub) => (
                     <TableRow 
                       key={sub.id} 
@@ -173,7 +173,7 @@ export function CategoryTableExpandable({
                       <TableCell className="text-right w-[18%]">
                         <div className="flex justify-end gap-1">
                           <Button variant="ghost" size="icon" asChild className="hover:bg-gray-100 h-8 w-8">
-                            <Link to={`/subcategories/${sub.id}/edit`}>
+                            <Link to={`/categories/${category.id}/subcategories/${sub.id}/edit`}>
                               <Edit className="h-3.5 w-3.5 text-gray-600" />
                             </Link>
                           </Button>
@@ -189,11 +189,12 @@ export function CategoryTableExpandable({
                       </TableCell>
                     </TableRow>
                   ))}
-                </>
+                </React.Fragment>
               )}
 
               {isExpanded && categorySubs.length === 0 && (
                 <TableRow 
+                  key={category.id + "-empty"}
                   className={`border-b ${
                     isEven 
                       ? 'bg-primary/[0.08]' 
@@ -218,7 +219,7 @@ export function CategoryTableExpandable({
                   </TableCell>
                 </TableRow>
               )}
-            </>
+            </React.Fragment>
           );
         })}
       </TableBody>

@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@import "./styles/subcategory-form.css";
-@import "./styles/feature-definition.css";
 
 @theme {
   /* Paleta MIIO360 - Tema Light (por defecto) */
