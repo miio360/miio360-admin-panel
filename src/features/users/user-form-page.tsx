@@ -10,8 +10,7 @@ import { Card } from '@/shared/components/ui/card';
 import { Label } from '@/shared/components/ui/label';
 import { Form } from '@/shared/components/ui/form';
 import { ArrowLeft, Save } from 'lucide-react';
-
-
+import { userService } from '@/shared/services/userService';
 
 export default function UserFormPage() {
   const navigate = useNavigate();
@@ -22,11 +21,29 @@ export default function UserFormPage() {
 
   const onSubmit = async (data: UserFormData) => {
     try {
-      // TODO: Implementar update y create usando userService
-      alert(JSON.stringify(data, null, 2));
+      if (isEditing && id) {
+        // TODO: Implementar update
+        alert('Actualización de usuario aún no implementada');
+      } else {
+        if (!data.password) {
+          alert('La contraseña es obligatoria');
+          return;
+        }
+        await userService.createUser({
+          email: data.email,
+          password: data.password!,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phone: data.phone,
+          activeRole: data.activeRole,
+          status: data.status,
+          vehicleType: data.activeRole === UserRole.COURIER ? data.vehicleType : undefined,
+        });
+        alert('Usuario creado correctamente');
+      }
       navigate('/users');
-    } catch (error) {
-      alert('Error al guardar el usuario');
+    } catch (error: any) {
+      alert(error?.message || 'Error al guardar el usuario');
     }
   };
 
@@ -76,6 +93,14 @@ export default function UserFormPage() {
                   <InputGlobal id="email" {...form.register('email')} placeholder="Email" autoComplete="off" />
                   {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
                 </div>
+                {/* Solo mostrar contraseña en modo creación */}
+                {!isEditing && (
+                  <div>
+                    <Label htmlFor="password" className="text-sm font-medium text-foreground mb-1 block">Contraseña provisional</Label>
+                    <InputGlobal id="password" type="password" {...form.register('password', { required: !isEditing })} placeholder="Contraseña temporal" autoComplete="new-password" />
+                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+                  </div>
+                )}
                 <div>
                   <Label htmlFor="phone" className="text-sm font-medium text-foreground mb-1 block">Teléfono</Label>
                   <InputGlobal id="phone" {...form.register('phone')} placeholder="Teléfono" autoComplete="off" />
@@ -91,6 +116,75 @@ export default function UserFormPage() {
                   <InputGlobal id="lastName" {...form.register('lastName')} placeholder="Apellido" autoComplete="off" />
                   {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>}
                 </div>
+                {/* Campos dinámicos por rol */}
+                {form.watch('activeRole') === UserRole.COURIER && (
+                  <>
+                    <div>
+                      <Label htmlFor="vehicleType" className="text-sm font-medium text-foreground mb-1 block">Tipo de vehículo</Label>
+                      <SelectGlobal id="vehicleType" {...form.register('vehicleType', { required: true })}>
+                        <option value="">Selecciona una opción</option>
+                        <option value="bike">Bicicleta</option>
+                        <option value="motorcycle">Moto</option>
+                        <option value="car">Auto</option>
+                        <option value="walking">A pie</option>
+                      </SelectGlobal>
+                      {errors.vehicleType && <p className="text-red-500 text-xs mt-1">{errors.vehicleType.message}</p>}
+                    </div>
+                    <div>
+                      <Label htmlFor="vehiclePlate" className="text-sm font-medium text-foreground mb-1 block">Placa del vehículo</Label>
+                      <InputGlobal id="vehiclePlate" {...form.register('vehiclePlate')} placeholder="Placa (opcional)" />
+                    </div>
+                    <div>
+                      <Label htmlFor="licenseNumber" className="text-sm font-medium text-foreground mb-1 block">Número de licencia</Label>
+                      <InputGlobal id="licenseNumber" {...form.register('licenseNumber')} placeholder="Licencia (opcional)" />
+                    </div>
+                    <div>
+                      <Label htmlFor="workingZones" className="text-sm font-medium text-foreground mb-1 block">Zonas de trabajo</Label>
+                      <InputGlobal id="workingZones" {...form.register('workingZones')} placeholder="Ej: Miraflores, Surco" />
+                      <span className="text-xs text-muted-foreground">Separar por coma</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" id="isAvailable" {...form.register('isAvailable')} className="accent-primary" />
+                      <Label htmlFor="isAvailable" className="text-sm font-medium text-foreground">Disponible para repartir</Label>
+                    </div>
+                  </>
+                )}
+                {form.watch('activeRole') === UserRole.SELLER && (
+                  <>
+                    <div>
+                      <Label htmlFor="businessName" className="text-sm font-medium text-foreground mb-1 block">Nombre del negocio</Label>
+                      <InputGlobal id="businessName" {...form.register('businessName', { required: true })} placeholder="Nombre del negocio" />
+                    </div>
+                    <div>
+                      <Label htmlFor="businessType" className="text-sm font-medium text-foreground mb-1 block">Tipo de negocio</Label>
+                      <InputGlobal id="businessType" {...form.register('businessType', { required: true })} placeholder="Ej: Restaurante, Tienda" />
+                    </div>
+                    <div>
+                      <Label htmlFor="taxId" className="text-sm font-medium text-foreground mb-1 block">RUC / NIT</Label>
+                      <InputGlobal id="taxId" {...form.register('taxId')} placeholder="RUC/NIT (opcional)" />
+                    </div>
+                    <div>
+                      <Label htmlFor="businessPhone" className="text-sm font-medium text-foreground mb-1 block">Teléfono del negocio</Label>
+                      <InputGlobal id="businessPhone" {...form.register('businessPhone', { required: true })} placeholder="Teléfono del negocio" />
+                    </div>
+                    <div>
+                      <Label htmlFor="businessEmail" className="text-sm font-medium text-foreground mb-1 block">Email del negocio</Label>
+                      <InputGlobal id="businessEmail" {...form.register('businessEmail', { required: true })} placeholder="Email del negocio" />
+                    </div>
+                    <div>
+                      <Label htmlFor="businessAddress" className="text-sm font-medium text-foreground mb-1 block">Dirección del negocio</Label>
+                      <InputGlobal id="businessAddress" {...form.register('businessAddress')} placeholder="Dirección (opcional)" />
+                    </div>
+                    <div>
+                      <Label htmlFor="categories" className="text-sm font-medium text-foreground mb-1 block">Categorías</Label>
+                      <InputGlobal id="categories" {...form.register('categories')} placeholder="Ej: Comida, Electrónica (separar por coma)" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" id="isVerified" {...form.register('isVerified')} className="accent-primary" />
+                      <Label htmlFor="isVerified" className="text-sm font-medium text-foreground">Negocio verificado</Label>
+                    </div>
+                  </>
+                )}
               </div>
             </Card>
 
