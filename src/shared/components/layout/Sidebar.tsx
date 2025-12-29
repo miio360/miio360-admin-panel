@@ -34,8 +34,8 @@ const navItems: NavItem[] = [
     section: "GENERAL",
   },
   {
-    title: "Clientes",
-    href: "/customers",
+    title: "Gestionar Usuarios",
+    href: "/users",
     icon: Users,
     section: "GENERAL",
   },
@@ -49,12 +49,6 @@ const navItems: NavItem[] = [
     title: "Ayuda",
     href: "/help",
     icon: HelpCircle,
-    section: "CUENTA",
-  },
-  {
-    title: "Gestionar Usuarios",
-    href: "/manage-users",
-    icon: UserCircle2,
     section: "CUENTA",
   },
 ];

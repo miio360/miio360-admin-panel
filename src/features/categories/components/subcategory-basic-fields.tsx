@@ -1,6 +1,6 @@
 import { UseFormReturn } from 'react-hook-form';
-import { Input } from '@/shared/components/ui/input';
-import { Textarea } from '@/shared/components/ui/textarea';
+import { InputGlobal } from '@/shared/components/ui/input-global';
+import { TextareaGlobal } from '@/shared/components/ui/textarea-global';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import type { Category } from '@/shared/types';
 
@@ -26,10 +26,9 @@ export function SubcategoryBasicFields({
               Nombre de la Subcategoría *
             </FormLabel>
             <FormControl>
-              <Input
+              <InputGlobal
                 placeholder="Ej: iPhone, Laptops, Sillas..."
                 disabled={loading}
-                className="h-11 border border-secondary/40 focus-visible:border-secondary focus-visible:ring-0 bg-secondary/5 focus:bg-background transition-all"
                 {...field}
               />
             </FormControl>
@@ -68,10 +67,9 @@ export function SubcategoryBasicFields({
           <FormItem>
             <FormLabel className="text-sm font-medium text-foreground">Icono *</FormLabel>
             <FormControl>
-              <Input
+              <InputGlobal
                 placeholder="briefcase-outline"
                 disabled={loading}
-                className="h-11 border border-secondary/40 focus-visible:border-secondary focus-visible:ring-0 bg-secondary/5 focus:bg-background transition-all"
                 {...field}
               />
             </FormControl>
@@ -87,11 +85,10 @@ export function SubcategoryBasicFields({
           <FormItem>
             <FormLabel className="text-sm font-medium text-foreground">Descripción</FormLabel>
             <FormControl>
-              <Textarea
+              <TextareaGlobal
                 placeholder="Describe brevemente esta subcategoría y qué tipo de productos incluye..."
                 disabled={loading}
                 rows={3}
-                className="resize-none text-sm border border-secondary/40 focus-visible:border-secondary focus-visible:ring-0 bg-secondary/5 focus:bg-background transition-all"
                 {...field}
               />
             </FormControl>

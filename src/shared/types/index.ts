@@ -1,23 +1,6 @@
+export * from './user';
+import type { User } from './user';
 import { Timestamp } from 'firebase/firestore';
-
-export interface UserProfile {
-  fullName: string;
-  phone: string;
-}
-
-export interface User {
-  id: string;
-  email: string;
-  emailVerified: boolean;
-  phoneVerified: boolean;
-  activeRole: string;
-  roles: string[];
-  status: string;
-  profile: UserProfile;
-  addresses?: any[];
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-}
 
 export interface Category {
   id: string;
