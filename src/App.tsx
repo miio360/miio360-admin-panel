@@ -8,7 +8,7 @@ import { CategoriesPage } from "./features/categories/categories-page";
 import { CategoryFormPage } from "./features/categories/category-form-page";
 import { SubcategoryFormPage } from "./features/categories/subcategory-form-page";
 import { UsersPage } from "./features/users/users-page";
-import { UserFormPage } from "./features/users/user-form-page";
+import UserFormPage from "./features/users/user-form-page";
 
 function App() {
   return (
