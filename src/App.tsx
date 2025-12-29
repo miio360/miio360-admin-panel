@@ -7,6 +7,8 @@ import { DashboardPage } from "./features/dashboard/dashboard-page";
 import { CategoriesPage } from "./features/categories/categories-page";
 import { CategoryFormPage } from "./features/categories/category-form-page";
 import { SubcategoryFormPage } from "./features/categories/subcategory-form-page";
+import { UsersPage } from "./features/users/users-page";
+import { UserFormPage } from "./features/users/user-form-page";
 
 function App() {
   return (
@@ -27,6 +29,9 @@ function App() {
           >
             <Route index element={<DashboardPage />} />
             <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="users/new" element={<UserFormPage />} />
+            <Route path="users/:id/edit" element={<UserFormPage />} />
             <Route path="categories" element={<CategoriesPage />} />
             <Route path="categories/new" element={<CategoryFormPage />} />
             <Route path="categories/:id/edit" element={<CategoryFormPage />} />

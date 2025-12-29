@@ -1,4 +1,3 @@
-import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Search } from "lucide-react";
 

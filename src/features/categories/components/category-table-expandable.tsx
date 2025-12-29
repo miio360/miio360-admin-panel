@@ -10,7 +10,6 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
 import { ChevronDown, ChevronRight, Edit, Trash2, Plus } from "lucide-react";
 
 interface CategoryTableExpandableProps {
