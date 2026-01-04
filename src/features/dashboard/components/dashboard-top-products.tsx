@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
+import { ButtonGlobal } from "@/shared/components/button-global";
 import { MoreVertical } from "lucide-react";
 
 const topProducts = [
@@ -13,9 +13,9 @@ export function DashboardTopProducts() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-semibold">Productos Más Vendidos</CardTitle>
-        <Button variant="ghost" size="icon">
+        <ButtonGlobal variant="ghost" size="iconSm">
           <MoreVertical className="w-4 h-4" />
-        </Button>
+        </ButtonGlobal>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

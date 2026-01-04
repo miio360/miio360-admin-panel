@@ -2,7 +2,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Switch } from "@/shared/components/ui/switch";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/shared/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import { CategoryFormData } from "../category-form-page";
+import { CategoryFormData } from "../hooks/useCategoryForm";
 
 interface CategoryAppearanceFieldsProps {
   form: UseFormReturn<CategoryFormData>;

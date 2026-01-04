@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase/firestore';
 import { FileUploaded, Rating } from './base';
 
 // User roles and types for ecommerce platform
@@ -34,7 +35,7 @@ export interface UserProfile {
   lastName: string;
   phone: string;
   avatar?: FileUploaded; //link  url profile picture
-  dateOfBirth?: Date;
+  dateOfBirth?: Timestamp;
 }
 
 export interface SellerProfile {
@@ -46,7 +47,7 @@ export interface SellerProfile {
   businessEmail: string;
   businessLogo?: string;
   isVerified: boolean;
-  verificationDate?: Date;
+  verificationDate?: Timestamp;
   rating: Rating;
   totalSales: number;
   categories?: string[]; // Categorías seleccionadas por el vendedor
@@ -63,7 +64,7 @@ export interface CourierProfile {
   currentLocation?: {
     latitude: number;
     longitude: number;
-    lastUpdate: Date;
+    lastUpdate: Timestamp;
   };
 }
 
@@ -81,9 +82,9 @@ export interface User {
   courierProfile?: CourierProfile;
 
   // Metadata
-  createdAt: Date;
-  updatedAt: Date;
-  lastLoginAt?: Date;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  lastLoginAt?: Timestamp;
   emailVerified: boolean;
   phoneVerified: boolean;
 }

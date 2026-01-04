@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
+import { ButtonGlobal } from "@/shared/components/button-global";
 import { Badge } from "@/shared/components/ui/badge";
 
 const recentOrders = [
@@ -13,7 +13,7 @@ export function DashboardRecentOrders() {
     <Card className="lg:col-span-2">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-semibold">Órdenes Recientes</CardTitle>
-        <Button variant="link" className="text-primary text-sm">Ver Todo</Button>
+        <ButtonGlobal variant="link" className="text-primary text-sm hover:underline">Ver Todo</ButtonGlobal>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

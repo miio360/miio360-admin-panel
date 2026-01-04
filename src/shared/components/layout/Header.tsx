@@ -1,6 +1,6 @@
-import { Bell, Search, Moon, Settings as SettingsIcon, Maximize2 } from "lucide-react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { Bell, Moon, Settings as SettingsIcon, Maximize2 } from "lucide-react";
+import { ButtonGlobal } from "../button-global";
+import { SearchGlobal } from "../search-global";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import {
   DropdownMenu,
@@ -16,31 +16,25 @@ export const Header = () => {
   const { user } = useAuth();
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-10">
-      {/* Search Bar */}
-      <div className="flex-1 max-w-md">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            type="search"
-            placeholder="Buscar"
-            className="pl-10 bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-gray-300"
-          />
-        </div>
+    <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-4 sm:px-6 lg:px-8 sticky top-0 z-10 shadow-sm">
+      <div className="flex-1 max-w-md hidden md:block">
+        <SearchGlobal
+          value=""
+          onChange={() => {}}
+          placeholder="Buscar transacción..."
+          className="h-10 text-sm"
+        />
       </div>
 
-      {/* Right Section */}
-      <div className="flex items-center gap-2">
-        {/* Maximize Button */}
-        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
-          <Maximize2 className="w-5 h-5" />
-        </Button>
+      <div className="flex items-center gap-1">
+        <ButtonGlobal variant="ghost" size="iconSm" className="text-gray-500 hover:text-gray-900 hover:bg-gray-50 hidden sm:flex">
+          <Maximize2 className="w-4 h-4" />
+        </ButtonGlobal>
 
-        {/* Compare Button */}
-        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
+        <ButtonGlobal variant="ghost" size="iconSm" className="text-gray-500 hover:text-gray-900 hover:bg-gray-50 hidden md:flex">
           <svg
-            width="20"
-            height="20"
+            width="18"
+            height="18"
             viewBox="0 0 20 20"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -52,34 +46,31 @@ export const Header = () => {
               fill="none"
             />
           </svg>
-        </Button>
+        </ButtonGlobal>
 
-        {/* Dark Mode Toggle */}
-        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
-          <Moon className="w-5 h-5" />
-        </Button>
+        <ButtonGlobal variant="ghost" size="iconSm" className="text-gray-500 hover:text-gray-900 hover:bg-gray-50 hidden sm:flex">
+          <Moon className="w-4 h-4" />
+        </ButtonGlobal>
 
-        {/* Settings */}
-        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900 hover:bg-gray-100">
-          <SettingsIcon className="w-5 h-5" />
-        </Button>
+        <ButtonGlobal variant="ghost" size="iconSm" className="text-gray-500 hover:text-gray-900 hover:bg-gray-50 hidden sm:flex">
+          <SettingsIcon className="w-4 h-4" />
+        </ButtonGlobal>
 
-        {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative text-gray-600 hover:text-gray-900 hover:bg-gray-100">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-        </Button>
+        <ButtonGlobal variant="ghost" size="iconSm" className="relative text-gray-500 hover:text-gray-900 hover:bg-gray-50">
+          <Bell className="w-4 h-4" />
+          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+        </ButtonGlobal>
 
-        {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-0 pl-2 pr-2 hover:bg-gray-100">
-              <Avatar className="w-8 h-8">
-                <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white text-sm">
+            <ButtonGlobal variant="ghost" className="gap-2 pl-2 pr-3 hover:bg-gray-50 h-9 ml-2">
+              <Avatar className="w-7 h-7">
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-semibold">
                   {user?.email?.charAt(0).toUpperCase() || "M"}
                 </AvatarFallback>
               </Avatar>
-            </Button>
+              <span className="text-xs font-medium text-gray-700">ENG</span>
+            </ButtonGlobal>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>

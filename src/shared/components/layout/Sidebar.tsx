@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "../../lib/utils";
-import { Button } from "../ui/button";
+import { ButtonGlobal } from "../button-global";
 import { ScrollArea } from "../ui/scroll-area";
 import {
   LayoutDashboard,
@@ -8,7 +8,6 @@ import {
   Settings,
   LogOut,
   HelpCircle,
-  UserCircle2,
   FolderTree,
 } from "lucide-react";
 
@@ -69,16 +68,16 @@ export const Sidebar = () => {
       <Link key={item.href} to={item.href}>
         <div
           className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all text-white",
+            "flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all text-white text-sm",
             isActive
-              ? "bg-primary/80 text-foreground font-semibold"
-              : "hover:bg-white/10"
+              ? "bg-primary/90 text-foreground font-semibold shadow-sm"
+              : "hover:bg-white/5"
           )}
         >
-          <Icon className="h-5 w-5 flex-shrink-0" />
-          <span className="text-sm font-medium flex-1">{item.title}</span>
+          <Icon className="h-4 w-4 flex-shrink-0" />
+          <span className="font-medium flex-1">{item.title}</span>
           {item.badge && (
-            <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+            <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
               {item.badge}
             </span>
           )}
@@ -88,23 +87,24 @@ export const Sidebar = () => {
   };
 
   return (
-    <div className="flex flex-col sticky top-0 h-screen w-64 border-r border-white/10 z-20" style={{ backgroundColor: '#1e293b' }}>
-      {/* Logo Section */}
-      <div className="flex items-center gap-3 h-16 px-4 border-b border-white/10">
-        <img 
-          src="/miio.jpeg" 
-          alt="Miio Logo" 
-          className="w-8 h-8 rounded object-cover"
-        />
-        <span className="text-lg font-bold text-white">miio</span>
-        <Button
+    <div className="hidden lg:flex flex-col sticky top-0 h-screen w-60 border-r border-gray-100 bg-gradient-to-b from-slate-900 to-slate-800 z-20 shrink-0">
+      <div className="flex items-center gap-3 h-14 px-5 border-b border-white/10">
+        <div className="flex items-center justify-center w-10 h-14">
+          <img
+          src="/miio.jpeg"
+          alt="Miio Logo"
+          className="w-8 h-8 rounded-md object-cover"
+          />
+        </div>
+        <span className="text-lg font-bold text-white tracking-tight">Miio</span>
+        <ButtonGlobal
           variant="ghost"
-          size="icon"
+          size="iconSm"
           className="ml-auto text-white/70 hover:text-white hover:bg-white/10"
         >
           <svg
-            width="20"
-            height="20"
+            width="18"
+            height="18"
             viewBox="0 0 20 20"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -116,33 +116,29 @@ export const Sidebar = () => {
               strokeLinecap="round"
             />
           </svg>
-        </Button>
+        </ButtonGlobal>
       </div>
 
-      {/* Navigation */}
-      <ScrollArea className="flex-1 py-6">
-        {/* GENERAL Section */}
-        <div className="px-4 mb-6">
-          <p className="text-xs font-semibold text-white/60 mb-3">GENERAL</p>
-          <nav className="space-y-1">{generalItems.map(renderNavItem)}</nav>
+      <ScrollArea className="flex-1 py-4">
+        <div className="px-3 mb-6">
+          <p className="text-[10px] font-bold text-white/50 mb-2 px-3 tracking-wider">MAIN</p>
+          <nav className="space-y-0.5">{generalItems.map(renderNavItem)}</nav>
         </div>
 
-        {/* CUENTA Section */}
-        <div className="px-4">
-          <p className="text-xs font-semibold text-white/60 mb-3">CUENTA</p>
-          <nav className="space-y-1">{accountItems.map(renderNavItem)}</nav>
+        <div className="px-3">
+          <p className="text-[10px] font-bold text-white/50 mb-2 px-3 tracking-wider">USERS</p>
+          <nav className="space-y-0.5">{accountItems.map(renderNavItem)}</nav>
         </div>
       </ScrollArea>
 
-      {/* Cerrar Sesión Section */}
-      <div className="p-4 border-t border-white/10">
-        <Button
+      <div className="p-3 border-t border-white/10">
+        <ButtonGlobal
           variant="ghost"
-          className="w-full justify-start gap-3 text-white/80 hover:text-white hover:bg-white/10"
+          className="w-full justify-start gap-3 text-white/80 hover:text-white hover:bg-white/10 h-9"
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="h-4 w-4" />
           <span className="text-sm font-medium">Cerrar Sesión</span>
-        </Button>
+        </ButtonGlobal>
       </div>
     </div>
   );

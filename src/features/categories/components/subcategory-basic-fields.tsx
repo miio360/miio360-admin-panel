@@ -1,6 +1,6 @@
 import { UseFormReturn } from 'react-hook-form';
 import { InputGlobal } from '@/shared/components/ui/input-global';
-import { TextareaGlobal } from '@/shared/components/ui/textarea-global';
+import { TextareaGlobal } from '@/shared/components/textarea-global';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import type { Category } from '@/shared/types';
 

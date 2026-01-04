@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 @theme {
   /* Paleta MIIO360 - Tema Light (por defecto) */
   --color-primary: oklch(85% 0.15 85); /* #FECD1B - Amarillo MIIO360 */
@@ -26,8 +25,8 @@
 }
 
 .dark {
-  --color-background: 159 91% 4%; /* #011611 - Verde oscuro */
-  --color-foreground: 44 95% 92%; /* #FDF3DA - Crema suave */
+  --color-background: 159 91% 4%;
+  --color-foreground: 44 95% 92%; 
   --color-card: 159 80% 8%;
   --color-card-foreground: 44 95% 92%;
   --color-popover: 159 80% 8%;

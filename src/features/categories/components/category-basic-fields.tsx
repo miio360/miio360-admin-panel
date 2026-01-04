@@ -3,7 +3,7 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/shared/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
 import { categoryService } from "@/shared/services/categoryService";
-import { CategoryFormData } from "../category-form-page";
+import { CategoryFormData } from "../hooks/useCategoryForm";
 
 interface CategoryBasicFieldsProps {
   form: UseFormReturn<CategoryFormData>;

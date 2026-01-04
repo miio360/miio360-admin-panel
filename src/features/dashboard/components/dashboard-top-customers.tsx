@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
+import { ButtonGlobal } from "@/shared/components/button-global";
 import { Avatar, AvatarFallback } from "@/shared/components/ui/avatar";
 import { MoreVertical } from "lucide-react";
 
@@ -14,9 +14,9 @@ export function DashboardTopCustomers() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-semibold">Mejores Clientes de la Semana</CardTitle>
-        <Button variant="ghost" size="icon">
+        <ButtonGlobal variant="ghost" size="iconSm">
           <MoreVertical className="w-4 h-4" />
-        </Button>
+        </ButtonGlobal>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -33,7 +33,7 @@ export function DashboardTopCustomers() {
                   <p className="text-xs text-muted-foreground">{customer.orders}</p>
                 </div>
               </div>
-              <Button variant="link" size="sm" className="text-primary">Ver</Button>
+              <ButtonGlobal variant="link" size="sm" className="text-primary hover:underline">Ver</ButtonGlobal>
             </div>
           ))}
         </div>

@@ -1,115 +1,119 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/shared/components/ui/button";
-import { TableBody, TableCell, TableRow } from "@/shared/components/ui/table";
-import { Badge } from "@/shared/components/ui/badge";
-import { Edit2, Trash2, Tag, Package } from "lucide-react";
+import { ButtonGlobal } from "@/shared/components/button-global";
+import { TableGlobal, TableGlobalColumn } from "@/shared/components/table-global";
+import { CardGlobal, CardGlobalContent } from "@/shared/components/card-global";
+import { Edit2, Trash2, Tag } from "lucide-react";
 import { Category } from "@/shared/types";
+import { Timestamp } from "firebase/firestore";
 
 interface CategoryTableProps {
   categories: Category[];
   onDelete: (id: string, name: string) => void;
+  loading?: boolean;
 }
 
-export function CategoryTable({ categories, onDelete }: CategoryTableProps) {
-  if (categories.length === 0) {
-    return (
-      <TableBody>
-        <TableRow>
-          <TableCell colSpan={5} className="h-48 text-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                <Package className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <p className="text-muted-foreground font-medium">No hay categorías registradas</p>
-              <Button asChild variant="link" size="sm">
-                <Link to="/categories/new">Crear primera categoría</Link>
-              </Button>
-            </div>
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    );
-  }
+const columns: TableGlobalColumn<Category>[] = [
+  {
+    key: 'name',
+    header: 'Categoría',
+    width: 'w-[25%]',
+    render: (category) => (
+      <div className="flex items-center gap-3">
+        {category.icon ? (
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-xl shadow-sm">
+            {category.icon}
+          </div>
+        ) : (
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-sm">
+            <Tag className="w-5 h-5 text-gray-600" />
+          </div>
+        )}
+        <div className="min-w-0">
+          <span className="text-sm font-semibold text-gray-900 block">
+            {category.name}
+          </span>
+          <span className="text-xs text-gray-500 mt-0.5 block font-mono">
+            {category.slug}
+          </span>
+        </div>
+      </div>
+    ),
+  },
+  {
+    key: 'description',
+    header: 'Descripción',
+    width: 'w-[35%]',
+    className: 'text-sm text-gray-600 truncate max-w-xs',
+    render: (category) => category.description || <span className="text-gray-400 italic">Sin descripción</span>
+  },
+  {
+    key: 'isActive',
+    header: 'Estado',
+    width: 'w-[15%]',
+    align: 'center',
+    render: (category) => (
+      <div className="flex justify-center">
+        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded ${
+          category.isActive
+            ? "text-green-700 bg-green-50"
+            : "text-gray-600 bg-gray-100"
+        }`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${
+            category.isActive ? "bg-green-500" : "bg-gray-400"
+          }`}></span>
+          {category.isActive ? "Activo" : "Inactivo"}
+        </span>
+      </div>
+    ),
+  },
+  {
+    key: 'createdAt',
+    header: 'Creado',
+    width: 'w-[15%]',
+    className: 'text-sm text-gray-600',
+    render: (category) => new Timestamp(category.createdAt.seconds, category.createdAt.nanoseconds)
+      .toDate()
+      .toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+  },
+];
 
+export function CategoryTable({ categories, onDelete, loading = false }: CategoryTableProps) {
   return (
-    <TableBody>
-      {categories.map((category) => (
-        <TableRow
-          key={category.id}
-          className="border-b border-gray-100 last:border-0 hover:bg-blue-90/30 transition-colors"
-        >
-          <TableCell className="py-4 px-6">
-            <div className="flex items-center gap-3">
-              {category.icon ? (
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-xl shadow-sm">
-                  {category.icon}
-                </div>
-              ) : (
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-sm">
-                  <Tag className="w-5 h-5 text-gray-600" />
-                </div>
-              )}
-              <div className="min-w-0">
-                <span className="text-sm font-semibold text-gray-900 block">
-                  {category.name}
-                </span>
-                <span className="text-xs text-gray-500 mt-0.5 block">
-                  {category.slug}
-                </span>
-              </div>
-            </div>
-          </TableCell>
-          <TableCell className="text-sm text-gray-600 max-w-xs truncate px-6">
-            {category.description || <span className="text-gray-400">-</span>}
-          </TableCell>
-          <TableCell className="px-6">
-            <Badge
-              className={`${
-                category.isActive
-                  ? "bg-green-100 text-green-700 border-0 font-medium"
-                  : "bg-gray-100 text-gray-600 border-0 font-medium"
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                  category.isActive ? "bg-green-500" : "bg-gray-400"
-                }`}
-              ></span>
-              {category.isActive ? "Activo" : "Inactivo"}
-            </Badge>
-          </TableCell>
-          <TableCell className="text-sm text-gray-600 px-6">
-            {category.createdAt.toDate().toLocaleDateString("es-ES", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })}
-          </TableCell>
-          <TableCell className="text-right px-6">
-            <div className="flex justify-end gap-2">
-              <Button
+    <CardGlobal>
+      <CardGlobalContent className="p-0">
+        <TableGlobal<Category>
+          data={categories}
+          columns={columns}
+          loading={loading}
+          emptyMessage="No hay categorías registradas"
+          actions={(category) => (
+            <>
+              <ButtonGlobal
                 asChild
                 variant="ghost"
-                size="icon"
-                className="h-9 w-9 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                size="iconSm"
+                className="hover:bg-gray-100 h-8 w-8"
               >
-                <Link to={`/categories/edit/${category.id}`} title="Editar">
-                  <Edit2 className="w-4 h-4" />
+                <Link to={`/categories/edit/${category.id}`}>
+                  <Edit2 className="w-3.5 h-3.5 text-gray-600" />
                 </Link>
-              </Button>
-              <Button
-                onClick={() => onDelete(category.id, category.name)}
+              </ButtonGlobal>
+              <ButtonGlobal
                 variant="ghost"
-                size="icon"
-                className="h-9 w-9 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                title="Eliminar"
+                size="iconSm"
+                onClick={() => onDelete(category.id, category.name)}
+                className="hover:bg-red-50 h-8 w-8"
               >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
+                <Trash2 className="w-3.5 h-3.5 text-red-600" />
+              </ButtonGlobal>
+            </>
+          )}
+        />
+      </CardGlobalContent>
+    </CardGlobal>
   );
 }

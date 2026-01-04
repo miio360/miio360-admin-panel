@@ -1,4 +1,4 @@
-import { Textarea } from './textarea';
+import { Textarea } from './ui/textarea';
 import clsx from 'clsx';
 import type { TextareaHTMLAttributes } from 'react';
 
