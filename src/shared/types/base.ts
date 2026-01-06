@@ -16,10 +16,6 @@ export interface SoftDeletableModel {
   isDeleted: boolean;
 }
 
-export interface StatusableModel extends BaseModel {
-  status: 'active' | 'inactive' | 'pending' | 'suspended';
-}
-
 export interface VisibilityModel {
   isVisible: boolean;
   hiddenAt?: Timestamp | null;
@@ -27,7 +23,6 @@ export interface VisibilityModel {
 }
 
 // ========== HELPERS (sin tipos de retorno) ==========
-
 
 export function createBaseModel(userId: string) {
   return {
@@ -37,13 +32,11 @@ export function createBaseModel(userId: string) {
   };
 }
 
-
 export function updateModelTimestamp() {
   return {
     updatedAt: serverTimestamp(),
   };
 }
-
 
 export function softDeleteModel(userId: string) {
   return {
@@ -60,7 +53,6 @@ export function restoreModel() {
     isDeleted: false,
   };
 }
-
 
 export function hideModel(userId: string) {
   return {

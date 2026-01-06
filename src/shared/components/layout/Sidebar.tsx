@@ -1,4 +1,5 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from '@/shared/hooks/useAuth';
 import { cn } from "../../lib/utils";
 import { ButtonGlobal } from "../button-global";
 import { ScrollArea } from "../ui/scroll-area";
@@ -38,25 +39,14 @@ const navItems: NavItem[] = [
     icon: Users,
     section: "GENERAL",
   },
-  {
-    title: "Configuración",
-    href: "/settings",
-    icon: Settings,
-    section: "CUENTA",
-  },
-  {
-    title: "Ayuda",
-    href: "/help",
-    icon: HelpCircle,
-    section: "CUENTA",
-  },
 ];
 
 export const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const generalItems = navItems.filter((item) => item.section === "GENERAL");
-  const accountItems = navItems.filter((item) => item.section === "CUENTA");
 
   const renderNavItem = (item: NavItem) => {
     const isActive =
@@ -124,21 +114,22 @@ export const Sidebar = () => {
           <p className="text-[10px] font-bold text-white/50 mb-2 px-3 tracking-wider">MAIN</p>
           <nav className="space-y-0.5">{generalItems.map(renderNavItem)}</nav>
         </div>
-
-        <div className="px-3">
-          <p className="text-[10px] font-bold text-white/50 mb-2 px-3 tracking-wider">USERS</p>
-          <nav className="space-y-0.5">{accountItems.map(renderNavItem)}</nav>
-        </div>
       </ScrollArea>
 
-      <div className="p-3 border-t border-white/10">
-        <ButtonGlobal
-          variant="ghost"
-          className="w-full justify-start gap-3 text-white/80 hover:text-white hover:bg-white/10 h-9"
+      <div className="p-3 border-t border-white/10 flex flex-col gap-2">
+        {/* Perfil de usuario clickable */}
+        <button
+          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg transition-all hover:bg-white/10 group"
+          onClick={() => navigate('/profile')}
         >
-          <LogOut className="h-4 w-4" />
-          <span className="text-sm font-medium">Cerrar Sesión</span>
-        </ButtonGlobal>
+          <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold text-primary">
+            {user?.profile?.firstName?.[0]?.toUpperCase() || user?.profile?.email?.[0]?.toUpperCase() || '?'}
+          </div>
+          <div className="flex flex-col items-start min-w-0">
+            <span className="text-white font-medium text-sm truncate max-w-[120px] group-hover:underline">{user?.profile?.firstName || 'Usuario'}</span>
+            <span className="text-xs text-white/60 truncate max-w-[120px]">{user?.profile?.email}</span>
+          </div>
+        </button>
       </div>
     </div>
   );

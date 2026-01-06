@@ -16,18 +16,18 @@ export const authService = {
     const userId = userCredential.user.uid;
 
     const newUser = {
-      email,
-      emailVerified: false,
-      phoneVerified: false,
-      activeRole: UserRole.ADMIN,
-      roles: [UserRole.ADMIN],
-      status: UserStatus.ACTIVE,
       profile: userData.profile || {
         firstName: '',
         lastName: '',
         phone: '',
+        email: email,
+        addresses: [],
+        emailVerified: false,
+        phoneVerified: false,
       },
-      addresses: [],
+      activeRole: UserRole.ADMIN,
+      roles: [UserRole.ADMIN],
+      status: UserStatus.ACTIVE,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };

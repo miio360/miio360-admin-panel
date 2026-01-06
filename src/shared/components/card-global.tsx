@@ -93,24 +93,20 @@ export function CardStat({
   value,
   subtitle,
   icon,
-  gradientClass,
   iconBgClass,
-  className = '',
 }: CardStatProps) {
   return (
     <CardGlobal className={cn(
-      'border-0 shadow-sm hover:shadow-md transition-all duration-200 bg-gradient-to-br',
-      gradientClass,
-      className
+      'border border-gray-200 bg-white shadow-sm hover:shadow transition-shadow duration-150'
     )}>
       <CardGlobalContent className="pt-5 pb-5">
         <div className="flex items-center justify-between">
           <div>
-            <p className={cn('text-xs mb-1.5 uppercase tracking-wide font-semibold text-foreground/70')}>{title}</p>
-            <p className="text-3xl font-bold text-foreground">{value}</p>
-            {subtitle && <p className="text-xs mt-2 font-medium text-foreground/60">{subtitle}</p>}
+            <p className="text-xs mb-1 uppercase tracking-wide font-medium text-gray-500">{title}</p>
+            <p className="text-2xl font-semibold text-gray-900">{value}</p>
+            {subtitle && <p className="text-xs mt-1 text-gray-500">{subtitle}</p>}
           </div>
-          <div className={cn('w-14 h-14 rounded-xl flex items-center justify-center shadow-sm', `bg-gradient-to-br ${iconBgClass}`)}>
+          <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center shadow-sm', `bg-gradient-to-br ${iconBgClass}`)}>
             {icon}
           </div>
         </div>

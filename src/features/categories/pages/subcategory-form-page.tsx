@@ -47,7 +47,7 @@ export function SubcategoryFormPage() {
         isActive: data.isActive,
         order: typeof data.order === 'number' && !isNaN(data.order) ? data.order : 0,
         featureDefinitions,
-        createdBy: user.id,
+        categoryId: data.categoryId,
       };
       
       const pathParts = window.location.pathname.split('/');
@@ -57,7 +57,7 @@ export function SubcategoryFormPage() {
         await subcategoryService.update(data.categoryId, id, subcategoryData);
         modal.showSuccess("Subcategoría actualizada exitosamente");
       } else {
-        await subcategoryService.create(data.categoryId, subcategoryData);
+        await subcategoryService.create(data.categoryId, subcategoryData, user.id);
         modal.showSuccess("Subcategoría creada exitosamente");
       }
       navigate("/categories");

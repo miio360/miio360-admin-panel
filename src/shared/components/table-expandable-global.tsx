@@ -53,25 +53,26 @@ export function TableExpandableGlobal<T, S = T>({
   const hasExpandable = !!getSubItems;
 
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-50 hover:bg-gray-50 border-y">
-            {hasExpandable && <TableHead className="w-10"></TableHead>}
+          <TableRow className="sticky top-0 z-10 bg-background border-b border-gray-200">
+            {hasExpandable && <TableHead className="w-10 bg-background"></TableHead>}
             {columns.map((column) => (
               <TableHead
                 key={column.key}
-                className={`font-semibold text-gray-600 text-xs uppercase ${
+                className={`font-semibold text-foreground text-xs uppercase tracking-wide bg-background ${
                   column.width || ""
                 } ${column.align === "center" ? "text-center" : column.align === "right" ? "text-right" : ""} ${
                   column.className || ""
                 }`}
+                style={{ borderBottom: '1.5px solid #F3F4F6' }}
               >
                 {column.header}
               </TableHead>
             ))}
             {actions && (
-              <TableHead className="text-right font-semibold text-gray-600 text-xs uppercase w-[18%]">
+              <TableHead className="text-right font-semibold text-foreground text-xs uppercase w-[18%] bg-background" style={{ borderBottom: '1.5px solid #F3F4F6' }}>
                 Acciones
               </TableHead>
             )}
@@ -84,16 +85,25 @@ export function TableExpandableGlobal<T, S = T>({
             const subItems = getSubItems?.(item);
             const isEven = index % 2 === 0;
 
+            // Fila principal: hover amarillo, borde izq amarillo si expandido
             return (
               <React.Fragment key={itemId}>
-                <TableRow className="transition-colors border-b group">
+                <TableRow
+                  className={`transition-colors border-b border-gray-100 group
+                    ${isExpanded ? 'ring-2 ring-primary/60 ring-inset border-l-4 border-l-primary bg-primary/10' : ''}
+                    hover:bg-primary/20
+                    ${isEven ? 'bg-white' : 'bg-background'}`}
+                  style={{ cursor: hasExpandable ? 'pointer' : 'default' }}
+                >
                   {hasExpandable && (
-                    <TableCell>
+                    <TableCell className="bg-transparent">
                       <ButtonGlobal
                         variant="ghost"
                         size="iconSm"
                         onClick={() => toggleRow(itemId)}
-                        className="hover:bg-gray-200 rounded-md"
+                        className="hover:bg-primary/20 rounded-md transition-colors"
+                        tabIndex={0}
+                        aria-label={isExpanded ? 'Colapsar' : 'Expandir'}
                       >
                         {isExpanded ? (
                           <ChevronDown className="h-4 w-4 text-gray-600" />
@@ -126,27 +136,36 @@ export function TableExpandableGlobal<T, S = T>({
                   )}
                 </TableRow>
 
+                {/* Subfilas: alineadas debajo, indent visual, fondo moderno */}
                 {isExpanded && subItems && subItems.length > 0 && renderSubItem && (
                   <React.Fragment key={itemId + "-subs"}>
                     {subItems.map((subItem, idx) => (
-                      <React.Fragment key={itemId + "-sub-" + idx}>
-                        {renderSubItem(subItem, item, isEven)}
-                      </React.Fragment>
+                      <TableRow
+                        key={itemId + "-sub-" + idx}
+                        className="border-b border-gray-100 bg-gray-50 group/subrow hover:bg-primary/10 transition-colors"
+                      >
+                        <TableCell
+                          colSpan={columns.length + (actions ? 1 : 0) + (hasExpandable ? 1 : 0)}
+                          className="bg-gray-50 p-0 align-middle"
+                        >
+                          {renderSubItem(subItem, item, isEven)}
+                        </TableCell>
+                      </TableRow>
                     ))}
                   </React.Fragment>
                 )}
 
+                {/* Empty subitems: alineado debajo, fondo moderno */}
                 {isExpanded &&
                   subItems &&
                   subItems.length === 0 &&
                   renderEmptySubItems && (
                     <TableRow
                       key={itemId + "-empty"}
-                      className={`border-b ${
-                        isEven ? "bg-primary/[0.08]" : "bg-emerald-100/70"
-                      }`}
+                      className="border-b bg-background"
                     >
-                      <TableCell colSpan={columns.length + (hasExpandable ? 1 : 0) + (actions ? 1 : 0)}>
+                      {hasExpandable && <TableCell className="bg-background p-0 w-10"></TableCell>}
+                      <TableCell colSpan={columns.length + (actions ? 1 : 0)}>
                         {renderEmptySubItems(item, isEven)}
                       </TableCell>
                     </TableRow>

@@ -11,6 +11,7 @@ import { CategoryFormPage } from "./features/categories/pages/category-form-page
 import { SubcategoryFormPage } from "./features/categories/pages/subcategory-form-page";
 import { UsersPage } from "./features/users/pages/users-page";
 import UserFormPage from "./features/users/pages/user-form-page";
+import UserProfilePage from "./features/users/pages/user-profile-page";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
               <Route index element={<DashboardPage />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="users" element={<UsersPage />} />
+              <Route path="/profile" element={<UserProfilePage />} />
               <Route path="users/new" element={<UserFormPage />} />
               <Route path="users/:id/edit" element={<UserFormPage />} />
               <Route path="categories" element={<CategoriesPage />} />

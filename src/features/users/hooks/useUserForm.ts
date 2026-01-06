@@ -25,7 +25,7 @@ export function useUserForm(id?: string) {
       userService.getById(id).then(user => {
         if (user) {
           reset({
-            email: user.email || '',
+            email: user.profile?.email || '',
             firstName: user.profile?.firstName || '',
             lastName: user.profile?.lastName || '',
             phone: user.profile?.phone || '',

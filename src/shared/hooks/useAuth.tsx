@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User as FirebaseUser } from "firebase/auth";
-import { User, AuthContextType } from "../types";
+import { User, AuthState } from "../types";
 import { authService } from "../services/authService";
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthState | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -39,13 +39,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isAdmin = authService.isAdmin(user);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, isAdmin }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isLoading: loading, 
+      isAuthenticated: !!user,
+      error: null,
+      signIn, 
+      signUp, 
+      signOut, 
+      isAdmin 
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = (): AuthState => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");

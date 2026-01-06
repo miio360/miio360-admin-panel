@@ -1,5 +1,5 @@
 import { UseFormReturn } from 'react-hook-form';
-import { InputGlobal } from '@/shared/components/ui/input-global';
+import { InputGlobal } from '@/shared/components/input-global';
 import { Label } from '@/shared/components/ui/label';
 
 interface UserBasicFieldsProps {

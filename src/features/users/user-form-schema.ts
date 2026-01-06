@@ -65,6 +65,13 @@ export const userFormSchema = z.object({
         path: ['businessEmail'],
       });
     }
+    if (!data.categories || data.categories.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debes seleccionar al menos una categoría',
+        path: ['categories'],
+      });
+    }
   }
 });
 

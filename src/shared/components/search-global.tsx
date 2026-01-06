@@ -22,7 +22,7 @@ export function SearchGlobal({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-10 pr-4 border border-gray-200 bg-white focus:ring-1 focus:ring-gray-300 focus:border-gray-300 text-gray-900 placeholder:text-gray-400 h-10 rounded-lg"
+        className="pl-10 pr-4 border border-gray-200 bg-white focus:outline-none focus:ring-1 focus:ring-gray-300 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-gray-300 h-10 rounded-lg"
       />
     </div>
   );

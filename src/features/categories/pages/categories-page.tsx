@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ButtonGlobal } from "@/shared/components/button-global";
 import { useModal } from "@/shared/hooks/useModal";
-import { CardGlobal, CardGlobalHeader, CardGlobalContent } from "@/shared/components/card-global";
+import {  CardGlobalContent } from "@/shared/components/card-global";
 import { PageHeaderGlobal } from "@/shared/components/page-header-global";
 import { SearchGlobal } from "@/shared/components/search-global";
 import { PaginationGlobal } from "@/shared/components/pagination-global";
@@ -97,7 +97,7 @@ export const CategoriesPage = () => {
   }
 
   return (
-    <div className="px-4 sm:px-6 py-6 sm:py-8 bg-background min-h-screen space-y-6 sm:space-y-8 max-w-[1600px] mx-auto">
+    <div className="px-4 sm:px-6 py-3 sm:py-8 bg-background min-h-screen space-y-6 sm:space-y-8 max-w-[1600px] mx-auto">
       <PageHeaderGlobal
         title="Categorías"
         description="Gestiona las categorías y subcategorías del marketplace"
@@ -119,48 +119,47 @@ export const CategoriesPage = () => {
         active={activeCategories}
         subcategories={totalSubcategories}
       />
-
-      <CardGlobal>
-        <CardGlobalHeader>
-          <SearchGlobal
-            value={searchTerm}
-            onChange={handleSearch}
-            placeholder="Buscar por nombre o slug..."
-          />
-        </CardGlobalHeader>
-        <CardGlobalContent className="p-0">
-          {paginatedCategories.length === 0 ? (
-            <div className="text-center py-12 sm:py-20 px-4">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 mb-3 sm:mb-4">
-                <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-              </div>
-              <p className="text-sm sm:text-base text-foreground/60 font-medium mb-1">No se encontraron categorías</p>
-              <p className="text-xs sm:text-sm text-foreground/40 mb-4 sm:mb-5">Comienza creando tu primera categoría</p>
-              <ButtonGlobal 
-                onClick={() => navigate("/categories/new")} 
-                className="bg-primary hover:bg-primary/90 text-foreground font-semibold" 
-                size="sm"
-                icon={<Plus className="w-4 h-4" />}
-                iconPosition="left"
-              >
-                Crear primera categoría
-              </ButtonGlobal>
-            </div>
-          ) : (
-            <CategoryTableExpandable
-              categories={paginatedCategories}
-              subcategories={subcategories}
-              onDelete={handleDelete}
-              onCreateSubcategory={handleCreateSubcategory}
-            />
-          )}
-        </CardGlobalContent>
-        <PaginationGlobal
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
+      <div className="space-y-2">
+        <SearchGlobal
+          value={searchTerm}
+          onChange={handleSearch}
+          placeholder="Buscar por nombre o slug..."
         />
-      </CardGlobal>
+        <div className="space-y-1">
+          <CardGlobalContent className="p-0">
+            {paginatedCategories.length === 0 ? (
+              <div className="text-center py-12 sm:py-20 px-4">
+                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 mb-3 sm:mb-4">
+                  <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+                </div>
+                <p className="text-sm sm:text-base text-foreground/60 font-medium mb-1">No se encontraron categorías</p>
+                <p className="text-xs sm:text-sm text-foreground/40 mb-4 sm:mb-5">Comienza creando tu primera categoría</p>
+                <ButtonGlobal
+                  onClick={() => navigate("/categories/new")}
+                  className="bg-primary hover:bg-primary/90 text-foreground font-semibold"
+                  size="sm"
+                  icon={<Plus className="w-4 h-4" />}
+                  iconPosition="left"
+                >
+                  Crear primera categoría
+                </ButtonGlobal>
+              </div>
+            ) : (
+              <CategoryTableExpandable
+                categories={paginatedCategories}
+                subcategories={subcategories}
+                onDelete={handleDelete}
+                onCreateSubcategory={handleCreateSubcategory}
+              />
+            )}
+          </CardGlobalContent>
+          <PaginationGlobal
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { UseFormReturn } from 'react-hook-form';
-import { InputGlobal } from '@/shared/components/ui/input-global';
+import { InputGlobal } from '@/shared/components/input-global';
 import { TextareaGlobal } from '@/shared/components/textarea-global';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import type { Category } from '@/shared/types';
@@ -107,7 +107,7 @@ export function SubcategoryBasicFields({
               <span className="text-xs text-muted-foreground">Activa la subcategoría para que sea visible en la aplicación</span>
             </div>
             <FormControl>
-              <input
+              <InputGlobal
                 type="checkbox"
                 checked={field.value}
                 onChange={field.onChange}

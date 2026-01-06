@@ -28,7 +28,6 @@ export interface TableGlobalProps<T> {
   showPagination?: boolean;
 }
 
-
 export function TableGlobal<T extends { id: string }>({
   columns,
   data,
@@ -51,26 +50,27 @@ export function TableGlobal<T extends { id: string }>({
   }, [data.length]);
 
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-50 hover:bg-gray-50 border-y">
+          <TableRow className="sticky top-0 z-10 bg-background border-b border-gray-200">
             {columns.map((col) => (
               <TableHead
                 key={col.key as string}
-                className={`font-semibold text-gray-600 text-xs uppercase ${col.width || ""} ${
+                className={`font-semibold text-foreground text-xs uppercase tracking-wide bg-background ${col.width || ""} ${
                   col.align === "center"
                     ? "text-center"
                     : col.align === "right"
                     ? "text-right"
                     : ""
                 } ${col.className || ""}`}
+                style={{ borderBottom: '1.5px solid #F3F4F6' }}
               >
                 {col.header}
               </TableHead>
             ))}
             {actions && (
-              <TableHead className="text-right font-semibold text-gray-600 text-xs uppercase w-[18%]">
+              <TableHead className="text-right font-semibold text-foreground text-xs uppercase w-[18%] bg-background" style={{ borderBottom: '1.5px solid #F3F4F6' }}>
                 Acciones
               </TableHead>
             )}
@@ -81,7 +81,7 @@ export function TableGlobal<T extends { id: string }>({
             <TableRow>
               <TableCell
                 colSpan={columns.length + (actions ? 1 : 0)}
-                className="text-center py-12"
+                className="text-center py-12 bg-white"
               >
                 <div className="flex items-center justify-center">
                   <div className="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
@@ -93,7 +93,7 @@ export function TableGlobal<T extends { id: string }>({
             <TableRow>
               <TableCell
                 colSpan={columns.length + (actions ? 1 : 0)}
-                className="h-48 text-center"
+                className="h-48 text-center bg-white"
               >
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
@@ -104,12 +104,12 @@ export function TableGlobal<T extends { id: string }>({
               </TableCell>
             </TableRow>
           ) : (
-            paginatedData.map((row) => (
+            paginatedData.map((row, idx) => (
               <TableRow
                 key={row.id}
-                className={`transition-colors border-b group ${
+                className={`transition-colors border-b border-gray-100 group hover:bg-primary/10 ${
                   rowClassName ? rowClassName(row) : ""
-                }`}
+                } ${idx % 2 === 0 ? 'bg-white' : 'bg-background'}`}
               >
                 {columns.map((col) => (
                   <TableCell

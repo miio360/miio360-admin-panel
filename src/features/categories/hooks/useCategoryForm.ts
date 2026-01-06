@@ -76,8 +76,7 @@ export function useCategoryForm(categoryId?: string) {
         await categoryService.create({
           ...data,
           order,
-          createdBy: user.id,
-        });
+        }, user.id);
         modal.showSuccess('Categoría creada exitosamente');
       }
       navigate('/categories');

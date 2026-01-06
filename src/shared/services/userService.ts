@@ -10,9 +10,13 @@ import {
   Timestamp,
   type DocumentData,
   type QueryDocumentSnapshot,
+  doc,
+  setDoc,
 } from 'firebase/firestore';
-import { UserRole } from '@/shared/types';
-import type { User, UserStatus } from '@/shared/types';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { UserRole, UserStatus } from '@/shared/types';
+import type { User, UserProfile, SellerProfile, CourierProfile } from '@/shared/types';
+import { createBaseModel } from '@/shared/types/base';
 
 const COLLECTION_NAME = 'users';
 
@@ -27,8 +31,6 @@ interface CreateUserInput {
   vehicleType?: string;
   vehiclePlate?: string;
   licenseNumber?: string;
-  workingZones?: string;
-  isAvailable?: boolean;
   businessName?: string;
   businessType?: string;
   taxId?: string;
@@ -36,107 +38,77 @@ interface CreateUserInput {
   businessEmail?: string;
   businessAddress?: string;
   categories?: string;
-  isVerified?: boolean;
-}
-
-interface UserDocument {
-  email: string;
-  profile: {
-    firstName: string;
-    lastName: string;
-    phone: string;
-  };
-  roles: UserRole[];
-  activeRole: UserRole;
-  status: UserStatus;
-  emailVerified: boolean;
-  phoneVerified: boolean;
-  createdAt: unknown;
-  updatedAt: unknown;
-  courierProfile?: {
-    vehicleType: string;
-    vehiclePlate: string;
-    licenseNumber: string;
-    workingZones: string[];
-    isAvailable: boolean;
-    rating: number;
-    totalDeliveries: number;
-  };
-  sellerProfile?: {
-    businessName: string;
-    businessType: string;
-    taxId: string;
-    businessAddress: {
-      id: string;
-      street: string;
-      city: string;
-      state: string;
-      zipCode: string;
-      country: string;
-      isDefault: boolean;
-    };
-    businessPhone: string;
-    businessEmail: string;
-    businessLogo: string;
-    isVerified: boolean;
-    rating: number;
-    totalSales: number;
-    categories: string[];
-  };
 }
 
 async function createUser(formData: CreateUserInput): Promise<string> {
-  // Crea usuario en Auth y Firestore
   try {
-    const { getAuth, createUserWithEmailAndPassword } = await import('firebase/auth');
-    const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
     const auth = getAuth();
-    // 1. Crear usuario en Auth
+    
     const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
     const uid = userCredential.user.uid;
-    // 2. Crear documento en Firestore
+    
     const userDoc = doc(db, COLLECTION_NAME, uid);
-    const data: UserDocument = {
+    
+    const profile: UserProfile = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      phone: formData.phone,
       email: formData.email,
-      profile: {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
-      },
-      roles: [formData.activeRole],
-      activeRole: formData.activeRole,
-      status: formData.status,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      addresses: [],
       emailVerified: false,
       phoneVerified: false,
     };
+
+    const data: Record<string, unknown> = {
+      profile,
+      roles: [formData.activeRole],
+      activeRole: formData.activeRole,
+      status: formData.status,
+      ...createBaseModel(uid),
+    };
+
     if (formData.activeRole === UserRole.COURIER) {
-      data.courierProfile = {
-        vehicleType: formData.vehicleType ?? '',
-        vehiclePlate: formData.vehiclePlate || '',
-        licenseNumber: formData.licenseNumber || '',
-        workingZones: formData.workingZones ? formData.workingZones.split(',').map((z: string) => z.trim()) : [],
-        isAvailable: !!formData.isAvailable,
-        rating: 0,
+      const courierProfile: CourierProfile = {
+        vehicleType: (formData.vehicleType as 'bike' | 'motorcycle' | 'car' | 'walking') ?? 'bike',
+        vehiclePlate: formData.vehiclePlate,
+        licenseNumber: formData.licenseNumber,
+        isAvailable: true,
+        rating: {
+          average: 0,
+          count: 0,
+        },
         totalDeliveries: 0,
       };
+      data.courierProfile = courierProfile;
     }
+
     if (formData.activeRole === UserRole.SELLER) {
-      data.sellerProfile = {
+      const sellerProfile: SellerProfile = {
         businessName: formData.businessName ?? '',
         businessType: formData.businessType ?? '',
-        taxId: formData.taxId || '',
-        businessAddress: { id: '', street: formData.businessAddress || '', city: '', state: '', zipCode: '', country: '', isDefault: true },
+        taxId: formData.taxId,
+        businessAddress: { 
+          id: '', 
+          street: formData.businessAddress || '', 
+          city: '', 
+          state: '', 
+          country: '', 
+          isDefault: true 
+        },
         businessPhone: formData.businessPhone ?? '',
         businessEmail: formData.businessEmail ?? '',
         businessLogo: '',
-        isVerified: !!formData.isVerified,
-        rating: 0,
+        isVerified: false,
+        rating: {
+          average: 0,
+          count: 0,
+        },
         totalSales: 0,
         categories: formData.categories ? formData.categories.split(',').map((c: string) => c.trim()) : [],
       };
+      data.sellerProfile = sellerProfile;
     }
+
     await setDoc(userDoc, data);
     return uid;
   } catch (error) {
@@ -173,19 +145,16 @@ export const userService = {
         const data = docSnap.data();
         return {
           id: docSnap.id,
-          email: data.email,
           profile: data.profile,
           roles: data.roles,
           activeRole: data.activeRole,
           status: data.status,
-          addresses: data.addresses || [],
           sellerProfile: data.sellerProfile,
           courierProfile: data.courierProfile,
           createdAt: (data.createdAt ?? Timestamp.fromDate(new Date())) as Timestamp,
           updatedAt: (data.updatedAt ?? Timestamp.fromDate(new Date())) as Timestamp,
+          createdBy: data.createdBy || 'unknown',
           lastLoginAt: (data.lastLoginAt as Timestamp | undefined) ?? undefined,
-          emailVerified: !!data.emailVerified,
-          phoneVerified: !!data.phoneVerified,
         };
       });
 
@@ -223,24 +192,89 @@ export const userService = {
       const data = docSnap.data();
       return {
         id: docSnap.id,
-        email: data.email,
         profile: data.profile,
         roles: data.roles,
         activeRole: data.activeRole,
         status: data.status,
-        addresses: data.addresses || [],
         sellerProfile: data.sellerProfile,
         courierProfile: data.courierProfile,
         createdAt: (data.createdAt ?? Timestamp.fromDate(new Date())) as Timestamp,
         updatedAt: (data.updatedAt ?? Timestamp.fromDate(new Date())) as Timestamp,
+        createdBy: data.createdBy || 'unknown',
         lastLoginAt: (data.lastLoginAt as Timestamp | undefined) ?? undefined,
-        emailVerified: !!data.emailVerified,
-        phoneVerified: !!data.phoneVerified,
       };
     } catch (error) {
       console.error('Error fetching user by id:', error);
       return null;
     }
   },
+
+  async updateUser(id: string, formData: Partial<CreateUserInput>): Promise<void> {
+    try {
+      const { updateDoc, doc } = await import('firebase/firestore');
+      const userDoc = doc(db, COLLECTION_NAME, id);
+
+      const updateData: Record<string, unknown> = {};
+
+      if (formData.firstName || formData.lastName || formData.phone || formData.email) {
+        const profile: Partial<UserProfile> = {};
+        if (formData.firstName) profile.firstName = formData.firstName;
+        if (formData.lastName) profile.lastName = formData.lastName;
+        if (formData.phone) profile.phone = formData.phone;
+        if (formData.email) profile.email = formData.email;
+        updateData.profile = profile;
+      }
+
+      if (formData.activeRole) {
+        updateData.activeRole = formData.activeRole;
+        updateData.roles = [formData.activeRole];
+      }
+
+      if (formData.status) {
+        updateData.status = formData.status;
+      }
+
+      if (formData.activeRole === UserRole.SELLER) {
+        const sellerProfile: Partial<SellerProfile> = {};
+        if (formData.businessName) sellerProfile.businessName = formData.businessName;
+        if (formData.businessType) sellerProfile.businessType = formData.businessType;
+        if (formData.taxId) sellerProfile.taxId = formData.taxId;
+        if (formData.businessPhone) sellerProfile.businessPhone = formData.businessPhone;
+        if (formData.businessEmail) sellerProfile.businessEmail = formData.businessEmail;
+        if (formData.businessAddress) {
+          sellerProfile.businessAddress = {
+            id: '',
+            street: formData.businessAddress,
+            city: '',
+            state: '',
+            country: '',
+            isDefault: true,
+          };
+        }
+        if (formData.categories) {
+          sellerProfile.categories = formData.categories.split(',').map((c: string) => c.trim());
+        }
+        updateData.sellerProfile = sellerProfile;
+      }
+
+      if (formData.activeRole === UserRole.COURIER) {
+        const courierProfile: Partial<CourierProfile> = {};
+        if (formData.vehicleType) {
+          courierProfile.vehicleType = formData.vehicleType as 'bike' | 'motorcycle' | 'car' | 'walking';
+        }
+        if (formData.vehiclePlate) courierProfile.vehiclePlate = formData.vehiclePlate;
+        if (formData.licenseNumber) courierProfile.licenseNumber = formData.licenseNumber;
+        updateData.courierProfile = courierProfile;
+      }
+
+      updateData.updatedAt = Timestamp.fromDate(new Date());
+
+      await updateDoc(userDoc, updateData);
+    } catch (error) {
+      console.error('Error actualizando usuario:', error);
+      throw new Error('No se pudo actualizar el usuario');
+    }
+  },
+
   createUser,
 };
