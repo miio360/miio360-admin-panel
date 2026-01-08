@@ -1,4 +1,4 @@
-import { db } from './firebase';
+import { db, functions } from './firebase';
 import {
   collection,
   getCountFromServer,
@@ -10,13 +10,10 @@ import {
   Timestamp,
   type DocumentData,
   type QueryDocumentSnapshot,
-  doc,
-  setDoc,
 } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { httpsCallable } from 'firebase/functions';
 import { UserRole, UserStatus } from '@/shared/types';
 import type { User, UserProfile, SellerProfile, CourierProfile } from '@/shared/types';
-import { createBaseModel } from '@/shared/types/base';
 
 const COLLECTION_NAME = 'users';
 
@@ -37,84 +34,72 @@ interface CreateUserInput {
   businessPhone?: string;
   businessEmail?: string;
   businessAddress?: string;
-  categories?: string;
+  categories?: string[] | string;
 }
 
 async function createUser(formData: CreateUserInput): Promise<string> {
+  console.log('[Frontend] Llamando a Cloud Function createUser...');
+  
   try {
-    const auth = getAuth();
+    const createUserFn = httpsCallable<CreateUserInput, CreateUserResponse>(functions, 'createUser');
     
-    const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-    const uid = userCredential.user.uid;
-    
-    const userDoc = doc(db, COLLECTION_NAME, uid);
-    
-    const profile: UserProfile = {
+    const payload: CreateUserInput = {
+      email: formData.email,
+      password: formData.password,
       firstName: formData.firstName,
       lastName: formData.lastName,
       phone: formData.phone,
-      email: formData.email,
-      addresses: [],
-      emailVerified: false,
-      phoneVerified: false,
-    };
-
-    const data: Record<string, unknown> = {
-      profile,
-      roles: [formData.activeRole],
       activeRole: formData.activeRole,
       status: formData.status,
-      ...createBaseModel(uid),
     };
 
-    if (formData.activeRole === UserRole.COURIER) {
-      const courierProfile: CourierProfile = {
-        vehicleType: (formData.vehicleType as 'bike' | 'motorcycle' | 'car' | 'walking') ?? 'bike',
-        vehiclePlate: formData.vehiclePlate,
-        licenseNumber: formData.licenseNumber,
-        isAvailable: true,
-        rating: {
-          average: 0,
-          count: 0,
-        },
-        totalDeliveries: 0,
-      };
-      data.courierProfile = courierProfile;
-    }
-
     if (formData.activeRole === UserRole.SELLER) {
-      const sellerProfile: SellerProfile = {
-        businessName: formData.businessName ?? '',
-        businessType: formData.businessType ?? '',
-        taxId: formData.taxId,
-        businessAddress: { 
-          id: '', 
-          street: formData.businessAddress || '', 
-          city: '', 
-          state: '', 
-          country: '', 
-          isDefault: true 
-        },
-        businessPhone: formData.businessPhone ?? '',
-        businessEmail: formData.businessEmail ?? '',
-        businessLogo: '',
-        isVerified: false,
-        rating: {
-          average: 0,
-          count: 0,
-        },
-        totalSales: 0,
-        categories: formData.categories ? formData.categories.split(',').map((c: string) => c.trim()) : [],
-      };
-      data.sellerProfile = sellerProfile;
+      payload.businessName = formData.businessName;
+      payload.businessType = formData.businessType;
+      payload.taxId = formData.taxId;
+      payload.businessPhone = formData.businessPhone;
+      payload.businessEmail = formData.businessEmail;
+      payload.businessAddress = formData.businessAddress;
+      
+      if (typeof formData.categories === 'string') {
+        payload.categories = formData.categories.split(',').map((c: string) => c.trim());
+      } else {
+        payload.categories = formData.categories || [];
+      }
     }
 
-    await setDoc(userDoc, data);
-    return uid;
+    if (formData.activeRole === UserRole.COURIER) {
+      payload.vehicleType = (formData.vehicleType as 'bike' | 'motorcycle' | 'car' | 'walking') ?? 'bike';
+      payload.vehiclePlate = formData.vehiclePlate;
+      payload.licenseNumber = formData.licenseNumber;
+    }
+
+    const result = await createUserFn(payload);
+    const response = result.data;
+
+    console.log('[Frontend] Respuesta de Cloud Function:', response);
+
+    if (response.success && response.userId) {
+      console.log('[Frontend] Usuario creado exitosamente:', response.userId);
+      return response.userId;
+    } else {
+      console.error('[Frontend] Error al crear usuario:', response.message);
+      throw new Error(response.message);
+    }
   } catch (error) {
-    console.error('Error creando usuario:', error);
+    console.error('[Frontend] Error llamando a Cloud Function:', error);
+    if (error instanceof Error) {
+      throw new Error(`Error al crear usuario: ${error.message}`);
+    }
     throw new Error('No se pudo crear el usuario');
   }
+}
+
+interface CreateUserResponse {
+  success: boolean;
+  userId?: string;
+  message: string;
+  code?: string;
 }
 
 export const userService = {
@@ -252,7 +237,11 @@ export const userService = {
           };
         }
         if (formData.categories) {
-          sellerProfile.categories = formData.categories.split(',').map((c: string) => c.trim());
+          if (typeof formData.categories === 'string') {
+            sellerProfile.categories = formData.categories.split(',').map((c: string) => c.trim());
+          } else {
+            sellerProfile.categories = formData.categories;
+          }
         }
         updateData.sellerProfile = sellerProfile;
       }

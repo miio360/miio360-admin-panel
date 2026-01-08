@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUserForm } from '../hooks/useUserForm';
 import { useUserFormSubmit } from '../hooks/useUserFormSubmit';
@@ -22,11 +22,17 @@ export default function UserFormPage() {
   const { formState: { isSubmitting } } = form;
   const { onSubmit: handleSubmit } = useUserFormSubmit();
   const [currentStep, setCurrentStep] = useState(0);
+  const [stepsSnapshot, setStepsSnapshot] = useState<string[]>(['Perfil', 'Rol']);
+  // Control para saber si el usuario avanzó manualmente al último step
+  const [canSubmit, setCanSubmit] = useState(false);
 
   const activeRole = form.watch('activeRole');
 
   const getSteps = () => {
     const baseSteps = ['Perfil', 'Rol'];
+    if (activeRole === UserRole.ADMIN) {
+      return baseSteps;
+    }
     if (activeRole === UserRole.SELLER) {
       return [...baseSteps, 'Negocio'];
     }
@@ -36,8 +42,26 @@ export default function UserFormPage() {
     return baseSteps;
   };
 
-  const steps = getSteps();
-  const isLastStep = currentStep === steps.length - 1;
+  useEffect(() => {
+    const newSteps = getSteps();
+    // Si el usuario está en el step de rol (1), actualiza steps y mantiene el step en 1
+    if (currentStep === 1) {
+      setStepsSnapshot(newSteps);
+      setCurrentStep(1);
+    } else {
+      // Si el step actual queda fuera de rango, lo corrige
+      if (currentStep > newSteps.length - 1) {
+        setCurrentStep(newSteps.length - 1);
+      }
+      setStepsSnapshot(newSteps);
+    }
+  }, [activeRole]);
+
+  useEffect(() => {
+    setCanSubmit(currentStep === stepsSnapshot.length - 1);
+  }, [currentStep, stepsSnapshot]);
+
+  const isLastStep = currentStep === stepsSnapshot.length - 1;
 
   const validateCurrentStep = async () => {
     const fieldsToValidate: (keyof UserFormData)[] = [];
@@ -58,8 +82,11 @@ export default function UserFormPage() {
 
   const handleNext = async () => {
     const isValid = await validateCurrentStep();
-    if (isValid && currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+    if (isValid && currentStep < stepsSnapshot.length - 1) {
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      const currentSteps = getSteps();
+      setStepsSnapshot(currentSteps);
     }
   };
 
@@ -73,7 +100,7 @@ export default function UserFormPage() {
 
   const renderStep = () => {
     if (currentStep === 0) {
-      return <UserProfileStep form={form} isSubmitting={isSubmitting} />;
+      return <UserProfileStep form={form} isSubmitting={isSubmitting} isEditing={isEditing} />;
     }
     if (currentStep === 1) {
       return <UserRoleStep form={form} isSubmitting={isSubmitting} />;
@@ -111,7 +138,7 @@ export default function UserFormPage() {
         </div>
 
         <Card className="bg-card shadow-sm border border-border overflow-hidden">
-          <StepperGlobal steps={steps} currentStep={currentStep} />
+          <StepperGlobal steps={stepsSnapshot} currentStep={currentStep} />
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -128,8 +155,19 @@ export default function UserFormPage() {
                 >
                   Anterior
                 </ButtonGlobal>
-
-                {!isLastStep ? (
+                {/* Solo mostrar submit si es el último step y el step de rol no es el último para seller/courier */}
+                {(activeRole === UserRole.CUSTOMER && isLastStep && stepsSnapshot.length === 2 && currentStep === 1) ||
+                 (activeRole === UserRole.ADMIN && isLastStep && stepsSnapshot.length === 2 && currentStep === 1) ||
+                 (activeRole === UserRole.SELLER && isLastStep && currentStep === 2) ||
+                 (activeRole === UserRole.COURIER && isLastStep && currentStep === 2) ? (
+                  <ButtonGlobal
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-primary hover:bg-primary/90 text-foreground"
+                  >
+                    {isSubmitting ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Crear usuario'}
+                  </ButtonGlobal>
+                ) : (
                   <ButtonGlobal
                     type="button"
                     onClick={handleNext}
@@ -139,14 +177,6 @@ export default function UserFormPage() {
                     className="bg-primary hover:bg-primary/90 text-foreground"
                   >
                     Siguiente
-                  </ButtonGlobal>
-                ) : (
-                  <ButtonGlobal
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="bg-primary hover:bg-primary/90 text-foreground"
-                  >
-                    {isSubmitting ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Crear usuario'}
                   </ButtonGlobal>
                 )}
               </div>

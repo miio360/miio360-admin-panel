@@ -3,12 +3,14 @@ import { InputGlobal } from '@/shared/components/input-global';
 import { Label } from '@/shared/components/ui/label';
 import { UserFormData } from '../user-form-schema';
 
+
 interface UserProfileStepProps {
   form: UseFormReturn<UserFormData>;
   isSubmitting: boolean;
+  isEditing?: boolean;
 }
 
-export function UserProfileStep({ form, isSubmitting }: UserProfileStepProps) {
+export function UserProfileStep({ form, isSubmitting, isEditing = false }: UserProfileStepProps) {
   const { formState: { errors }, register } = form;
 
   return (
@@ -25,6 +27,7 @@ export function UserProfileStep({ form, isSubmitting }: UserProfileStepProps) {
           </Label>
           <InputGlobal
             id="firstName"
+            autoComplete="given-name"
             placeholder="Juan"
             {...register('firstName')}
             disabled={isSubmitting}
@@ -41,6 +44,7 @@ export function UserProfileStep({ form, isSubmitting }: UserProfileStepProps) {
           </Label>
           <InputGlobal
             id="lastName"
+            autoComplete="family-name"
             placeholder="Pérez"
             {...register('lastName')}
             disabled={isSubmitting}
@@ -57,6 +61,7 @@ export function UserProfileStep({ form, isSubmitting }: UserProfileStepProps) {
           </Label>
           <InputGlobal
             id="email"
+            autoComplete="email"
             placeholder="usuario@ejemplo.com"
             type="email"
             {...register('email')}
@@ -74,6 +79,7 @@ export function UserProfileStep({ form, isSubmitting }: UserProfileStepProps) {
           </Label>
           <InputGlobal
             id="phone"
+            autoComplete="tel"
             placeholder="+52 123 456 7890"
             type="tel"
             {...register('phone')}
@@ -85,22 +91,26 @@ export function UserProfileStep({ form, isSubmitting }: UserProfileStepProps) {
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-sm font-medium text-foreground">
-            Contraseña <span className="text-red-500">*</span>
-          </Label>
-          <InputGlobal
-            id="password"
-            placeholder="Mínimo 6 caracteres"
-            type="password"
-            {...register('password')}
-            disabled={isSubmitting}
-            className={`h-11 ${errors.password ? 'border-red-500' : ''}`}
-          />
-          {errors.password && (
-            <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
-          )}
-        </div>
+        {/* Solo mostrar contraseña si no es edición */}
+        {!isEditing && (
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-sm font-medium text-foreground">
+              Contraseña <span className="text-red-500">*</span>
+            </Label>
+            <InputGlobal
+              id="password"
+              autoComplete="new-password"
+              placeholder="Mínimo 6 caracteres"
+              type="password"
+              {...register('password')}
+              disabled={isSubmitting}
+              className={`h-11 ${errors.password ? 'border-red-500' : ''}`}
+            />
+            {errors.password && (
+              <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
