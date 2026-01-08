@@ -37,7 +37,10 @@ export function useUserFormSubmit() {
           modal.showError('La contraseña es obligatoria');
           return;
         }
-        
+        if (!data.activeRole) {
+          modal.showError('Selecciona un rol para crear al usuario');
+          return;
+        }
         await userService.createUser({
           email: data.email,
           password: data.password,
@@ -57,7 +60,6 @@ export function useUserFormSubmit() {
           businessAddress: data.businessAddress,
           categories: data.categories,
         });
-        
         modal.showSuccess('Usuario creado correctamente');
         navigate('/users');
       }

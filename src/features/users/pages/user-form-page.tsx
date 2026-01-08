@@ -23,7 +23,6 @@ export default function UserFormPage() {
   const { onSubmit: handleSubmit } = useUserFormSubmit();
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsSnapshot, setStepsSnapshot] = useState<string[]>(['Perfil', 'Rol']);
-  // Control para saber si el usuario avanzó manualmente al último step
   const [canSubmit, setCanSubmit] = useState(false);
 
   const activeRole = form.watch('activeRole');
@@ -44,12 +43,10 @@ export default function UserFormPage() {
 
   useEffect(() => {
     const newSteps = getSteps();
-    // Si el usuario está en el step de rol (1), actualiza steps y mantiene el step en 1
     if (currentStep === 1) {
       setStepsSnapshot(newSteps);
       setCurrentStep(1);
     } else {
-      // Si el step actual queda fuera de rango, lo corrige
       if (currentStep > newSteps.length - 1) {
         setCurrentStep(newSteps.length - 1);
       }

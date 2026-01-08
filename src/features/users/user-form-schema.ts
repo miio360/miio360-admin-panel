@@ -9,7 +9,7 @@ export const userFormSchema = z.object({
   firstName: z.string().min(2, 'Nombre requerido'),
   lastName: z.string().min(2, 'Apellido requerido'),
   phone: z.string().min(6, 'Teléfono requerido'),
-  activeRole: z.nativeEnum(UserRole),
+   activeRole: z.nativeEnum(UserRole).optional(),
   status: z.nativeEnum(UserStatus),
   // Courier fields
   vehicleType: z.string().min(2, 'Selecciona un tipo de vehículo').optional(),
@@ -27,6 +27,13 @@ export const userFormSchema = z.object({
   categories: z.string().optional(), // se separa por coma
   isVerified: z.boolean().optional(),
 }).superRefine((data, ctx) => {
+    if (!data.activeRole) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Selecciona un rol para crear al usuario',
+        path: ['activeRole'],
+      });
+    }
   if (data.activeRole === UserRole.COURIER) {
     if (!data.vehicleType || data.vehicleType.length < 2) {
       ctx.addIssue({

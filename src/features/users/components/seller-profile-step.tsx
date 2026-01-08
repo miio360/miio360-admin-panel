@@ -79,7 +79,7 @@ export function SellerProfileStep({ form, isSubmitting }: SellerProfileStepProps
 
         <div className="space-y-2">
           <Label htmlFor="businessType" className="text-sm font-medium text-foreground">
-            Tipo de Negocio <span className="text-red-500">*</span>
+            Tipo de Tienda <span className="text-red-500">*</span>
           </Label>
           <SelectGlobal
             {...register('businessType')}
@@ -87,8 +87,9 @@ export function SellerProfileStep({ form, isSubmitting }: SellerProfileStepProps
             className={errors.businessType ? 'border-red-500' : ''}
           >
             <option value="">Selecciona el tipo</option>
-            <option value="individual">Persona Física</option>
-            <option value="company">Empresa</option>
+            <option value="individual">Individual</option>
+            <option value="virtual">Virtual</option>
+            <option value="manufacturer">Fabricantes</option>
           </SelectGlobal>
           {errors.businessType && (
             <p className="text-xs text-red-500 mt-1">{errors.businessType.message}</p>
@@ -101,7 +102,7 @@ export function SellerProfileStep({ form, isSubmitting }: SellerProfileStepProps
           </Label>
           <InputGlobal
             id="businessPhone"
-            placeholder="+52 123 456 7890"
+            placeholder="12345678"
             type="tel"
             {...register('businessPhone')}
             disabled={isSubmitting}

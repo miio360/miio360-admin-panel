@@ -37,7 +37,11 @@ export function UserRoleStep({ form, isSubmitting }: UserRoleStepProps) {
             <option value={UserRole.ADMIN}>Administrador</option>
           </SelectGlobal>
           {errors.activeRole && (
-            <p className="text-xs text-red-500 mt-1">{errors.activeRole.message}</p>
+            <p className="text-xs text-red-500 mt-1">
+              {errors.activeRole.message === 'Invalid option: expected one of \"customer\"|\"seller\"|\"courier\"|\"admin\"' || !errors.activeRole.message
+                ? 'Selecciona un rol para crear al usuario'
+                : errors.activeRole.message}
+            </p>
           )}
           <p className="text-xs text-muted-foreground mt-1">
             {activeRole === UserRole.SELLER && 'El usuario podrá vender productos'}

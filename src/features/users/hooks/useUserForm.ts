@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { userFormSchema, UserFormData } from '../user-form-schema';
-import { UserRole, UserStatus } from '@/shared/types';
+import { UserStatus } from '@/shared/types';
 import { userService } from '@/shared/services/userService';
 
 export function useUserForm(id?: string) {
@@ -14,7 +14,7 @@ export function useUserForm(id?: string) {
       firstName: '',
       lastName: '',
       phone: '',
-      activeRole: UserRole.CUSTOMER,
+        activeRole: undefined,
       status: UserStatus.ACTIVE,
     },
   });
@@ -29,7 +29,7 @@ export function useUserForm(id?: string) {
             firstName: user.profile?.firstName || '',
             lastName: user.profile?.lastName || '',
             phone: user.profile?.phone || '',
-            activeRole: user.activeRole || UserRole.CUSTOMER,
+            activeRole: user.activeRole || undefined,
             status: user.status || UserStatus.ACTIVE,
           });
         }
