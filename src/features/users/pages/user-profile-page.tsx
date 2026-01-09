@@ -1,5 +1,5 @@
 import { useAuth } from '@/shared/hooks/useAuth';
-import { CardGlobal, CardGlobalContent } from '@/shared/components/card-global';
+import { Card, CardContent } from '@/shared/components/ui/card';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { LogOut } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
@@ -9,7 +9,7 @@ export default function UserProfilePage() {
 
   if (!user) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <div className="flex justify-center items-center min-h-screen bg-background">
         <span className="text-lg text-gray-500">No hay información de usuario</span>
       </div>
     );
@@ -30,9 +30,9 @@ export default function UserProfilePage() {
   };
 
   return (
-    <div className="flex justify-center items-center h-full p-6">
-      <CardGlobal className="w-full max-w-2xl">
-        <CardGlobalContent className="flex flex-col gap-6 p-8">
+    <div className="flex justify-center items-center min-h-screen bg-background px-2 py-2">
+      <Card className="w-full max-w-2xl mx-auto">
+        <CardContent className="flex flex-col gap-6 p-4 sm:p-8">
           <div className="flex flex-col items-center gap-2">
             <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center text-4xl font-bold text-primary">
               {profile?.firstName?.[0]?.toUpperCase() || profile?.email?.[0]?.toUpperCase() || '?'}
@@ -42,7 +42,7 @@ export default function UserProfilePage() {
               <div className="text-sm text-gray-500">{profile?.email}</div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm w-full">
             <div className="text-gray-500">Rol activo</div>
             <div className="text-foreground font-medium">{activeRole}</div>
             <div className="text-gray-500">Todos los roles</div>
@@ -57,16 +57,16 @@ export default function UserProfilePage() {
             <div className="text-foreground">{profile.phoneVerified ? 'Sí' : 'No'}</div>
           </div>
           {mainAddress && (
-            <div className="mt-4 p-4 rounded-lg bg-gray-50 border border-gray-200">
+            <div className="mt-4 p-4 rounded-lg bg-gray-50 border border-gray-200 w-full">
               <div className="font-semibold text-foreground mb-2">Dirección principal</div>
               <div className="text-sm text-foreground">
                 {mainAddress.street}, {mainAddress.city}, {mainAddress.state}, {mainAddress.country}
               </div>
             </div>
           )}
-          <div className="mt-4 p-4 rounded-lg bg-gray-50 border border-gray-200">
+          <div className="mt-4 p-4 rounded-lg bg-gray-50 border border-gray-200 w-full">
             <div className="font-semibold text-foreground mb-3">Información del sistema</div>
-            <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm w-full">
               <div className="text-gray-500">Fecha de registro</div>
               <div className="text-foreground">{formatDate(createdAt)}</div>
               <div className="text-gray-500">Última actualización</div>
@@ -76,9 +76,9 @@ export default function UserProfilePage() {
             </div>
           </div>
           {sellerProfile && (
-            <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/20">
+            <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/20 w-full">
               <div className="font-semibold text-primary mb-2">Datos de vendedor</div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm w-full">
                 <div className="text-gray-500">Negocio</div>
                 <div className="text-foreground">{sellerProfile.businessName}</div>
                 <div className="text-gray-500">Tipo</div>
@@ -95,9 +95,9 @@ export default function UserProfilePage() {
             </div>
           )}
           {courierProfile && (
-            <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/20">
+            <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/20 w-full">
               <div className="font-semibold text-primary mb-2">Datos de repartidor</div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm w-full">
                 <div className="text-gray-500">Tipo de vehículo</div>
                 <div className="text-foreground">{courierProfile.vehicleType}</div>
                 <div className="text-gray-500">Placa</div>
@@ -112,8 +112,8 @@ export default function UserProfilePage() {
           <ButtonGlobal onClick={signOut} variant="destructive" className="w-full mt-2" icon={<LogOut className="w-4 h-4" />} iconPosition="left">
             Cerrar sesión
           </ButtonGlobal>
-        </CardGlobalContent>
-      </CardGlobal>
+        </CardContent>
+      </Card>
     </div>
   );
 }

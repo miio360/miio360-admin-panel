@@ -99,7 +99,7 @@ export function TableExpandableGlobal<T, S = T>({
                     <TableCell className="bg-transparent">
                       <ButtonGlobal
                         variant="ghost"
-                        size="iconSm"
+                        size="sm"
                         onClick={() => toggleRow(itemId)}
                         className="hover:bg-primary/20 rounded-md transition-colors"
                         tabIndex={0}

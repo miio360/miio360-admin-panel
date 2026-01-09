@@ -30,7 +30,7 @@ export function PaginationGlobal({
           <PaginationItem>
             <PaginationPrevious
               onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
-              className={`h-9 px-3 text-sm ${
+              className={`h-8 w-8 px-2 text-xs md:h-9 md:w-auto md:px-3 md:text-sm ${
                 currentPage === 1
                   ? "pointer-events-none opacity-50"
                   : "cursor-pointer hover:bg-gray-100"
@@ -52,7 +52,7 @@ export function PaginationGlobal({
                   <PaginationLink
                     onClick={() => onPageChange(pageNumber)}
                     isActive={isCurrentPage}
-                    className={`cursor-pointer h-9 w-9 text-sm ${
+                    className={`cursor-pointer h-8 w-8 text-xs md:h-9 md:w-9 md:text-sm ${
                       isCurrentPage
                         ? "bg-primary text-foreground font-bold hover:bg-primary shadow-sm"
                         : "hover:bg-gray-100 text-foreground/70"
@@ -68,7 +68,7 @@ export function PaginationGlobal({
             ) {
               return (
                 <PaginationItem key={pageNumber}>
-                  <PaginationEllipsis className="h-9 w-9" />
+                  <PaginationEllipsis className="h-8 w-8 md:h-9 md:w-9" />
                 </PaginationItem>
               );
             }
@@ -80,7 +80,7 @@ export function PaginationGlobal({
               onClick={() =>
                 currentPage < totalPages && onPageChange(currentPage + 1)
               }
-              className={`h-9 px-3 text-sm ${
+              className={`h-8 w-8 px-2 text-xs md:h-9 md:w-auto md:px-3 md:text-sm ${
                 currentPage === totalPages
                   ? "pointer-events-none opacity-50"
                   : "cursor-pointer hover:bg-gray-100"

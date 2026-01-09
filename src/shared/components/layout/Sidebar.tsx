@@ -6,9 +6,6 @@ import { ScrollArea } from "../ui/scroll-area";
 import {
   LayoutDashboard,
   Users,
-  Settings,
-  LogOut,
-  HelpCircle,
   FolderTree,
 } from "lucide-react";
 
@@ -44,7 +41,7 @@ const navItems: NavItem[] = [
 export const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
 
   const generalItems = navItems.filter((item) => item.section === "GENERAL");
 
@@ -77,7 +74,7 @@ export const Sidebar = () => {
   };
 
   return (
-    <div className="hidden lg:flex flex-col sticky top-0 h-screen w-60 border-r border-gray-100 bg-gradient-to-b from-slate-900 to-slate-800 z-20 shrink-0">
+    <div className="hidden lg:flex flex-col h-screen w-60 border-r border-gray-100 bg-gradient-to-b from-slate-900 to-slate-800 z-20 shrink-0">
       <div className="flex items-center gap-3 h-14 px-5 border-b border-white/10">
         <div className="flex items-center justify-center w-10 h-14">
           <img
@@ -87,26 +84,6 @@ export const Sidebar = () => {
           />
         </div>
         <span className="text-lg font-bold text-white tracking-tight">Miio</span>
-        <ButtonGlobal
-          variant="ghost"
-          size="iconSm"
-          className="ml-auto text-white/70 hover:text-white hover:bg-white/10"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M3 5h14M3 10h14M3 15h14"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        </ButtonGlobal>
       </div>
 
       <ScrollArea className="flex-1 py-4">
@@ -117,7 +94,6 @@ export const Sidebar = () => {
       </ScrollArea>
 
       <div className="p-3 border-t border-white/10 flex flex-col gap-2">
-        {/* Perfil de usuario clickable */}
         <button
           className="w-full flex items-center gap-3 px-2 py-2 rounded-lg transition-all hover:bg-white/10 group"
           onClick={() => navigate('/profile')}

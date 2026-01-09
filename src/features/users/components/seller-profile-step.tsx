@@ -70,7 +70,7 @@ export function SellerProfileStep({ form, isSubmitting }: SellerProfileStepProps
             placeholder="Mi Tienda"
             {...register('businessName')}
             disabled={isSubmitting}
-            className={`h-11 ${errors.businessName ? 'border-red-500' : ''}`}
+            error={!!errors.businessName}
           />
           {errors.businessName && (
             <p className="text-xs text-red-500 mt-1">{errors.businessName.message}</p>
@@ -106,7 +106,7 @@ export function SellerProfileStep({ form, isSubmitting }: SellerProfileStepProps
             type="tel"
             {...register('businessPhone')}
             disabled={isSubmitting}
-            className={`h-11 ${errors.businessPhone ? 'border-red-500' : ''}`}
+            error={!!errors.businessPhone}
           />
           {errors.businessPhone && (
             <p className="text-xs text-red-500 mt-1">{errors.businessPhone.message}</p>
@@ -123,7 +123,7 @@ export function SellerProfileStep({ form, isSubmitting }: SellerProfileStepProps
             type="email"
             {...register('businessEmail')}
             disabled={isSubmitting}
-            className={`h-11 ${errors.businessEmail ? 'border-red-500' : ''}`}
+            error={!!errors.businessEmail}
           />
           {errors.businessEmail && (
             <p className="text-xs text-red-500 mt-1">{errors.businessEmail.message}</p>
@@ -139,7 +139,6 @@ export function SellerProfileStep({ form, isSubmitting }: SellerProfileStepProps
             placeholder="ABCD123456XYZ"
             {...register('taxId')}
             disabled={isSubmitting}
-            className="h-11"
           />
           <p className="text-xs text-muted-foreground">Opcional</p>
         </div>
@@ -153,7 +152,6 @@ export function SellerProfileStep({ form, isSubmitting }: SellerProfileStepProps
             placeholder="Calle, Ciudad, Estado"
             {...register('businessAddress')}
             disabled={isSubmitting}
-            className="h-11"
           />
           <p className="text-xs text-muted-foreground">Opcional</p>
         </div>

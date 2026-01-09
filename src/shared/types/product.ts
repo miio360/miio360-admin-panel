@@ -17,7 +17,7 @@ export interface Stock {
 }
 
 export interface ProductFeature {
-  [key: string]: string | number;  // Valores tipados dinámicamente
+  [key: string]: string | number; 
 }
 
 export interface Product extends BaseModel, SoftDeletableModel, VisibilityModel {

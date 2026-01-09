@@ -49,7 +49,6 @@ export function CourierProfileStep({ form, isSubmitting }: CourierProfileStepPro
             placeholder="ABC-123"
             {...register('vehiclePlate')}
             disabled={isSubmitting}
-            className="h-11"
           />
           <p className="text-xs text-muted-foreground">Opcional, solo si aplica</p>
         </div>
@@ -63,7 +62,6 @@ export function CourierProfileStep({ form, isSubmitting }: CourierProfileStepPro
             placeholder="Ej: 123456789"
             {...register('licenseNumber')}
             disabled={isSubmitting}
-            className="h-11"
           />
           <p className="text-xs text-muted-foreground">Opcional, número de licencia de conducir</p>
         </div>

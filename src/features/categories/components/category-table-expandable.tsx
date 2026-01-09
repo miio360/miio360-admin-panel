@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Category, Subcategory } from "@/shared/types";
 import { TableExpandableGlobal, TableExpandableColumn } from "@/shared/components/table-expandable-global";
 import { TableRow, TableCell } from "@/shared/components/ui/table";
@@ -65,6 +65,8 @@ export function CategoryTableExpandable({
   onDelete,
   onCreateSubcategory,
 }: CategoryTableExpandableProps) {
+  const navigate = useNavigate();
+
   return (
     <TableExpandableGlobal<Category, Subcategory>
       data={categories}
@@ -83,14 +85,12 @@ export function CategoryTableExpandable({
           >
             Subcategoría
           </ButtonGlobal>
-          <ButtonGlobal variant="ghost" size="iconSm" asChild className="hover:bg-gray-100 h-8 w-8">
-            <Link to={`/categories/${category.id}/edit`}>
+          <ButtonGlobal variant="ghost" size="sm" className="hover:bg-gray-100 h-8 w-8" onClick={() => navigate(`/categories/${category.id}/edit`)}>
               <Edit className="h-3.5 w-3.5 text-gray-600" />
-            </Link>
           </ButtonGlobal>
           <ButtonGlobal
             variant="ghost"
-            size="iconSm"
+            size="sm"
             onClick={() => onDelete(category.id, "category")}
             className="hover:bg-red-50 h-8 w-8"
           >
@@ -135,14 +135,12 @@ export function CategoryTableExpandable({
           </TableCell>
           <TableCell className="text-right w-[18%]">
             <div className="flex justify-end gap-1">
-              <ButtonGlobal variant="ghost" size="iconSm" asChild className="hover:bg-gray-100 h-8 w-8">
-                <Link to={`/categories/${parent.id}/subcategories/${sub.id}/edit`}>
-                  <Edit className="h-3.5 w-3.5 text-gray-600" />
-                </Link>
+              <ButtonGlobal variant="ghost" size="sm" className="hover:bg-gray-100 h-8 w-8" onClick={() => navigate(`/categories/${parent.id}/subcategories/${sub.id}/edit`)}>
+                <Edit className="h-3.5 w-3.5 text-gray-600" />
               </ButtonGlobal>
               <ButtonGlobal
                 variant="ghost"
-                size="iconSm"
+                size="sm"
                 onClick={() => onDelete(sub.id, "subcategory")}
                 className="hover:bg-red-50 h-8 w-8"
               >

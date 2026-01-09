@@ -111,9 +111,6 @@ export const userService = {
     cursor?: QueryDocumentSnapshot<DocumentData> | null;
   } = {}): Promise<{ users: User[]; total: number; lastDoc: QueryDocumentSnapshot<DocumentData> | null }> {
     try {
-      // Índice/ordenamiento:
-      // - Esta query requiere el campo `createdAt`.
-      // - Si en el futuro se agrega `where(...)` + `orderBy(...)`, Firestore puede pedir un índice compuesto.
       const usersRef = collection(db, COLLECTION_NAME);
 
       const baseQuery = query(usersRef, orderBy('createdAt', 'desc'), limit(pageSize));
@@ -154,8 +151,7 @@ export const userService = {
   async getAll(
     { page = 0, pageSize = 6 }: { page?: number; pageSize?: number } = {}
   ): Promise<{ users: User[]; total: number }> {
-    // Compatibilidad con llamadas existentes: reconstruye el cursor hasta la página solicitada.
-    // Esto mantiene la UI actual sin depender de offset (no recomendado en Firestore).
+
     let cursor: QueryDocumentSnapshot<DocumentData> | null = null;
 
     for (let i = 0; i < page; i += 1) {

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ButtonGlobal } from "@/shared/components/button-global";
 import { useModal } from "@/shared/hooks/useModal";
-import {  CardGlobalContent } from "@/shared/components/card-global";
+import { CardContent } from "@/shared/components/ui/card";
 import { PageHeaderGlobal } from "@/shared/components/page-header-global";
 import { SearchGlobal } from "@/shared/components/search-global";
 import { PaginationGlobal } from "@/shared/components/pagination-global";
@@ -97,19 +97,17 @@ export const CategoriesPage = () => {
   }
 
   return (
-    <div className="px-4 sm:px-6 py-3 sm:py-8 bg-background min-h-screen space-y-6 sm:space-y-8 max-w-[1600px] mx-auto">
+<div className="px-2 sm:px-2 py-1 sm:py-2 bg-background space-y-6 sm:space-y-8 max-w-[1600px] mx-auto">
       <PageHeaderGlobal
         title="Categorías"
         description="Gestiona las categorías y subcategorías del marketplace"
         action={
           <ButtonGlobal
-            asChild
+            onClick={() => navigate("/categories/new")}
             className="bg-primary hover:bg-primary/90 text-foreground font-semibold shadow-sm hover:shadow-md transition-all duration-200 px-5 py-2.5 text-sm rounded-lg"
           >
-            <Link to="/categories/new" className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Nueva Categoría
-            </Link>
+            <Plus className="w-4 h-4" />
+            Nueva Categoría
           </ButtonGlobal>
         }
       />
@@ -126,7 +124,7 @@ export const CategoriesPage = () => {
           placeholder="Buscar por nombre o slug..."
         />
         <div className="space-y-1">
-          <CardGlobalContent className="p-0">
+          <CardContent className="p-0">
             {paginatedCategories.length === 0 ? (
               <div className="text-center py-12 sm:py-20 px-4">
                 <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 mb-3 sm:mb-4">
@@ -152,7 +150,7 @@ export const CategoriesPage = () => {
                 onCreateSubcategory={handleCreateSubcategory}
               />
             )}
-          </CardGlobalContent>
+          </CardContent>
           <PaginationGlobal
             currentPage={currentPage}
             totalPages={totalPages}

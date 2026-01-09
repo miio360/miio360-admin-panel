@@ -1,10 +1,9 @@
 import type { User } from '@/shared/types';
 import { UserStatus } from '@/shared/types';
 import { TableGlobal, TableGlobalColumn } from '@/shared/components/table-global';
-import { CardGlobal, CardGlobalContent } from '@/shared/components/card-global';
 import { PaginationGlobal } from '@/shared/components/pagination-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Edit2, Trash2 } from 'lucide-react';
 
 interface UserTableProps {
@@ -28,11 +27,19 @@ const columns: TableGlobalColumn<User>[] = [
     key: 'activeRole',
     header: 'Rol',
     width: 'w-[20%]',
-    render: (u) => (
-      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700">
-        {u.activeRole}
-      </span>
-    )
+    render: (u) => {
+      const roleMap: Record<string, string> = {
+        customer: 'Comprador',
+        seller: 'Vendedor',
+        courier: 'Repartidor',
+        admin: 'Administrador',
+      };
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700">
+          {roleMap[u.activeRole] || u.activeRole}
+        </span>
+      );
+    }
   },
   {
     key: 'status',
@@ -61,6 +68,7 @@ const columns: TableGlobalColumn<User>[] = [
 
 export function UserTable({ data, loading, currentPage, pageSize, total, onPageChange }: UserTableProps) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-1">
@@ -73,18 +81,16 @@ export function UserTable({ data, loading, currentPage, pageSize, total, onPageC
         actions={(u) => (
           <>
             <ButtonGlobal
-              asChild
+              onClick={() => navigate(`/users/${u.id}/edit`)}
               variant="ghost"
-              size="iconSm"
+              size="sm"
               className="hover:bg-gray-80 h-8 w-8"
             >
-              <Link to={`/users/${u.id}/edit`}>
-                <Edit2 className="w-3.5 h-3.5 text-gray-600" />
-              </Link>
+              <Edit2 className="w-3.5 h-3.5 text-gray-600" />
             </ButtonGlobal>
             <ButtonGlobal
               variant="ghost"
-              size="iconSm"
+              size="sm"
               className="hover:bg-red-50 h-8 w-8"
             >
               <Trash2 className="w-3.5 h-3.5 text-red-600" />

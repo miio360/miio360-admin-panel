@@ -1,6 +1,6 @@
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { ButtonGlobal } from "./button-global";
-import { CardGlobal, CardGlobalContent } from "./card-global";
+import { Card, CardContent } from "../components/ui/card";
 
 interface ErrorGlobalProps {
   title?: string;
@@ -15,8 +15,8 @@ export function ErrorGlobal({
 }: ErrorGlobalProps) {
   return (
     <div className="p-6 bg-background min-h-screen">
-      <CardGlobal className="max-w-2xl mx-auto mt-20">
-        <CardGlobalContent>
+      <Card className="max-w-2xl mx-auto mt-20">
+        <CardContent>
           <div className="flex flex-col items-center text-center py-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-50 mb-4">
               <AlertCircle className="w-8 h-8 text-red-500" />
@@ -35,8 +35,8 @@ export function ErrorGlobal({
               </ButtonGlobal>
             )}
           </div>
-        </CardGlobalContent>
-      </CardGlobal>
+        </CardContent>
+      </Card>
     </div>
   );
 }

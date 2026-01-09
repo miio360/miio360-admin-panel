@@ -39,7 +39,6 @@ export function SubcategoryBasicFields({ form, categories, loading }: Subcategor
           placeholder="Ej: Electrodomésticos"
           {...form.register('name')}
           disabled={loading}
-          className="h-11"
         />
         {form.formState.errors.name && (
           <p className="text-xs text-red-500">{form.formState.errors.name.message as string}</p>
@@ -55,7 +54,6 @@ export function SubcategoryBasicFields({ form, categories, loading }: Subcategor
           placeholder="Describe la subcategoría..."
           {...form.register('description')}
           disabled={loading}
-          className="h-11"
         />
         {form.formState.errors.description && (
           <p className="text-xs text-red-500">{form.formState.errors.description.message as string}</p>
@@ -71,7 +69,6 @@ export function SubcategoryBasicFields({ form, categories, loading }: Subcategor
           placeholder="📱"
           {...form.register('icon')}
           disabled={loading}
-          className="h-11"
         />
         {form.formState.errors.icon && (
           <p className="text-xs text-red-500">{form.formState.errors.icon.message as string}</p>
@@ -88,7 +85,6 @@ export function SubcategoryBasicFields({ form, categories, loading }: Subcategor
           placeholder="0"
           {...form.register('order', { valueAsNumber: true })}
           disabled={loading}
-          className="h-11"
         />
       </div>
     </div>
