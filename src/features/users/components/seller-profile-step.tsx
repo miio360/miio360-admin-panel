@@ -5,7 +5,7 @@ import { Label } from '@/shared/components/ui/label';
 import { SelectGlobal } from '@/shared/components/select-global';
 import { categoryService } from '@/shared/services/categoryService';
 import { Category } from '@/shared/types';
-import { UserFormData } from '../user-form-schema';
+import { UserFormData } from '../utils/user-form-schema';
 import { Badge } from '@/shared/components/ui/badge';
 import { X } from 'lucide-react';
 

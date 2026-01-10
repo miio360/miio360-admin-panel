@@ -1,7 +1,7 @@
 import { UseFormReturn } from 'react-hook-form';
 import { InputGlobal } from '@/shared/components/input-global';
 import { Label } from '@/shared/components/ui/label';
-import { UserFormData } from '../user-form-schema';
+import { UserFormData } from '../utils/user-form-schema';
 
 
 interface UserProfileStepProps {
@@ -80,7 +80,7 @@ export function UserProfileStep({ form, isSubmitting, isEditing = false }: UserP
           <InputGlobal
             id="phone"
             autoComplete="tel"
-            placeholder="+52 123 456 7890"
+            placeholder="12345678"
             type="tel"
             {...register('phone')}
             disabled={isSubmitting}

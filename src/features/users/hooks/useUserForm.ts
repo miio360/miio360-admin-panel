@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { userFormSchema, UserFormData } from '../user-form-schema';
+import { userFormSchema, UserFormData } from '../utils/user-form-schema';
 import { UserStatus } from '@/shared/types';
 import { userService } from '@/shared/services/userService';
 

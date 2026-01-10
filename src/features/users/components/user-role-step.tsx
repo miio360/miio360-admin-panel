@@ -1,7 +1,7 @@
 import { UseFormReturn } from 'react-hook-form';
 import { Label } from '@/shared/components/ui/label';
 import { UserRole, UserStatus } from '@/shared/types';
-import { UserFormData } from '../user-form-schema';
+import { UserFormData } from '../utils/user-form-schema';
 import { SelectGlobal } from '@/shared/components/select-global';
 
 interface UserRoleStepProps {

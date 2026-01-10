@@ -1,12 +1,17 @@
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, FieldErrors } from 'react-hook-form';
 import { SelectGlobal } from '@/shared/components/select-global';
 import { Label } from '@/shared/components/ui/label';
 import { UserRole, UserStatus } from '@/shared/types';
 
 interface UserRoleFieldsProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<UserRoleFieldsValues>;
   isSubmitting: boolean;
-  errors: any;
+  errors: FieldErrors<UserRoleFieldsValues>;
+}
+
+interface UserRoleFieldsValues {
+  activeRole: UserRole | "";
+  status: UserStatus | "";
 }
 
 export function UserRoleFields({ form, isSubmitting, errors }: UserRoleFieldsProps) {

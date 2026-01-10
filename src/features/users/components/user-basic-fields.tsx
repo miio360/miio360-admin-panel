@@ -1,12 +1,21 @@
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, FieldErrors } from 'react-hook-form';
 import { InputGlobal } from '@/shared/components/input-global';
 import { Label } from '@/shared/components/ui/label';
 
+export interface UserFormValues {
+  email: string;
+  password?: string;
+  displayName: string;
+  phoneNumber?: string;
+}
+
+type UserFormErrors = FieldErrors<UserFormValues>;
+
 interface UserBasicFieldsProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<UserFormValues>;
   isEditing: boolean;
   isSubmitting: boolean;
-  errors: any;
+  errors: UserFormErrors;
 }
 
 export function UserBasicFields({ form, isEditing, isSubmitting, errors }: UserBasicFieldsProps) {
@@ -70,7 +79,7 @@ export function UserBasicFields({ form, isEditing, isSubmitting, errors }: UserB
         </Label>
         <InputGlobal
           id="phoneNumber"
-          placeholder="+52 123 456 7890"
+          placeholder="12345678"
           type="tel"
           {...form.register('phoneNumber')}
           disabled={isSubmitting}

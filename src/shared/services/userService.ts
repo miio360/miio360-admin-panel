@@ -14,6 +14,7 @@ import {
 import { httpsCallable } from 'firebase/functions';
 import { UserRole, UserStatus } from '@/shared/types';
 import type { User, UserProfile, SellerProfile, CourierProfile } from '@/shared/types';
+import { CreateUserResponse } from '@/shared/types/user';
 
 const COLLECTION_NAME = 'users';
 
@@ -93,13 +94,6 @@ async function createUser(formData: CreateUserInput): Promise<string> {
     }
     throw new Error('No se pudo crear el usuario');
   }
-}
-
-interface CreateUserResponse {
-  success: boolean;
-  userId?: string;
-  message: string;
-  code?: string;
 }
 
 export const userService = {

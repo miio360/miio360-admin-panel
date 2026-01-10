@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { UserFormData } from '../user-form-schema';
+import { UserFormData } from '../utils/user-form-schema';
 import { userService } from '@/shared/services/userService';
 import { UserRole } from '@/shared/types';
 import { useModal } from '@/shared/hooks/useModal';

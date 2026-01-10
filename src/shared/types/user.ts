@@ -109,6 +109,13 @@ export interface SignUpData {
   initialRole: UserRole;
 }
 
+export interface CreateUserResponse {
+  success: boolean;
+  userId?: string;
+  message: string;
+  code?: string;
+}
+
 export interface PasswordResetData {
   email: string;
 }

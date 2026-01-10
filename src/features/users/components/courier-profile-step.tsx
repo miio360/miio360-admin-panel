@@ -2,7 +2,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { InputGlobal } from '@/shared/components/input-global';
 import { Label } from '@/shared/components/ui/label';
 import { SelectGlobal } from '@/shared/components/select-global';
-import { UserFormData } from '../user-form-schema';
+import { UserFormData } from '../utils/user-form-schema';
 
 interface CourierProfileStepProps {
   form: UseFormReturn<UserFormData>;

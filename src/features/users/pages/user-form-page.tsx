@@ -6,7 +6,7 @@ import { UserProfileStep } from '../components/user-profile-step';
 import { UserRoleStep } from '../components/user-role-step';
 import { SellerProfileStep } from '../components/seller-profile-step';
 import { CourierProfileStep } from '../components/courier-profile-step';
-import type { UserFormData } from '../user-form-schema';
+import type { UserFormData } from '../utils/user-form-schema';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { Card } from '@/shared/components/ui/card';
 import { Form } from '@/shared/components/ui/form';
