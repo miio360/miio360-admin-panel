@@ -1,6 +1,5 @@
-import { CardGlobal } from '@/shared/components/ui/card-global';
-import { User, UserRole } from '@/shared/types';
-import { User as UserIcon, Users, ShieldCheck, Truck, Store } from 'lucide-react';
+import { CardStat } from '@/shared/components/card-global';
+import { Users, UserCheck, Shield, ShoppingBag } from 'lucide-react';
 
 interface UserStatsProps {
   total: number;
@@ -11,48 +10,40 @@ interface UserStatsProps {
   admins: number;
 }
 
-export function UserStats({ total, active, customers, sellers, couriers, admins }: UserStatsProps) {
+export function UserStats({ total, active, customers, admins }: UserStatsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-      <CardGlobal
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+      <CardStat
         title="Total Usuarios"
         value={total}
-        subtitle={`Activos: ${active}`}
-        icon={<Users className="w-8 h-8 text-white" />}
-        gradientClass="from-primary/10 via-white to-primary/30"
-        iconBgClass="from-primary to-yellow-400"
+        subtitle={`${total > 0 ? ((active / total) * 100).toFixed(0) : 0}% activos`}
+        icon={<Users className="w-6 h-6 text-white" strokeWidth={2.5} />}
+        gradientClass="from-blue-50/50 to-white"
+        iconBgClass="from-blue-500 to-blue-600"
       />
-      <CardGlobal
-        title="Clientes"
-        value={customers}
-        subtitle="Rol: customer"
-        icon={<UserIcon className="w-8 h-8 text-white" />}
-        gradientClass="from-blue-50 via-white to-blue-100"
-        iconBgClass="from-blue-500 to-blue-700"
+      <CardStat
+        title="Activos"
+        value={active}
+        subtitle="Con acceso al sistema"
+        icon={<UserCheck className="w-6 h-6 text-white" strokeWidth={2.5} />}
+        gradientClass="from-green-50/50 to-white"
+        iconBgClass="from-green-500 to-green-600"
       />
-      <CardGlobal
-        title="Vendedores"
-        value={sellers}
-        subtitle="Rol: seller"
-        icon={<Store className="w-8 h-8 text-white" />}
-        gradientClass="from-green-50 via-white to-green-100"
-        iconBgClass="from-green-500 to-green-700"
-      />
-      <CardGlobal
-        title="Repartidores"
-        value={couriers}
-        subtitle="Rol: courier"
-        icon={<Truck className="w-8 h-8 text-white" />}
-        gradientClass="from-orange-50 via-white to-orange-100"
-        iconBgClass="from-orange-400 to-orange-600"
-      />
-      <CardGlobal
+      <CardStat
         title="Admins"
         value={admins}
-        subtitle="Rol: admin"
-        icon={<ShieldCheck className="w-8 h-8 text-white" />}
-        gradientClass="from-gray-50 via-white to-gray-200"
-        iconBgClass="from-gray-500 to-gray-700"
+        subtitle={`${total > 0 ? ((admins / total) * 100).toFixed(0) : 0}% del total`}
+        icon={<Shield className="w-6 h-6 text-white" strokeWidth={2.5} />}
+        gradientClass="from-purple-50/50 to-white"
+        iconBgClass="from-purple-500 to-purple-600"
+      />
+      <CardStat
+        title="Clientes"
+        value={customers}
+        subtitle={`${total > 0 ? ((customers / total) * 100).toFixed(0) : 0}% del total`}
+        icon={<ShoppingBag className="w-6 h-6 text-white" strokeWidth={2.5} />}
+        gradientClass="from-orange-50/50 to-white"
+        iconBgClass="from-orange-500 to-orange-600"
       />
     </div>
   );

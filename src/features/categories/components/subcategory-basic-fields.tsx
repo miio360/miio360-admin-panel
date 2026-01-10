@@ -1,11 +1,13 @@
 import { UseFormReturn } from 'react-hook-form';
-import { InputGlobal } from '@/shared/components/ui/input-global';
-import { TextareaGlobal } from '@/shared/components/ui/textarea-global';
+import type { SubcategoryFormData } from '../types/subcategoryFormSchema';
+import { InputGlobal } from '@/shared/components/input-global';
+import { Textarea } from '@/shared/components/ui/textarea';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import type { Category } from '@/shared/types';
+import { TextareaGlobal } from '@/shared/components/textarea-global';
 
 interface SubcategoryBasicFieldsProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<SubcategoryFormData>;
   categories: Category[];
   loading: boolean;
 }
@@ -78,23 +80,13 @@ export function SubcategoryBasicFields({
         )}
       />
 
-      <FormField
+      <TextareaGlobal
         control={form.control}
         name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-sm font-medium text-foreground">Descripción</FormLabel>
-            <FormControl>
-              <TextareaGlobal
-                placeholder="Describe brevemente esta subcategoría y qué tipo de productos incluye..."
-                disabled={loading}
-                rows={3}
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+        label="Descripción"
+        placeholder="Describe brevemente esta subcategoría y qué tipo de productos incluye..."
+        description="Texto descriptivo opcional"
+        disabled={loading}
       />
 
       <FormField
@@ -107,11 +99,10 @@ export function SubcategoryBasicFields({
               <span className="text-xs text-muted-foreground">Activa la subcategoría para que sea visible en la aplicación</span>
             </div>
             <FormControl>
-              <input
+              <InputGlobal
                 type="checkbox"
                 checked={field.value}
                 onChange={field.onChange}
-                className="h-5 w-5 text-primary border border-border rounded focus:ring-primary/40"
                 disabled={loading}
               />
             </FormControl>

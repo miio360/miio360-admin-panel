@@ -9,11 +9,11 @@ import {
   query,
   where,
   orderBy,
-  serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { Category } from "../types";
+import { createBaseModel, updateModelTimestamp } from "../types/base";
 
 const COLLECTION_NAME = "categories";
 
@@ -85,11 +85,10 @@ export const categoryService = {
   },
 
   // Create category
-  async create(categoryData: Omit<Category, "id" | "createdAt" | "updatedAt">): Promise<string> {
+  async create(categoryData: Omit<Category, "id" | "createdAt" | "updatedAt" | "createdBy">, userId: string): Promise<string> {
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
       ...categoryData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      ...createBaseModel(userId),
     });
     return docRef.id;
   },
@@ -99,7 +98,7 @@ export const categoryService = {
     const docRef = doc(db, COLLECTION_NAME, id);
     await updateDoc(docRef, {
       ...categoryData,
-      updatedAt: serverTimestamp(),
+      ...updateModelTimestamp(),
     });
   },
 

@@ -7,7 +7,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { auth, db } from "./firebase";
-import { User } from "../types";
+import { User, UserRole, UserStatus } from "../types";
 
 export const authService = {
   // Sign up
@@ -16,17 +16,18 @@ export const authService = {
     const userId = userCredential.user.uid;
 
     const newUser = {
-      email,
-      emailVerified: false,
-      phoneVerified: false,
-      activeRole: 'admin',
-      roles: ['admin'],
-      status: 'active',
       profile: userData.profile || {
-        fullName: '',
+        firstName: '',
+        lastName: '',
         phone: '',
+        email: email,
+        addresses: [],
+        emailVerified: false,
+        phoneVerified: false,
       },
-      addresses: [],
+      activeRole: UserRole.ADMIN,
+      roles: [UserRole.ADMIN],
+      status: UserStatus.ACTIVE,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
@@ -61,7 +62,7 @@ export const authService = {
 
   // Check if user is admin
   isAdmin(user: User | null): boolean {
-    return user?.roles?.includes('admin') || false;
+    return user?.roles?.includes(UserRole.ADMIN) || false;
   },
 
   // Auth state observer

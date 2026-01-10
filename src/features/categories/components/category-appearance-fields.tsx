@@ -2,7 +2,8 @@ import { Input } from "@/shared/components/ui/input";
 import { Switch } from "@/shared/components/ui/switch";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/shared/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import { CategoryFormData } from "../category-form-page";
+import { CategoryFormData } from "../hooks/useCategoryForm";
+import { InputGlobal } from "@/shared/components/input-global";
 
 interface CategoryAppearanceFieldsProps {
   form: UseFormReturn<CategoryFormData>;
@@ -20,7 +21,7 @@ export function CategoryAppearanceFields({ form, loading }: CategoryAppearanceFi
             <FormItem>
               <FormLabel className="text-sm font-medium text-foreground">Icono *</FormLabel>
               <FormControl>
-                <Input
+                <InputGlobal
                   placeholder="briefcase-outline"
                   disabled={loading}
                   className="h-11 border border-secondary/40 focus-visible:border-secondary focus-visible:ring-0 bg-secondary/5 focus:bg-background transition-all"

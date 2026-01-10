@@ -1,9 +1,9 @@
-import { Input } from "@/shared/components/ui/input";
-import { Textarea } from "@/shared/components/ui/textarea";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/shared/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
 import { categoryService } from "@/shared/services/categoryService";
-import { CategoryFormData } from "../category-form-page";
+import { CategoryFormData } from "../hooks/useCategoryForm";
+import { InputGlobal } from "@/shared/components/input-global";
+import { TextareaGlobal } from "@/shared/components/textarea-global";
 
 interface CategoryBasicFieldsProps {
   form: UseFormReturn<CategoryFormData>;
@@ -22,10 +22,9 @@ export function CategoryBasicFields({ form, loading }: CategoryBasicFieldsProps)
               Nombre de la Categoría *
             </FormLabel>
             <FormControl>
-              <Input
+              <InputGlobal
                 placeholder="Ej: Electrónica, Hogar, Deportes..."
                 disabled={loading}
-                className="h-11 border border-secondary/40 focus-visible:border-secondary focus-visible:ring-0 bg-secondary/5 focus:bg-background transition-all"
                 {...field}
                 onChange={(e) => {
                   field.onChange(e);
@@ -45,10 +44,9 @@ export function CategoryBasicFields({ form, loading }: CategoryBasicFieldsProps)
           <FormItem>
             <FormLabel className="text-sm font-medium text-foreground">Slug (URL amigable)</FormLabel>
             <FormControl>
-              <Input
+              <InputGlobal
                 placeholder="electronica-y-tecnologia"
                 disabled={loading}
-                className="h-11 border border-secondary/40 focus-visible:border-secondary focus-visible:ring-0 bg-secondary/5 focus:bg-background font-mono text-sm transition-all"
                 {...field}
               />
             </FormControl>
@@ -58,24 +56,13 @@ export function CategoryBasicFields({ form, loading }: CategoryBasicFieldsProps)
         )}
       />
 
-      <FormField
+      <TextareaGlobal
         control={form.control}
         name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-sm font-medium text-foreground">Descripción</FormLabel>
-            <FormControl>
-              <Textarea
-                placeholder="Describe brevemente esta categoría y qué tipo de productos o servicios incluye..."
-                disabled={loading}
-                rows={3}
-                className="resize-none text-sm border border-secondary/40 focus-visible:border-secondary focus-visible:ring-0 bg-secondary/5 focus:bg-background transition-all"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+        label="Descripción"
+        placeholder="Describe brevemente esta categoría y qué tipo de productos o servicios incluye..."
+        description="Texto descriptivo opcional"
+        disabled={loading}
       />
     </div>
   );

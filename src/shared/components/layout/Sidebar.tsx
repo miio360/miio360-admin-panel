@@ -1,14 +1,11 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from '@/shared/hooks/useAuth';
 import { cn } from "../../lib/utils";
-import { Button } from "../ui/button";
+import { ButtonGlobal } from "../button-global";
 import { ScrollArea } from "../ui/scroll-area";
 import {
   LayoutDashboard,
   Users,
-  Settings,
-  LogOut,
-  HelpCircle,
-  UserCircle2,
   FolderTree,
 } from "lucide-react";
 
@@ -39,25 +36,14 @@ const navItems: NavItem[] = [
     icon: Users,
     section: "GENERAL",
   },
-  {
-    title: "Configuración",
-    href: "/settings",
-    icon: Settings,
-    section: "CUENTA",
-  },
-  {
-    title: "Ayuda",
-    href: "/help",
-    icon: HelpCircle,
-    section: "CUENTA",
-  },
 ];
 
 export const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const generalItems = navItems.filter((item) => item.section === "GENERAL");
-  const accountItems = navItems.filter((item) => item.section === "CUENTA");
 
   const renderNavItem = (item: NavItem) => {
     const isActive =
@@ -69,16 +55,16 @@ export const Sidebar = () => {
       <Link key={item.href} to={item.href}>
         <div
           className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all text-white",
+            "flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all text-white text-sm",
             isActive
-              ? "bg-primary/80 text-foreground font-semibold"
-              : "hover:bg-white/10"
+              ? "bg-primary/90 text-foreground font-semibold shadow-sm"
+              : "hover:bg-white/5"
           )}
         >
-          <Icon className="h-5 w-5 flex-shrink-0" />
-          <span className="text-sm font-medium flex-1">{item.title}</span>
+          <Icon className="h-4 w-4 flex-shrink-0" />
+          <span className="font-medium flex-1">{item.title}</span>
           {item.badge && (
-            <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+            <span className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
               {item.badge}
             </span>
           )}
@@ -88,61 +74,38 @@ export const Sidebar = () => {
   };
 
   return (
-    <div className="flex flex-col sticky top-0 h-screen w-64 border-r border-white/10 z-20" style={{ backgroundColor: '#1e293b' }}>
-      {/* Logo Section */}
-      <div className="flex items-center gap-3 h-16 px-4 border-b border-white/10">
-        <img 
-          src="/miio.jpeg" 
-          alt="Miio Logo" 
-          className="w-8 h-8 rounded object-cover"
-        />
-        <span className="text-lg font-bold text-white">miio</span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="ml-auto text-white/70 hover:text-white hover:bg-white/10"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M3 5h14M3 10h14M3 15h14"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        </Button>
+    <div className="hidden lg:flex flex-col h-screen w-60 border-r border-gray-100 bg-gradient-to-b from-slate-900 to-slate-800 z-20 shrink-0">
+      <div className="flex items-center gap-3 h-14 px-5 border-b border-white/10">
+        <div className="flex items-center justify-center w-10 h-14">
+          <img
+          src="/miio.jpeg"
+          alt="Miio Logo"
+          className="w-8 h-8 rounded-md object-cover"
+          />
+        </div>
+        <span className="text-lg font-bold text-white tracking-tight">Miio</span>
       </div>
 
-      {/* Navigation */}
-      <ScrollArea className="flex-1 py-6">
-        {/* GENERAL Section */}
-        <div className="px-4 mb-6">
-          <p className="text-xs font-semibold text-white/60 mb-3">GENERAL</p>
-          <nav className="space-y-1">{generalItems.map(renderNavItem)}</nav>
-        </div>
-
-        {/* CUENTA Section */}
-        <div className="px-4">
-          <p className="text-xs font-semibold text-white/60 mb-3">CUENTA</p>
-          <nav className="space-y-1">{accountItems.map(renderNavItem)}</nav>
+      <ScrollArea className="flex-1 py-4">
+        <div className="px-3 mb-6">
+          <p className="text-[10px] font-bold text-white/50 mb-2 px-3 tracking-wider">MAIN</p>
+          <nav className="space-y-0.5">{generalItems.map(renderNavItem)}</nav>
         </div>
       </ScrollArea>
 
-      {/* Cerrar Sesión Section */}
-      <div className="p-4 border-t border-white/10">
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-3 text-white/80 hover:text-white hover:bg-white/10"
+      <div className="p-3 border-t border-white/10 flex flex-col gap-2">
+        <button
+          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg transition-all hover:bg-white/10 group"
+          onClick={() => navigate('/profile')}
         >
-          <LogOut className="h-5 w-5" />
-          <span className="text-sm font-medium">Cerrar Sesión</span>
-        </Button>
+          <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-lg font-bold text-primary">
+            {user?.profile?.firstName?.[0]?.toUpperCase() || user?.profile?.email?.[0]?.toUpperCase() || '?'}
+          </div>
+          <div className="flex flex-col items-start min-w-0">
+            <span className="text-white font-medium text-sm truncate max-w-[120px] group-hover:underline">{user?.profile?.firstName || 'Usuario'}</span>
+            <span className="text-xs text-white/60 truncate max-w-[120px]">{user?.profile?.email}</span>
+          </div>
+        </button>
       </div>
     </div>
   );

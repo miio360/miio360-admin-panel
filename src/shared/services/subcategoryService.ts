@@ -7,13 +7,12 @@ import {
   getDocs,
   getDoc,
   query,
-  where,
   orderBy,
-  serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { Subcategory } from "../types";
+import { createBaseModel, updateModelTimestamp } from "../types/base";
 
 const CATEGORY_COLLECTION = "categories";
 const SUBCOLLECTION_NAME = "subcategories";
@@ -68,12 +67,11 @@ export const subcategoryService = {
 
 
   // Crear subcategoría (en subcolección de la categoría)
-  async create(categoryId: string, subcategoryData: Omit<Subcategory, "id" | "createdAt" | "updatedAt">): Promise<string> {
+  async create(categoryId: string, subcategoryData: Omit<Subcategory, "id" | "createdAt" | "updatedAt" | "createdBy">, userId: string): Promise<string> {
     const subcatRef = collection(db, CATEGORY_COLLECTION, categoryId, SUBCOLLECTION_NAME);
     const docRef = await addDoc(subcatRef, {
       ...subcategoryData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      ...createBaseModel(userId),
     });
     return docRef.id;
   },
@@ -84,7 +82,7 @@ export const subcategoryService = {
     const docRef = doc(db, CATEGORY_COLLECTION, categoryId, SUBCOLLECTION_NAME, subcategoryId);
     await updateDoc(docRef, {
       ...subcategoryData,
-      updatedAt: serverTimestamp(),
+      ...updateModelTimestamp(),
     });
   },
 

@@ -101,7 +101,7 @@ interface Category {
   name: string;
   slug: string;
   isActive: boolean;
-  createdAt: Date;
+  createdAt: Timestamp;
 }
 
 async function getCategories(): Promise<Category[]> {
@@ -442,6 +442,17 @@ npm run lint
 
 # Agregar componente shadcn/ui
 npx shadcn@latest add <component-name>
+```
+
+---
+
+## no uses emojis en el codigo
+
+Cada implemetacion que hagas nunca uses emojis en el codigo, comentarios o nombres de variables, funciones o archivos.:
+
+no te admito ningun emoji en el codigo, comentarios o nombres de variables, funciones o archivos.
+```typescript
+    subtitle={`🟢 ${active} activas · 🔴 ${inactive} inactivas`}
 ```
 
 ---
