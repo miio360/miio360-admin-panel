@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TableGlobal, TableGlobalColumn } from '@/shared/components/table-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { DeleteConfirmDialog } from '@/shared/components/delete-confirm-dialog';
+import { LoadingGlobal } from '@/shared/components/loading-global';
 import { Edit, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import type { AdvertisingPlan } from '../types/plan';
 import { PlanCardAdvertising } from './plan-cards/PlanCardAdvertising';
@@ -102,7 +103,6 @@ export function PlanAdvertisingTable({
 
   return (
     <>
-      {/* Filtros */}
       <PlanTableFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -114,35 +114,37 @@ export function PlanAdvertisingTable({
         onToggleSortOrder={toggleSortOrder}
       />
 
-      {/* Vista Desktop */}
       <div className="hidden md:block">
-        <TableGlobal
-          columns={getAdvertisingPlanColumns(formatPrice) as TableGlobalColumn<AdvertisingPlan>[]}
-          data={filteredPlans as AdvertisingPlan[]}
-          loading={loading}
-          emptyMessage="No hay planes de publicidad creados"
-          actions={renderActions}
-          showPagination={!pagination}
-          externalPagination={pagination}
-        />
+        <LoadingGlobal variant="overlay" loading={loading} message="Cargando tabla...">
+          <TableGlobal
+            columns={getAdvertisingPlanColumns(formatPrice) as TableGlobalColumn<AdvertisingPlan>[]}
+            data={filteredPlans as AdvertisingPlan[]}
+            loading={false}
+            emptyMessage="No hay planes de publicidad creados"
+            actions={renderActions}
+            showPagination={!pagination}
+            externalPagination={pagination}
+          />
+        </LoadingGlobal>
       </div>
 
-      {/* Vista Mobile - Cards con paginación (server-side) */}
       <div className="block md:hidden">
         {(filteredPlans as AdvertisingPlan[]).length === 0 ? (
           <PlanCardEmptyState />
         ) : (
-          <div className="flex flex-col gap-4">
-            {(filteredPlans as AdvertisingPlan[]).map((plan) => (
-              <PlanCardAdvertising
-                key={plan.id}
-                plan={plan}
-                onEdit={() => onEdit(plan)}
-                onToggleActive={() => onToggleActive(plan)}
-                onDelete={() => handleDeleteClick(plan)}
-              />
-            ))}
-          </div>
+          <LoadingGlobal variant="overlay" loading={loading} message="Cargando página...">
+            <div className="flex flex-col gap-4">
+              {(filteredPlans as AdvertisingPlan[]).map((plan) => (
+                <PlanCardAdvertising
+                  key={plan.id}
+                  plan={plan}
+                  onEdit={() => onEdit(plan)}
+                  onToggleActive={() => onToggleActive(plan)}
+                  onDelete={() => handleDeleteClick(plan)}
+                />
+              ))}
+            </div>
+          </LoadingGlobal>
         )}
         {pagination && (
           <div className="mt-4">

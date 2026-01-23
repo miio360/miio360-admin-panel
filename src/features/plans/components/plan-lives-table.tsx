@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TableGlobal, TableGlobalColumn } from '@/shared/components/table-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { DeleteConfirmDialog } from '@/shared/components/delete-confirm-dialog';
+import { LoadingGlobal } from '@/shared/components/loading-global';
 import { Edit, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import type { LivesPlan } from '../types/plan';
 import { PlanCardLives } from './plan-cards/PlanCardLives';
@@ -116,15 +117,17 @@ export function PlanLivesTable({
 
       {/* Vista Desktop */}
       <div className="hidden md:block">
-        <TableGlobal
-          columns={getLivesPlanColumns(formatPrice) as TableGlobalColumn<LivesPlan>[]}
-          data={filteredPlans as LivesPlan[]}
-          loading={loading}
-          emptyMessage="No hay planes de lives creados"
-          actions={renderActions}
-          showPagination={!pagination}
-          externalPagination={pagination}
-        />
+        <LoadingGlobal variant="overlay" loading={loading} message="Cargando tabla...">
+          <TableGlobal
+            columns={getLivesPlanColumns(formatPrice) as TableGlobalColumn<LivesPlan>[]}
+            data={filteredPlans as LivesPlan[]}
+            loading={false}
+            emptyMessage="No hay planes de lives creados"
+            actions={renderActions}
+            showPagination={!pagination}
+            externalPagination={pagination}
+          />
+        </LoadingGlobal>
       </div>
 
       {/* Vista Mobile - Cards con paginación */}
@@ -132,23 +135,25 @@ export function PlanLivesTable({
         {(filteredPlans as LivesPlan[]).length === 0 ? (
           <PlanCardEmptyState />
         ) : (
-          <div className="flex flex-col gap-4">
-            {(pagination
-              ? (filteredPlans as LivesPlan[]).slice(
-                  (pagination.currentPage - 1) * 10,
-                  pagination.currentPage * 10
-                )
-              : (filteredPlans as LivesPlan[])
-            ).map((plan) => (
-              <PlanCardLives
-                key={plan.id}
-                plan={plan}
-                onEdit={() => onEdit(plan)}
-                onToggleActive={() => onToggleActive(plan)}
-                onDelete={() => handleDeleteClick(plan)}
-              />
-            ))}
-          </div>
+          <LoadingGlobal variant="overlay" loading={loading} message="Cargando página...">
+            <div className="flex flex-col gap-4">
+              {(pagination
+                ? (filteredPlans as LivesPlan[]).slice(
+                    (pagination.currentPage - 1) * 10,
+                    pagination.currentPage * 10
+                  )
+                : (filteredPlans as LivesPlan[])
+              ).map((plan) => (
+                <PlanCardLives
+                  key={plan.id}
+                  plan={plan}
+                  onEdit={() => onEdit(plan)}
+                  onToggleActive={() => onToggleActive(plan)}
+                  onDelete={() => handleDeleteClick(plan)}
+                />
+              ))}
+            </div>
+          </LoadingGlobal>
         )}
         {pagination && (
           <div className="mt-4">

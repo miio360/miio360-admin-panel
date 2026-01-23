@@ -1,7 +1,3 @@
-
-
-
-
 import * as React from 'react';
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
@@ -26,7 +22,6 @@ export interface TableGlobalProps<T> {
   rowClassName?: (row: T) => string;
   pageSize?: number;
   showPagination?: boolean;
-  // Props para paginacion externa (Firestore)
   externalPagination?: {
     currentPage: number;
     totalPages: number;

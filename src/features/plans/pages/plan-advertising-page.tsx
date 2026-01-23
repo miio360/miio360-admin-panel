@@ -3,17 +3,17 @@ import { PageHeaderGlobal } from '@/shared/components/page-header-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { LoadingGlobal } from '@/shared/components/loading-global';
 import { ErrorGlobal } from '@/shared/components/error-global';
-import { PlanAdvertisingTable } from '../components/plan-advertising-table';
 import { PlanAdvertisingDialog } from '../components/plan-advertising-dialog';
 import { usePlans } from '../hooks/usePlans';
 import { planService } from '../services/planService';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Plus } from 'lucide-react';
 import type { AdvertisingPlan } from '../types/plan';
+import { PlanAdvertisingTable } from '../components/plan-advertising-table';
 
 export function PlanAdvertisingPage() {
   const { user } = useAuth();
-  const { plans, isLoading, error, currentPage, totalPages, goToPage, refetch } = usePlans('advertising');
+  const { plans, isInitialLoading, isPaginationLoading, error, currentPage, totalPages, goToPage, refetch } = usePlans('advertising');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<AdvertisingPlan | null>(null);
 
@@ -53,7 +53,7 @@ export function PlanAdvertisingPage() {
     }
   };
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return <LoadingGlobal message="Cargando planes de publicidad..." />;
   }
 
@@ -77,19 +77,19 @@ export function PlanAdvertisingPage() {
         }
       />
 
-      <PlanAdvertisingTable
-        plans={plans as AdvertisingPlan[]}
-        loading={isLoading}
-        onEdit={handleEdit}
-        onToggleActive={handleToggleActive}
-        onDelete={handleDelete}
-        pagination={{
-          currentPage,
-          totalPages,
-          onPageChange: goToPage,
-        }}
-      />
-
+        <PlanAdvertisingTable
+          plans={plans as AdvertisingPlan[]}
+          loading={isPaginationLoading}
+          onEdit={handleEdit}
+          onToggleActive={handleToggleActive}
+          onDelete={handleDelete}
+          pagination={{
+            currentPage,
+            totalPages,
+            onPageChange: goToPage,
+          }}
+        />
+    
       <PlanAdvertisingDialog
         open={dialogOpen}
         onOpenChange={handleDialogClose}

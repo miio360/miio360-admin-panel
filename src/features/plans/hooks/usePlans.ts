@@ -5,7 +5,8 @@ import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 
 interface UsePlansReturn {
   plans: Plan[];
-  isLoading: boolean;
+  isInitialLoading: boolean;
+  isPaginationLoading: boolean;
   error: string | null;
   currentPage: number;
   totalPages: number;
@@ -16,16 +17,21 @@ interface UsePlansReturn {
 
 export function usePlans(planType: PlanType): UsePlansReturn {
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isPaginationLoading, setIsPaginationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const pageDocsCache = useRef<Map<number, QueryDocumentSnapshot<DocumentData>>>(new Map());
 
-  const fetchPage = useCallback(async (page: number) => {
+  const fetchPage = useCallback(async (page: number, isInitial = false) => {
     try {
-      setIsLoading(true);
+      if (isInitial) {
+        setIsInitialLoading(true);
+      } else {
+        setIsPaginationLoading(true);
+      }
       setError(null);
       
       const lastDoc = page > 1 ? pageDocsCache.current.get(page - 1) : null;
@@ -43,7 +49,11 @@ export function usePlans(planType: PlanType): UsePlansReturn {
       const message = err instanceof Error ? err.message : 'Error desconocido';
       setError(message);
     } finally {
-      setIsLoading(false);
+      if (isInitial) {
+        setIsInitialLoading(false);
+      } else {
+        setIsPaginationLoading(false);
+      }
     }
   }, [planType]);
 
@@ -55,7 +65,7 @@ export function usePlans(planType: PlanType): UsePlansReturn {
       setCurrentPage(1);
 
       const loadPagesSequentially = async () => {
-        setIsLoading(true);
+        setIsPaginationLoading(true);
         try {
           let lastDoc: QueryDocumentSnapshot<DocumentData> | null = null;
           for (let p = 1; p <= page; p++) {
@@ -75,7 +85,7 @@ export function usePlans(planType: PlanType): UsePlansReturn {
           const message = err instanceof Error ? err.message : 'Error desconocido';
           setError(message);
         } finally {
-          setIsLoading(false);
+          setIsPaginationLoading(false);
         }
       };
       loadPagesSequentially();
@@ -88,18 +98,19 @@ export function usePlans(planType: PlanType): UsePlansReturn {
   const refetch = useCallback(async () => {
     pageDocsCache.current.clear();
     setCurrentPage(1);
-    await fetchPage(1);
+    await fetchPage(1, false);
   }, [fetchPage]);
 
   useEffect(() => {
     pageDocsCache.current.clear();
     setCurrentPage(1);
-    fetchPage(1);
+    fetchPage(1, true);
   }, [planType, fetchPage]);
 
   return {
     plans,
-    isLoading,
+    isInitialLoading,
+    isPaginationLoading,
     error,
     currentPage,
     totalPages,

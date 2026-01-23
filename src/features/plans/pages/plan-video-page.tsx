@@ -13,7 +13,7 @@ import type { VideoPlan } from '../types/plan';
 
 export function PlanVideoPage() {
   const { user } = useAuth();
-  const { plans, isLoading, error, currentPage, totalPages, goToPage, refetch } = usePlans('video');
+  const { plans, isInitialLoading, isPaginationLoading, error, currentPage, totalPages, goToPage, refetch } = usePlans('video');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<VideoPlan | null>(null);
 
@@ -53,7 +53,7 @@ export function PlanVideoPage() {
     }
   };
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return <LoadingGlobal message="Cargando planes de video..." />;
   }
 
@@ -79,7 +79,7 @@ export function PlanVideoPage() {
 
       <PlanVideoTable
         plans={plans as VideoPlan[]}
-        loading={isLoading}
+        loading={isPaginationLoading}
         onEdit={handleEdit}
         onToggleActive={handleToggleActive}
         onDelete={handleDelete}

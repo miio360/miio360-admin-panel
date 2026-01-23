@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TableGlobal, TableGlobalColumn } from '@/shared/components/table-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { DeleteConfirmDialog } from '@/shared/components/delete-confirm-dialog';
+import { LoadingGlobal } from '@/shared/components/loading-global';
 import { Edit, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import type { VideoPlan } from '../types/plan';
 import { PlanCardVideo } from './plan-cards/PlanCardVideo';
@@ -114,38 +115,42 @@ export function PlanVideoTable({
       />
 
       <div className="hidden md:block">
-        <TableGlobal
-          columns={getVideoPlanColumns(formatPrice) as TableGlobalColumn<VideoPlan>[]}
-          data={filteredPlans as VideoPlan[]}
-          loading={loading}
-          emptyMessage="No hay planes de video creados"
-          actions={renderActions}
-          showPagination={!pagination}
-          externalPagination={pagination}
-        />
+        <LoadingGlobal variant="overlay" loading={loading} message="Cargando tabla...">
+          <TableGlobal
+            columns={getVideoPlanColumns(formatPrice) as TableGlobalColumn<VideoPlan>[]}
+            data={filteredPlans as VideoPlan[]}
+            loading={false}
+            emptyMessage="No hay planes de video creados"
+            actions={renderActions}
+            showPagination={!pagination}
+            externalPagination={pagination}
+          />
+        </LoadingGlobal>
       </div>
 
       <div className="block md:hidden">
         {(filteredPlans as VideoPlan[]).length === 0 ? (
           <PlanCardEmptyState />
         ) : (
-          <div className="flex flex-col gap-4">
-            {(pagination
-              ? (filteredPlans as VideoPlan[]).slice(
-                  (pagination.currentPage - 1) * 10,
-                  pagination.currentPage * 10
-                )
-              : (filteredPlans as VideoPlan[])
-            ).map((plan) => (
-              <PlanCardVideo
-                key={plan.id}
-                plan={plan}
-                onEdit={() => onEdit(plan)}
-                onToggleActive={() => onToggleActive(plan)}
-                onDelete={() => handleDeleteClick(plan)}
-              />
-            ))}
-          </div>
+          <LoadingGlobal variant="overlay" loading={loading} message="Cargando página...">
+            <div className="flex flex-col gap-4">
+              {(pagination
+                ? (filteredPlans as VideoPlan[]).slice(
+                    (pagination.currentPage - 1) * 10,
+                    pagination.currentPage * 10
+                  )
+                : (filteredPlans as VideoPlan[])
+              ).map((plan) => (
+                <PlanCardVideo
+                  key={plan.id}
+                  plan={plan}
+                  onEdit={() => onEdit(plan)}
+                  onToggleActive={() => onToggleActive(plan)}
+                  onDelete={() => handleDeleteClick(plan)}
+                />
+              ))}
+            </div>
+          </LoadingGlobal>
         )}
         {pagination && (
           <div className="mt-4">

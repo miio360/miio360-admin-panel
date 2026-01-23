@@ -13,7 +13,7 @@ import type { LivesPlan } from '../types/plan';
 
 export function PlanLivesPage() {
   const { user } = useAuth();
-  const { plans, isLoading, error, currentPage, totalPages, goToPage, refetch } = usePlans('lives');
+  const { plans, isInitialLoading, isPaginationLoading, error, currentPage, totalPages, goToPage, refetch } = usePlans('lives');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<LivesPlan | null>(null);
 
@@ -53,7 +53,7 @@ export function PlanLivesPage() {
     }
   };
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return <LoadingGlobal message="Cargando planes de lives..." />;
   }
 
@@ -79,7 +79,7 @@ export function PlanLivesPage() {
 
       <PlanLivesTable
         plans={plans as LivesPlan[]}
-        loading={isLoading}
+        loading={isPaginationLoading}
         onEdit={handleEdit}
         onToggleActive={handleToggleActive}
         onDelete={handleDelete}
