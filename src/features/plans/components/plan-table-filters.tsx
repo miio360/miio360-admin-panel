@@ -43,7 +43,7 @@ export function PlanTableFilters({
       <SearchGlobal
         value={searchTerm}
         onChange={onSearchChange}
-        placeholder="Buscar por titulo o descripcion..."
+        placeholder="Buscar por titulo o descripcion"
         className="sm:max-w-xs"
       />
 

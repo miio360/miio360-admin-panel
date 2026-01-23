@@ -45,7 +45,7 @@ export function PlanLivesFields({
         rows={3}
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="price" className="text-sm font-medium mb-1 block">
             Precio (BOB)
@@ -68,7 +68,7 @@ export function PlanLivesFields({
           )}
         </div>
 
-        <div className="flex items-center gap-3 pt-6">
+        <div className="flex items-center gap-3 sm:pt-6">
           <Switch
             id="isActive"
             checked={isActive}

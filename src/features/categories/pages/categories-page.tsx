@@ -121,7 +121,7 @@ export const CategoriesPage = () => {
         <SearchGlobal
           value={searchTerm}
           onChange={handleSearch}
-          placeholder="Buscar por nombre o slug..."
+          placeholder="Buscar por nombre o slug"
         />
         <div className="space-y-1">
           <CardContent className="p-0">

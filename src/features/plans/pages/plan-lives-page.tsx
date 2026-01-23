@@ -3,13 +3,13 @@ import { PageHeaderGlobal } from '@/shared/components/page-header-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { LoadingGlobal } from '@/shared/components/loading-global';
 import { ErrorGlobal } from '@/shared/components/error-global';
-import { PlanTable } from '../components/plan-table';
+import { PlanLivesTable } from '../components/plan-lives-table';
 import { PlanLivesDialog } from '../components/plan-lives-dialog';
 import { usePlans } from '../hooks/usePlans';
 import { planService } from '../services/planService';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Plus } from 'lucide-react';
-import type { Plan, LivesPlan } from '../types/plan';
+import type { LivesPlan } from '../types/plan';
 
 export function PlanLivesPage() {
   const { user } = useAuth();
@@ -17,8 +17,8 @@ export function PlanLivesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<LivesPlan | null>(null);
 
-  const handleEdit = (plan: Plan) => {
-    setEditingPlan(plan as LivesPlan);
+  const handleEdit = (plan: LivesPlan) => {
+    setEditingPlan(plan);
     setDialogOpen(true);
   };
 
@@ -34,7 +34,7 @@ export function PlanLivesPage() {
     setDialogOpen(open);
   };
 
-  const handleToggleActive = async (plan: Plan) => {
+  const handleToggleActive = async (plan: LivesPlan) => {
     try {
       await planService.toggleActive(plan.id, !plan.isActive);
       refetch();
@@ -43,12 +43,8 @@ export function PlanLivesPage() {
     }
   };
 
-  const handleDelete = async (plan: Plan) => {
+  const handleDelete = async (plan: LivesPlan) => {
     if (!user?.id) return;
-    const confirmed = window.confirm(
-      `Estas seguro de eliminar el plan "${plan.title}"?`
-    );
-    if (!confirmed) return;
     try {
       await planService.softDelete(plan.id, user.id);
       refetch();
@@ -81,8 +77,8 @@ export function PlanLivesPage() {
         }
       />
 
-      <PlanTable
-        plans={plans}
+      <PlanLivesTable
+        plans={plans as LivesPlan[]}
         loading={isLoading}
         onEdit={handleEdit}
         onToggleActive={handleToggleActive}

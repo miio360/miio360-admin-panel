@@ -91,12 +91,12 @@ export function PlanLivesDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
             {isEditing ? 'Editar Plan de Lives' : 'Crear Plan de Lives'}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             {isEditing
               ? 'Modifica los datos del plan de lives'
               : 'Configura un nuevo plan de transmisiones en vivo'}

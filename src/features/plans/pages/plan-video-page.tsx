@@ -3,13 +3,13 @@ import { PageHeaderGlobal } from '@/shared/components/page-header-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { LoadingGlobal } from '@/shared/components/loading-global';
 import { ErrorGlobal } from '@/shared/components/error-global';
-import { PlanTable } from '../components/plan-table';
+import { PlanVideoTable } from '../components/plan-video-table';
 import { PlanVideoDialog } from '../components/plan-video-dialog';
 import { usePlans } from '../hooks/usePlans';
 import { planService } from '../services/planService';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Plus } from 'lucide-react';
-import type { Plan, VideoPlan } from '../types/plan';
+import type { VideoPlan } from '../types/plan';
 
 export function PlanVideoPage() {
   const { user } = useAuth();
@@ -17,8 +17,8 @@ export function PlanVideoPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<VideoPlan | null>(null);
 
-  const handleEdit = (plan: Plan) => {
-    setEditingPlan(plan as VideoPlan);
+  const handleEdit = (plan: VideoPlan) => {
+    setEditingPlan(plan);
     setDialogOpen(true);
   };
 
@@ -34,7 +34,7 @@ export function PlanVideoPage() {
     setDialogOpen(open);
   };
 
-  const handleToggleActive = async (plan: Plan) => {
+  const handleToggleActive = async (plan: VideoPlan) => {
     try {
       await planService.toggleActive(plan.id, !plan.isActive);
       refetch();
@@ -43,12 +43,8 @@ export function PlanVideoPage() {
     }
   };
 
-  const handleDelete = async (plan: Plan) => {
+  const handleDelete = async (plan: VideoPlan) => {
     if (!user?.id) return;
-    const confirmed = window.confirm(
-      `Estas seguro de eliminar el plan "${plan.title}"?`
-    );
-    if (!confirmed) return;
     try {
       await planService.softDelete(plan.id, user.id);
       refetch();
@@ -81,8 +77,8 @@ export function PlanVideoPage() {
         }
       />
 
-      <PlanTable
-        plans={plans}
+      <PlanVideoTable
+        plans={plans as VideoPlan[]}
         loading={isLoading}
         onEdit={handleEdit}
         onToggleActive={handleToggleActive}

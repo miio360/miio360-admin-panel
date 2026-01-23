@@ -94,12 +94,12 @@ export function PlanVideoDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
             {isEditing ? 'Editar Plan de Video' : 'Crear Plan de Video'}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             {isEditing
               ? 'Modifica los datos del plan de video'
               : 'Configura un nuevo plan de video para vendedores'}

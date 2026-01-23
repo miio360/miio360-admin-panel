@@ -3,13 +3,13 @@ import { PageHeaderGlobal } from '@/shared/components/page-header-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { LoadingGlobal } from '@/shared/components/loading-global';
 import { ErrorGlobal } from '@/shared/components/error-global';
-import { PlanTable } from '../components/plan-table';
+import { PlanAdvertisingTable } from '../components/plan-advertising-table';
 import { PlanAdvertisingDialog } from '../components/plan-advertising-dialog';
 import { usePlans } from '../hooks/usePlans';
 import { planService } from '../services/planService';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { Plus } from 'lucide-react';
-import type { Plan, AdvertisingPlan } from '../types/plan';
+import type { AdvertisingPlan } from '../types/plan';
 
 export function PlanAdvertisingPage() {
   const { user } = useAuth();
@@ -17,8 +17,8 @@ export function PlanAdvertisingPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<AdvertisingPlan | null>(null);
 
-  const handleEdit = (plan: Plan) => {
-    setEditingPlan(plan as AdvertisingPlan);
+  const handleEdit = (plan: AdvertisingPlan) => {
+    setEditingPlan(plan);
     setDialogOpen(true);
   };
 
@@ -34,7 +34,7 @@ export function PlanAdvertisingPage() {
     setDialogOpen(open);
   };
 
-  const handleToggleActive = async (plan: Plan) => {
+  const handleToggleActive = async (plan: AdvertisingPlan) => {
     try {
       await planService.toggleActive(plan.id, !plan.isActive);
       refetch();
@@ -43,12 +43,8 @@ export function PlanAdvertisingPage() {
     }
   };
 
-  const handleDelete = async (plan: Plan) => {
+  const handleDelete = async (plan: AdvertisingPlan) => {
     if (!user?.id) return;
-    const confirmed = window.confirm(
-      `Estas seguro de eliminar el plan "${plan.title}"?`
-    );
-    if (!confirmed) return;
     try {
       await planService.softDelete(plan.id, user.id);
       refetch();
@@ -81,8 +77,8 @@ export function PlanAdvertisingPage() {
         }
       />
 
-      <PlanTable
-        plans={plans}
+      <PlanAdvertisingTable
+        plans={plans as AdvertisingPlan[]}
         loading={isLoading}
         onEdit={handleEdit}
         onToggleActive={handleToggleActive}
