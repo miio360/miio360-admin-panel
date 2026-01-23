@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ButtonGlobal } from "@/shared/components/button-global";
 import { useModal } from "@/shared/hooks/useModal";
 import { CardContent } from "@/shared/components/ui/card";
@@ -121,7 +121,7 @@ export const CategoriesPage = () => {
         <SearchGlobal
           value={searchTerm}
           onChange={handleSearch}
-          placeholder="Buscar por nombre o slug..."
+          placeholder="Buscar por nombre o slug"
         />
         <div className="space-y-1">
           <CardContent className="p-0">

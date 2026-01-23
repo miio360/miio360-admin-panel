@@ -12,6 +12,9 @@ import { SubcategoryFormPage } from "./features/categories/pages/subcategory-for
 import { UsersPage } from "./features/users/pages/users-page";
 import UserFormPage from "./features/users/pages/user-form-page";
 import UserProfilePage from "./features/users/pages/user-profile-page";
+import { PlanVideoPage } from "./features/plans/pages/plan-video-page";
+import { PlanAdvertisingPage } from "./features/plans/pages/plan-advertising-page";
+import { PlanLivesPage } from "./features/plans/pages/plan-lives-page";
 
 function App() {
   return (
@@ -41,6 +44,9 @@ function App() {
               <Route path="categories/:id/edit" element={<CategoryFormPage />} />
               <Route path="categories/:categoryId/subcategory/new" element={<SubcategoryFormPage />} />
               <Route path="categories/:categoryId/subcategories/:id/edit" element={<SubcategoryFormPage />} />
+              <Route path="plans/video" element={<PlanVideoPage />} />
+              <Route path="plans/advertising" element={<PlanAdvertisingPage />} />
+              <Route path="plans/lives" element={<PlanLivesPage />} />
 
             </Route>
 

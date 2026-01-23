@@ -1,12 +1,18 @@
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from '@/shared/hooks/useAuth';
 import { cn } from "../../lib/utils";
-import { ButtonGlobal } from "../button-global";
 import { ScrollArea } from "../ui/scroll-area";
 import {
   LayoutDashboard,
   Users,
   FolderTree,
+  CreditCard,
+  Video,
+  Megaphone,
+  Radio,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 
 interface NavItem {
@@ -17,6 +23,19 @@ interface NavItem {
   section?: string;
 }
 
+interface SubNavItem {
+  title: string;
+  href: string;
+  icon: React.ElementType;
+}
+
+interface NavGroup {
+  title: string;
+  icon: React.ElementType;
+  section: string;
+  children: SubNavItem[];
+}
+
 const navItems: NavItem[] = [
   {
     title: "Dashboard",
@@ -25,7 +44,7 @@ const navItems: NavItem[] = [
     section: "GENERAL",
   },
   {
-    title: "Categorías",
+    title: "Categorias",
     href: "/categories",
     icon: FolderTree,
     section: "GENERAL",
@@ -38,12 +57,33 @@ const navItems: NavItem[] = [
   },
 ];
 
+const navGroups: NavGroup[] = [
+  {
+    title: "Planes",
+    icon: CreditCard,
+    section: "GENERAL",
+    children: [
+      { title: "Plan Video", href: "/plans/video", icon: Video },
+      { title: "Plan Publicidad", href: "/plans/advertising", icon: Megaphone },
+      { title: "Plan Lives", href: "/plans/lives", icon: Radio },
+    ],
+  },
+];
+
 export const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['Planes']);
 
   const generalItems = navItems.filter((item) => item.section === "GENERAL");
+  const generalGroups = navGroups.filter((group) => group.section === "GENERAL");
+
+  const toggleGroup = (title: string) => {
+    setExpandedGroups((prev) =>
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
+    );
+  };
 
   const renderNavItem = (item: NavItem) => {
     const isActive =
@@ -89,7 +129,59 @@ export const Sidebar = () => {
       <ScrollArea className="flex-1 py-4">
         <div className="px-3 mb-6">
           <p className="text-[10px] font-bold text-white/50 mb-2 px-3 tracking-wider">MAIN</p>
-          <nav className="space-y-0.5">{generalItems.map(renderNavItem)}</nav>
+          <nav className="space-y-0.5">
+            {generalItems.map(renderNavItem)}
+            {generalGroups.map((group) => {
+              const isExpanded = expandedGroups.includes(group.title);
+              const hasActiveChild = group.children.some(
+                (child) => location.pathname.startsWith(child.href)
+              );
+              const GroupIcon = group.icon;
+
+              return (
+                <div key={group.title}>
+                  <button
+                    onClick={() => toggleGroup(group.title)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all text-white text-sm",
+                      hasActiveChild ? "bg-white/10" : "hover:bg-white/5"
+                    )}
+                  >
+                    <GroupIcon className="h-4 w-4 flex-shrink-0" />
+                    <span className="font-medium flex-1 text-left">{group.title}</span>
+                    {isExpanded ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </button>
+                  {isExpanded && (
+                    <div className="ml-4 mt-1 space-y-0.5">
+                      {group.children.map((child) => {
+                        const isActive = location.pathname.startsWith(child.href);
+                        const ChildIcon = child.icon;
+                        return (
+                          <Link key={child.href} to={child.href}>
+                            <div
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all text-white text-sm",
+                                isActive
+                                  ? "bg-primary/90 text-foreground font-semibold shadow-sm"
+                                  : "hover:bg-white/5"
+                              )}
+                            >
+                              <ChildIcon className="h-4 w-4 flex-shrink-0" />
+                              <span className="font-medium">{child.title}</span>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
         </div>
       </ScrollArea>
 

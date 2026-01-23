@@ -1,7 +1,3 @@
-
-
-
-
 import * as React from 'react';
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
@@ -26,6 +22,11 @@ export interface TableGlobalProps<T> {
   rowClassName?: (row: T) => string;
   pageSize?: number;
   showPagination?: boolean;
+  externalPagination?: {
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+  };
 }
 
 export function TableGlobal<T extends { id: string }>({
@@ -37,17 +38,35 @@ export function TableGlobal<T extends { id: string }>({
   rowClassName,
   pageSize = 6,
   showPagination = true,
+  externalPagination,
 }: TableGlobalProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(data.length / pageSize);
-  const paginatedData = showPagination
+  // Si hay paginacion externa, usar esos valores; sino, paginar localmente
+  const useExternalPagination = !!externalPagination;
+  
+  const internalTotalPages = Math.ceil(data.length / pageSize);
+  const paginatedData = useExternalPagination
+    ? data // Los datos ya vienen paginados desde Firestore
+    : showPagination
     ? data.slice((currentPage - 1) * pageSize, currentPage * pageSize)
     : data;
 
+  const effectiveCurrentPage = useExternalPagination 
+    ? externalPagination.currentPage 
+    : currentPage;
+  const effectiveTotalPages = useExternalPagination 
+    ? externalPagination.totalPages 
+    : internalTotalPages;
+  const effectiveOnPageChange = useExternalPagination 
+    ? externalPagination.onPageChange 
+    : setCurrentPage;
+
   React.useEffect(() => {
-    setCurrentPage(1);
-  }, [data.length]);
+    if (!useExternalPagination) {
+      setCurrentPage(1);
+    }
+  }, [data.length, useExternalPagination]);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -137,11 +156,11 @@ export function TableGlobal<T extends { id: string }>({
           )}
         </TableBody>
       </Table>
-      {showPagination && (
+      {(showPagination || useExternalPagination) && effectiveTotalPages > 1 && (
         <PaginationGlobal
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
+          currentPage={effectiveCurrentPage}
+          totalPages={effectiveTotalPages}
+          onPageChange={effectiveOnPageChange}
         />
       )}
     </div>

@@ -4,19 +4,66 @@ import { cn } from "../../lib/utils";
 import { useAuth } from "@/shared/hooks/useAuth";
 import { ButtonGlobal } from "../button-global";
 import { ScrollArea } from "../ui/scroll-area";
-import { LayoutDashboard, Users, FolderTree } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  FolderTree,
+  CreditCard,
+  Video,
+  Megaphone,
+  Radio,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 
-const navItems = [
+interface NavItem {
+  title: string;
+  href: string;
+  icon: React.ElementType;
+}
+
+interface SubNavItem {
+  title: string;
+  href: string;
+  icon: React.ElementType;
+}
+
+interface NavGroup {
+  title: string;
+  icon: React.ElementType;
+  children: SubNavItem[];
+}
+
+const navItems: NavItem[] = [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
-  { title: "Categorías", href: "/categories", icon: FolderTree },
+  { title: "Categorias", href: "/categories", icon: FolderTree },
   { title: "Gestionar Usuarios", href: "/users", icon: Users },
+];
+
+const navGroups: NavGroup[] = [
+  {
+    title: "Planes",
+    icon: CreditCard,
+    children: [
+      { title: "Plan Video", href: "/plans/video", icon: Video },
+      { title: "Plan Publicidad", href: "/plans/advertising", icon: Megaphone },
+      { title: "Plan Lives", href: "/plans/lives", icon: Radio },
+    ],
+  },
 ];
 
 export const MobileHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['Planes']);
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  const toggleGroup = (title: string) => {
+    setExpandedGroups((prev) =>
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
+    );
+  };
 
   return (
     <>
@@ -81,6 +128,57 @@ export const MobileHeader = () => {
                       <Icon className="h-4 w-4 flex-shrink-0" />
                       <span className="font-medium flex-1">{item.title}</span>
                     </Link>
+                  );
+                })}
+                {navGroups.map((group) => {
+                  const isExpanded = expandedGroups.includes(group.title);
+                  const hasActiveChild = group.children.some(
+                    (child) => location.pathname.startsWith(child.href)
+                  );
+                  const GroupIcon = group.icon;
+
+                  return (
+                    <div key={group.title}>
+                      <button
+                        onClick={() => toggleGroup(group.title)}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all text-white text-sm",
+                          hasActiveChild ? "bg-white/10" : "hover:bg-primary/20"
+                        )}
+                      >
+                        <GroupIcon className="h-4 w-4 flex-shrink-0" />
+                        <span className="font-medium flex-1 text-left">{group.title}</span>
+                        {isExpanded ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
+                      {isExpanded && (
+                        <div className="ml-4 mt-1 space-y-0.5">
+                          {group.children.map((child) => {
+                            const isActive = location.pathname.startsWith(child.href);
+                            const ChildIcon = child.icon;
+                            return (
+                              <Link
+                                key={child.href}
+                                to={child.href}
+                                onClick={() => setMenuOpen(false)}
+                                className={cn(
+                                  "flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all text-white text-sm",
+                                  isActive
+                                    ? "bg-primary/90 text-foreground font-semibold shadow-sm"
+                                    : "hover:bg-primary/20"
+                                )}
+                              >
+                                <ChildIcon className="h-4 w-4 flex-shrink-0" />
+                                <span className="font-medium">{child.title}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </nav>
