@@ -2,10 +2,6 @@ import { ReactNode } from 'react';
 
 import {
   Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardDescription,
   CardContent
 } from '../components/ui/card';
 import { cn } from '../lib/utils';
