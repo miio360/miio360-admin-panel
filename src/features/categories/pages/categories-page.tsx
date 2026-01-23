@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ButtonGlobal } from "@/shared/components/button-global";
 import { useModal } from "@/shared/hooks/useModal";
 import { CardContent } from "@/shared/components/ui/card";

@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { TableGlobal } from '@/shared/components/table-global';
+import { TableGlobal, TableGlobalColumn } from '@/shared/components/table-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { DeleteConfirmDialog } from '@/shared/components/delete-confirm-dialog';
 import { Edit, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import type { AdvertisingPlan } from '../types/plan';
-import { getAdvertisingPlanColumns } from '../utils/getAdvertisingPlanColumns';
-import { PlanAdvertisingCardCarousel } from './plan-card-carousel';
+import { PlanCardAdvertising } from './plan-cards/PlanCardAdvertising';
+import { PlanCardEmptyState } from './plan-cards/PlanCardEmptyState';
+import { PaginationGlobal } from '@/shared/components/pagination-global';
 import { PlanTableFilters } from './plan-table-filters';
 import { usePlanFilters } from '../hooks/usePlanFilters';
+import { getAdvertisingPlanColumns } from '../utils/getAdvertisingPlanColumns';
 
 interface PlanAdvertisingTableProps {
   plans: AdvertisingPlan[];
@@ -21,7 +23,6 @@ interface PlanAdvertisingTableProps {
     onPageChange: (page: number) => void;
   };
 }
-
 
 function formatPrice(price: number): string {
   return `BOB ${price.toFixed(2)}`;
@@ -63,8 +64,6 @@ export function PlanAdvertisingTable({
     }
   };
 
-  const columns = getAdvertisingPlanColumns(formatPrice);
-
   const renderActions = (row: AdvertisingPlan) => (
     <div className="flex justify-end gap-1">
       <ButtonGlobal
@@ -103,6 +102,7 @@ export function PlanAdvertisingTable({
 
   return (
     <>
+      {/* Filtros */}
       <PlanTableFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -114,9 +114,10 @@ export function PlanAdvertisingTable({
         onToggleSortOrder={toggleSortOrder}
       />
 
+      {/* Vista Desktop */}
       <div className="hidden md:block">
         <TableGlobal
-          columns={columns}
+          columns={getAdvertisingPlanColumns(formatPrice) as TableGlobalColumn<AdvertisingPlan>[]}
           data={filteredPlans as AdvertisingPlan[]}
           loading={loading}
           emptyMessage="No hay planes de publicidad creados"
@@ -126,13 +127,32 @@ export function PlanAdvertisingTable({
         />
       </div>
 
+      {/* Vista Mobile - Cards con paginación (server-side) */}
       <div className="block md:hidden">
-        <PlanAdvertisingCardCarousel
-          plans={filteredPlans as AdvertisingPlan[]}
-          onEdit={onEdit}
-          onToggleActive={onToggleActive}
-          onDelete={handleDeleteClick}
-        />
+        {(filteredPlans as AdvertisingPlan[]).length === 0 ? (
+          <PlanCardEmptyState />
+        ) : (
+          <div className="flex flex-col gap-4">
+            {(filteredPlans as AdvertisingPlan[]).map((plan) => (
+              <PlanCardAdvertising
+                key={plan.id}
+                plan={plan}
+                onEdit={() => onEdit(plan)}
+                onToggleActive={() => onToggleActive(plan)}
+                onDelete={() => handleDeleteClick(plan)}
+              />
+            ))}
+          </div>
+        )}
+        {pagination && (
+          <div className="mt-4">
+            <PaginationGlobal
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={pagination.onPageChange}
+            />
+          </div>
+        )}
       </div>
 
       <DeleteConfirmDialog

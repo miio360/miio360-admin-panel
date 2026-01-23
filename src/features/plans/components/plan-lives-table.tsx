@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { TableGlobal } from '@/shared/components/table-global';
+import { TableGlobal, TableGlobalColumn } from '@/shared/components/table-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { DeleteConfirmDialog } from '@/shared/components/delete-confirm-dialog';
 import { Edit, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import type { LivesPlan } from '../types/plan';
-import { getLivesPlanColumns } from '../utils/getLivesPlanColumns';
-import { PlanLivesCardCarousel } from './plan-card-carousel';
+import { PlanCardLives } from './plan-cards/PlanCardLives';
+import { PlanCardEmptyState } from './plan-cards/PlanCardEmptyState';
+import { PaginationGlobal } from '@/shared/components/pagination-global';
 import { PlanTableFilters } from './plan-table-filters';
 import { usePlanFilters } from '../hooks/usePlanFilters';
+import { getLivesPlanColumns } from '../utils/getLivesPlanColumns';
 
 interface PlanLivesTableProps {
   plans: LivesPlan[];
@@ -62,8 +64,6 @@ export function PlanLivesTable({
     }
   };
 
-  const columns = getLivesPlanColumns(formatPrice);
-
   const renderActions = (row: LivesPlan) => (
     <div className="flex justify-end gap-1">
       <ButtonGlobal
@@ -102,6 +102,7 @@ export function PlanLivesTable({
 
   return (
     <>
+      {/* Filtros */}
       <PlanTableFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -113,9 +114,10 @@ export function PlanLivesTable({
         onToggleSortOrder={toggleSortOrder}
       />
 
+      {/* Vista Desktop */}
       <div className="hidden md:block">
         <TableGlobal
-          columns={columns}
+          columns={getLivesPlanColumns(formatPrice) as TableGlobalColumn<LivesPlan>[]}
           data={filteredPlans as LivesPlan[]}
           loading={loading}
           emptyMessage="No hay planes de lives creados"
@@ -125,13 +127,38 @@ export function PlanLivesTable({
         />
       </div>
 
+      {/* Vista Mobile - Cards con paginación */}
       <div className="block md:hidden">
-        <PlanLivesCardCarousel
-          plans={filteredPlans as LivesPlan[]}
-          onEdit={onEdit}
-          onToggleActive={onToggleActive}
-          onDelete={handleDeleteClick}
-        />
+        {(filteredPlans as LivesPlan[]).length === 0 ? (
+          <PlanCardEmptyState />
+        ) : (
+          <div className="flex flex-col gap-4">
+            {(pagination
+              ? (filteredPlans as LivesPlan[]).slice(
+                  (pagination.currentPage - 1) * 10,
+                  pagination.currentPage * 10
+                )
+              : (filteredPlans as LivesPlan[])
+            ).map((plan) => (
+              <PlanCardLives
+                key={plan.id}
+                plan={plan}
+                onEdit={() => onEdit(plan)}
+                onToggleActive={() => onToggleActive(plan)}
+                onDelete={() => handleDeleteClick(plan)}
+              />
+            ))}
+          </div>
+        )}
+        {pagination && (
+          <div className="mt-4">
+            <PaginationGlobal
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={pagination.onPageChange}
+            />
+          </div>
+        )}
       </div>
 
       <DeleteConfirmDialog

@@ -4,9 +4,8 @@ import {
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "./ui/pagination";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationGlobalProps {
   currentPage: number;
@@ -28,14 +27,19 @@ export function PaginationGlobal({
       <Pagination>
         <PaginationContent className="gap-1">
           <PaginationItem>
-            <PaginationPrevious
+            <button
+              aria-label="Anterior"
               onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
-              className={`h-8 w-8 px-2 text-xs md:h-9 md:w-auto md:px-3 md:text-sm ${
+              className={`flex items-center justify-center h-8 w-8 px-2 text-xs md:h-9 md:w-auto md:px-3 md:text-sm rounded transition-colors ${
                 currentPage === 1
                   ? "pointer-events-none opacity-50"
                   : "cursor-pointer hover:bg-gray-100"
               }`}
-            />
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              <span className="hidden md:inline">Anterior</span>
+            </button>
           </PaginationItem>
 
           {[...Array(totalPages)].map((_, index) => {
@@ -76,16 +80,19 @@ export function PaginationGlobal({
           })}
 
           <PaginationItem>
-            <PaginationNext
-              onClick={() =>
-                currentPage < totalPages && onPageChange(currentPage + 1)
-              }
-              className={`h-8 w-8 px-2 text-xs md:h-9 md:w-auto md:px-3 md:text-sm ${
+            <button
+              aria-label="Siguiente"
+              onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+              className={`flex items-center justify-center h-8 w-8 px-2 text-xs md:h-9 md:w-auto md:px-3 md:text-sm rounded transition-colors ${
                 currentPage === totalPages
                   ? "pointer-events-none opacity-50"
                   : "cursor-pointer hover:bg-gray-100"
               }`}
-            />
+              disabled={currentPage === totalPages}
+            >
+              <span className="hidden md:inline">Siguiente</span>
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </button>
           </PaginationItem>
         </PaginationContent>
       </Pagination>
