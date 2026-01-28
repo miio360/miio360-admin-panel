@@ -8,12 +8,10 @@ export interface BaseModel {
   createdAt: Timestamp;
   createdBy: string;
   updatedAt: Timestamp;
-}
-
-export interface SoftDeletableModel {
+  updatedBy?: string;
   deletedAt?: Timestamp | null;
   deletedBy?: string | null;
-  isDeleted: boolean;
+  isDeleted?: boolean;
 }
 
 export interface VisibilityModel {
@@ -29,12 +27,15 @@ export function createBaseModel(userId: string) {
     createdAt: serverTimestamp(),
     createdBy: userId,
     updatedAt: serverTimestamp(),
+    updatedBy: userId,
+    isDeleted: false,
   };
 }
 
-export function updateModelTimestamp() {
+export function updateModelTimestamp(userId: string) {
   return {
     updatedAt: serverTimestamp(),
+    updatedBy: userId,
   };
 }
 

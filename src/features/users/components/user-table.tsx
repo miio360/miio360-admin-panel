@@ -3,7 +3,7 @@ import { UserStatus } from '@/shared/types';
 import { TableGlobal, TableGlobalColumn } from '@/shared/components/table-global';
 import { PaginationGlobal } from '@/shared/components/pagination-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2 } from 'lucide-react';
 
 interface UserTableProps {

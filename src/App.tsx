@@ -15,6 +15,8 @@ import UserProfilePage from "./features/users/pages/user-profile-page";
 import { PlanVideoPage } from "./features/plans/pages/plan-video-page";
 import { PlanAdvertisingPage } from "./features/plans/pages/plan-advertising-page";
 import { PlanLivesPage } from "./features/plans/pages/plan-lives-page";
+import { PaymentReceiptsPage } from "./features/payment-receipts/pages/payment-receipts-page";
+import { PaymentQRPage } from "./features/payment-settings/pages/payment-qr-page";
 
 function App() {
   return (
@@ -47,6 +49,8 @@ function App() {
               <Route path="plans/video" element={<PlanVideoPage />} />
               <Route path="plans/advertising" element={<PlanAdvertisingPage />} />
               <Route path="plans/lives" element={<PlanLivesPage />} />
+              <Route path="payment-receipts" element={<PaymentReceiptsPage />} />
+              <Route path="payment-qr" element={<PaymentQRPage />} />
 
             </Route>
 

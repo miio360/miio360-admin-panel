@@ -1,4 +1,4 @@
-import { BaseModel, SoftDeletableModel } from '@/shared/types/base';
+import { BaseModel } from '@/shared/types/base';
 
 // ========== ENUMS ==========
 
@@ -8,7 +8,7 @@ export type AdvertisingType = 'store_banner' | 'product';
 
 // ========== INTERFACES BASE ==========
 
-export interface BasePlan extends BaseModel, SoftDeletableModel {
+export interface BasePlan extends BaseModel {
   title: string;
   description: string;
   price: number;
