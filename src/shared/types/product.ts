@@ -5,7 +5,6 @@ import {
   CustomLocation,
   FileUploaded,
   Rating,
-  SoftDeletableModel,
   VisibilityModel,
 } from './base';
 import { SellerSummary } from './summaries';
@@ -20,7 +19,7 @@ export interface ProductFeature {
   [key: string]: string | number; 
 }
 
-export interface Product extends BaseModel, SoftDeletableModel, VisibilityModel {
+export interface Product extends BaseModel, VisibilityModel {
   // Información básica
   name: string;
   description: string;

@@ -13,6 +13,8 @@ import {
   Radio,
   ChevronDown,
   ChevronRight,
+  Receipt,
+  QrCode,
 } from "lucide-react";
 
 interface NavItem {
@@ -53,6 +55,18 @@ const navItems: NavItem[] = [
     title: "Gestionar Usuarios",
     href: "/users",
     icon: Users,
+    section: "GENERAL",
+  },
+  {
+    title: "Comprobantes de Pago",
+    href: "/payment-receipts",
+    icon: Receipt,
+    section: "GENERAL",
+  },
+  {
+    title: "QR de Pago",
+    href: "/payment-qr",
+    icon: QrCode,
     section: "GENERAL",
   },
 ];
