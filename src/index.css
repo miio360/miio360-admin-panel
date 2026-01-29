@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  /* Paleta MIIO360 - Tema Light (por defecto) */
+  --color-primary: oklch(85% 0.15 85); /* #FECD1B - Amarillo MIIO360 */
+  --color-background: oklch(100% 0 0); /* Blanco puro */
+  --color-foreground: oklch(10% 0.05 170); /* #011611 - Verde oscuro */
+  --color-card: oklch(100% 0 0); /* Blanco puro */
+  --color-card-foreground: oklch(10% 0.05 170);
+  --color-popover: oklch(100% 0 0);
+  --color-popover-foreground: oklch(10% 0.05 170);
+  --color-primary-foreground: oklch(10% 0.05 170);
+  --color-secondary: oklch(60% 0.15 160); /* Verde esmeralda */
+  --color-secondary-foreground: oklch(100% 0 0);
+  --color-muted: oklch(96% 0.01 220);
+  --color-muted-foreground: oklch(60% 0.02 220);
+  --color-accent: oklch(75% 0.12 220); /* Azul celeste suave para inputs */
+  --color-accent-foreground: oklch(10% 0.05 170);
+  --color-destructive: oklch(55% 0.22 25);
+  --color-destructive-foreground: oklch(100% 0 0);
+  --color-border: oklch(90% 0.01 220);
+  --color-input: oklch(100% 0 0);
+  --color-ring: oklch(85% 0.15 85);
+  --radius: 0.75rem;
+}
+
+.dark {
+  --color-background: 159 91% 4%;
+  --color-foreground: 44 95% 92%; 
+  --color-card: 159 80% 8%;
+  --color-card-foreground: 44 95% 92%;
+  --color-popover: 159 80% 8%;
+  --color-popover-foreground: 44 95% 92%;
+  --color-primary: 48 99% 56%; /* #FECD1B - Amarillo MIIO360 */
+  --color-primary-foreground: 159 91% 4%;
+  --color-secondary: 159 70% 12%;
+  --color-secondary-foreground: 44 95% 92%;
+  --color-muted: 159 60% 15%;
+  --color-muted-foreground: 44 75% 70%;
+  --color-accent: 48 99% 56%;
+  --color-accent-foreground: 159 91% 4%;
+  --color-destructive: 0 62.8% 30.6%;
+  --color-destructive-foreground: 44 95% 92%;
+  --color-border: 159 50% 20%;
+  --color-input: 159 50% 20%;
+  --color-ring: 48 99% 56%;
+}
+
+body {
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
