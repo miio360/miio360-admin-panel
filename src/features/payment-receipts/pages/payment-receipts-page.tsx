@@ -33,7 +33,17 @@ export function PaymentReceiptsPage() {
     if (!user?.id) return;
     try {
       setActionLoading(true);
-      await paymentReceiptService.approve(receipt.id, user.id);
+      
+      // Construir datos del vendedor para el active_plan
+      const sellerData = {
+        id: receipt.seller.id,
+        name: receipt.seller.name,
+        profileImage: receipt.seller.avatar || '',
+        storeName: receipt.seller.name, // Se usa el nombre como fallback
+      };
+
+      const result = await paymentReceiptService.approve(receipt.id, user.id, sellerData);
+      console.log('Comprobante aprobado. Plan activo creado:', result.activePlanId);
       await refetch();
     } catch (err) {
       console.error('Error al aprobar:', err);
@@ -54,6 +64,7 @@ export function PaymentReceiptsPage() {
       await paymentReceiptService.reject(selectedReceipt.id, user.id, reason, comment);
       setRejectDialogOpen(false);
       setSelectedReceipt(null);
+      console.log('Comprobante rechazado');
       await refetch();
     } catch (err) {
       console.error('Error al rechazar:', err);
