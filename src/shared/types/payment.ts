@@ -24,6 +24,7 @@ export interface PaymentReceipt extends BaseModel {
   approvedAt?: Timestamp;
   rejectedBy?: string;
   rejectedAt?: Timestamp;
+  activePlanId?: string;
 }
 
 export interface PaymentSettings extends BaseModel {
