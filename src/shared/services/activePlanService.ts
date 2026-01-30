@@ -149,9 +149,14 @@ export const activePlanService = {
         };
       } else if (input.planType === 'video') {
         planSpecificData = {
+          videoMode: input.videoMode ?? 'video_count',
+          // Modalidad video_count
           videoCount: input.videoCount ?? 0,
-          videoDurationMinutes: input.videoDurationMinutes ?? 0,
+          maxDurationPerVideoSeconds: input.maxDurationPerVideoSeconds ?? 0,
           videosUsed: 0,
+          // Modalidad time_pool
+          totalDurationSeconds: input.totalDurationSeconds ?? 0,
+          totalSecondsUsed: 0,
         };
       } else if (input.planType === 'lives') {
         planSpecificData = {

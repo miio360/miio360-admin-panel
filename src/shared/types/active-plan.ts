@@ -1,6 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 import type { BaseModel, FileUploaded } from './base';
-import type { PlanType, AdvertisingType } from '@/features/plans/types/plan';
+import type { PlanType, AdvertisingType, VideoMode } from '@/features/plans/types/plan';
 
 // ========== ENUMS ==========
 
@@ -51,9 +51,14 @@ export interface ActiveAdvertisingPlan extends ActivePlanBase {
 
 export interface ActiveVideoPlan extends ActivePlanBase {
   planType: 'video';
-  videoCount: number;
-  videoDurationMinutes: number;
-  videosUsed: number;
+  videoMode: VideoMode;
+  // Modalidad video_count: cantidad de videos con duracion maxima por video
+  videoCount?: number;
+  maxDurationPerVideoSeconds?: number;
+  videosUsed?: number;
+  // Modalidad time_pool: pool total de segundos
+  totalDurationSeconds?: number;
+  totalSecondsUsed?: number;
 }
 
 export interface ActiveLivesPlan extends ActivePlanBase {
@@ -88,8 +93,10 @@ export interface CreateActivePlanInput {
   daysEnabled?: number;
   bannerImage?: FileUploaded;
   // Para planes de video
+  videoMode?: VideoMode;
   videoCount?: number;
-  videoDurationMinutes?: number;
+  maxDurationPerVideoSeconds?: number;
+  totalDurationSeconds?: number;
   // Para planes de lives
   livesDurationMinutes?: number;
 }

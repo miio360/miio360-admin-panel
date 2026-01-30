@@ -6,6 +6,13 @@ export type PlanType = 'video' | 'advertising' | 'lives';
 
 export type AdvertisingType = 'store_banner' | 'product';
 
+/**
+ * Modalidad del plan de video:
+ * - video_count: Por cantidad de videos con duracion maxima por video
+ * - time_pool: Por tiempo total (pool de segundos)
+ */
+export type VideoMode = 'video_count' | 'time_pool';
+
 // ========== INTERFACES BASE ==========
 
 export interface BasePlan extends BaseModel {
@@ -18,10 +25,20 @@ export interface BasePlan extends BaseModel {
 
 // ========== PLAN VIDEO ==========
 
+/**
+ * Plan de Video
+ * - videoMode: Define la modalidad del plan
+ * - Para video_count: videoCount + maxDurationPerVideoSeconds (duracion maxima por video)
+ * - Para time_pool: totalDurationSeconds (pool total de segundos)
+ */
 export interface VideoPlan extends BasePlan {
   planType: 'video';
-  videoCount: number;
-  videoDurationMinutes: number;
+  videoMode: VideoMode;
+  // Modalidad video_count: cantidad de videos con duracion maxima por video
+  videoCount?: number;
+  maxDurationPerVideoSeconds?: number;
+  // Modalidad time_pool: pool total de segundos
+  totalDurationSeconds?: number;
 }
 
 // ========== PLAN PUBLICIDAD ==========
@@ -50,8 +67,12 @@ export interface VideoPlanFormData {
   description: string;
   price: number;
   isActive: boolean;
-  videoCount: number;
-  videoDurationMinutes: number;
+  videoMode: VideoMode;
+  // Modalidad video_count
+  videoCount?: number;
+  maxDurationPerVideoSeconds?: number;
+  // Modalidad time_pool
+  totalDurationSeconds?: number;
 }
 
 export interface AdvertisingPlanFormData {
@@ -77,6 +98,11 @@ export const PLAN_TYPE_LABELS: Record<PlanType, string> = {
   video: 'Plan Video',
   advertising: 'Plan Publicidad',
   lives: 'Plan Lives',
+};
+
+export const VIDEO_MODE_LABELS: Record<VideoMode, string> = {
+  video_count: 'Por cantidad de videos',
+  time_pool: 'Por tiempo total',
 };
 
 export const ADVERTISING_TYPE_LABELS: Record<AdvertisingType, string> = {
