@@ -1,5 +1,5 @@
 import { CustomLocation, Rating } from '.';
-import type { PlanType, AdvertisingType } from '@/features/plans/types/plan';
+import type { PlanType, AdvertisingType, VideoMode } from '@/features/plans/types/plan';
 
 export interface SellerSummary {
   id: string;
@@ -26,8 +26,12 @@ export interface BasePlanSummary {
 
 export interface VideoPlanSummary extends BasePlanSummary {
   planType: 'video';
-  videoCount: number;
-  videoDurationMinutes: number;
+  videoMode: VideoMode;
+  // Modalidad video_count
+  videoCount?: number;
+  maxDurationPerVideoSeconds?: number;
+  // Modalidad time_pool
+  totalDurationSeconds?: number;
 }
 
 export interface AdvertisingPlanSummary extends BasePlanSummary {
