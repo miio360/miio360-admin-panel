@@ -124,7 +124,6 @@ export const activePlanService = {
     try {
       const now = Timestamp.now();
 
-      // Datos base para todos los planes
       const baseData = {
         receiptId: input.receiptId,
         seller: input.seller,
@@ -133,29 +132,36 @@ export const activePlanService = {
         planPrice: input.planPrice,
         status: 'pending_assignment' as const,
         approvedAt: now,
-        approvedBy: input.approvedBy,
         ...createBaseModel(input.approvedBy),
       };
 
-      // Datos especificos segun tipo de plan
       let planSpecificData = {};
 
       if (input.planType === 'advertising') {
         planSpecificData = {
           advertisingType: input.advertisingType,
-          daysEnabled: input.daysEnabled ?? 0,
+          daysEnabled: input.daysEnabled,
           daysUsed: 0,
-          bannerImage: input.bannerImage ?? null,
+          bannerImage: input.bannerImage,
         };
       } else if (input.planType === 'video') {
-        planSpecificData = {
-          videoCount: input.videoCount ?? 0,
-          videoDurationMinutes: input.videoDurationMinutes ?? 0,
-          videosUsed: 0,
+        const videoData: Record<string, unknown> = {
+          videoMode: input.videoMode,
         };
+
+        if (input.videoMode === 'video_count') {
+          videoData.videoCount = input.videoCount ?? 0;
+          videoData.maxDurationPerVideoSeconds = input.maxDurationPerVideoSeconds ?? 0;
+          videoData.videosUsed = 0;
+        } else if (input.videoMode === 'time_pool') {
+          videoData.totalDurationSeconds = input.totalDurationSeconds ?? 0;
+          videoData.totalSecondsUsed = 0;
+        }
+
+        planSpecificData = videoData;
       } else if (input.planType === 'lives') {
         planSpecificData = {
-          livesDurationMinutes: input.livesDurationMinutes ?? 0,
+          livesDurationMinutes: input.livesDurationMinutes,
           livesUsed: 0,
         };
       }

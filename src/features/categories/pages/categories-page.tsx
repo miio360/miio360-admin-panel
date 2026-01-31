@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ButtonGlobal } from "@/shared/components/button-global";
 import { useModal } from "@/shared/hooks/useModal";
+import { useAuth } from "@/shared/hooks/useAuth";
 import { CardContent } from "@/shared/components/ui/card";
 import { PageHeaderGlobal } from "@/shared/components/page-header-global";
 import { SearchGlobal } from "@/shared/components/search-global";
@@ -12,10 +13,12 @@ import { Plus } from "lucide-react";
 import { CategoryStats } from "../components/category-stats";
 import { CategoryTableExpandable } from "../components/category-table-expandable";
 import { useCategoriesWithSubcategories } from "../hooks/useCategoriesWithSubcategories";
+import { categoryService } from "@/shared/services/categoryService";
 
 export const CategoriesPage = () => {
   const navigate = useNavigate();
   const modal = useModal();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const {
@@ -68,6 +71,22 @@ export const CategoriesPage = () => {
 
   const handleCreateSubcategory = (categoryId: string) => {
     navigate(`/categories/${categoryId}/subcategory/new`);
+  };
+
+  const handleOrderChange = async (categoryId: string, newOrder: number) => {
+    if (!user?.id) {
+      modal.showError("Debes estar autenticado para realizar esta acción");
+      return;
+    }
+
+    try {
+      await categoryService.reorderCategory(categoryId, newOrder, user.id);
+      await refetch();
+      modal.showSuccess("Orden actualizado correctamente");
+    } catch (error) {
+      console.error("Error reordering category:", error);
+      modal.showError("Error al actualizar el orden");
+    }
   };
 
   const filteredCategories = searchTerm
@@ -148,6 +167,7 @@ export const CategoriesPage = () => {
                 subcategories={subcategories}
                 onDelete={handleDelete}
                 onCreateSubcategory={handleCreateSubcategory}
+                onOrderChange={handleOrderChange}
               />
             )}
           </CardContent>

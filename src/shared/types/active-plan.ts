@@ -1,68 +1,70 @@
 import { Timestamp } from 'firebase/firestore';
 import type { BaseModel, FileUploaded } from './base';
-import type { PlanType, AdvertisingType } from '@/features/plans/types/plan';
+import type { PlanType, AdvertisingType, VideoMode } from '@/features/plans/types/plan';
+import { ProductSummary, SellerSummary } from './summaries';
 
 // ========== ENUMS ==========
 
 export type ActivePlanStatus =
-  | 'pending_assignment'
-  | 'scheduled'
-  | 'active'
-  | 'expired'
-  | 'cancelled';
+  | 'pending_assignment' // Aprobado, esperando asignación de producto (solo para advertising product)
+  | 'scheduled' // Asignado pero aún no activo (fecha futura)
+  | 'active' // Activo y visible
+  | 'expired' // Días terminados
+  | 'cancelled'; // Cancelado por admin
 
-// ========== INTERFACES ==========
+// ========== BASE ACTIVE PLAN ==========
 
-export interface ActivePlanSeller {
-  id: string;
-  name: string;
-  profileImage: string;
-  storeName: string;
-}
-
-export interface AssignedProduct {
-  id: string;
-  name: string;
-  image: string;
-  price: number;
-}
-
-export interface ActivePlanBase extends BaseModel {
+export interface BaseActivePlan extends BaseModel {
   receiptId: string;
-  seller: ActivePlanSeller;
+  seller: SellerSummary;
   planType: PlanType;
   planTitle: string;
   planPrice: number;
   status: ActivePlanStatus;
   approvedAt: Timestamp;
   approvedBy: string;
-  startDate?: Timestamp;
-  endDate?: Timestamp;
 }
 
-export interface ActiveAdvertisingPlan extends ActivePlanBase {
+// ========== ADVERTISING ACTIVE PLAN ==========
+
+export interface AdvertisingActivePlan extends BaseActivePlan {
   planType: 'advertising';
   advertisingType: AdvertisingType;
   daysEnabled: number;
   daysUsed: number;
-  bannerImage?: FileUploaded;
-  assignedProduct?: AssignedProduct;
+  bannerImage: FileUploaded;
+  startDate?: Timestamp;
+  endDate?: Timestamp;
+  assignedProduct?: ProductSummary;
 }
 
-export interface ActiveVideoPlan extends ActivePlanBase {
+// ========== VIDEO ACTIVE PLAN ==========
+
+export interface VideoActivePlan extends BaseActivePlan {
   planType: 'video';
-  videoCount: number;
-  videoDurationMinutes: number;
-  videosUsed: number;
+  videoMode: VideoMode;
+
+  // Modalidad video_count: cantidad de videos con duración máxima por video
+  videoCount?: number;
+  maxDurationPerVideoSeconds?: number;
+  videosUsed?: number;
+
+  // Modalidad time_pool: pool total de segundos
+  totalDurationSeconds?: number;
+  totalSecondsUsed?: number;
 }
 
-export interface ActiveLivesPlan extends ActivePlanBase {
+// ========== LIVES ACTIVE PLAN ==========
+
+export interface LivesActivePlan extends BaseActivePlan {
   planType: 'lives';
   livesDurationMinutes: number;
   livesUsed: number;
 }
 
-export type ActivePlan = ActiveAdvertisingPlan | ActiveVideoPlan | ActiveLivesPlan;
+// ========== UNION TYPE ==========
+
+export type ActivePlan = AdvertisingActivePlan | VideoActivePlan | LivesActivePlan;
 
 // ========== LABELS ==========
 
@@ -76,20 +78,35 @@ export const ACTIVE_PLAN_STATUS_LABELS: Record<ActivePlanStatus, string> = {
 
 // ========== INPUT TYPES ==========
 
-export interface CreateActivePlanInput {
+interface BaseActivePlanInput {
   receiptId: string;
-  seller: ActivePlanSeller;
-  planType: PlanType;
+  seller: SellerSummary;
   planTitle: string;
   planPrice: number;
   approvedBy: string;
-  // Para planes de publicidad
-  advertisingType?: AdvertisingType;
-  daysEnabled?: number;
-  bannerImage?: FileUploaded;
-  // Para planes de video
-  videoCount?: number;
-  videoDurationMinutes?: number;
-  // Para planes de lives
-  livesDurationMinutes?: number;
 }
+
+export interface CreateAdvertisingActivePlanInput extends BaseActivePlanInput {
+  planType: 'advertising';
+  advertisingType: AdvertisingType;
+  daysEnabled: number;
+  bannerImage: FileUploaded;
+}
+
+export interface CreateVideoActivePlanInput extends BaseActivePlanInput {
+  planType: 'video';
+  videoMode: VideoMode;
+  videoCount?: number;
+  maxDurationPerVideoSeconds?: number;
+  totalDurationSeconds?: number;
+}
+
+export interface CreateLivesActivePlanInput extends BaseActivePlanInput {
+  planType: 'lives';
+  livesDurationMinutes: number;
+}
+
+export type CreateActivePlanInput =
+  | CreateAdvertisingActivePlanInput
+  | CreateVideoActivePlanInput
+  | CreateLivesActivePlanInput;

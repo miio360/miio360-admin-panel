@@ -94,12 +94,13 @@ export const categoryService = {
   },
 
   // Update category
-  async update(id: string, categoryData: Partial<Category>): Promise<void> {
+  async update(id: string, categoryData: Partial<Category>, userId?: string): Promise<void> {
     const docRef = doc(db, COLLECTION_NAME, id);
-    await updateDoc(docRef, {
-      ...categoryData,
-      ...updateModelTimestamp(),
-    });
+    const updateData: any = { ...categoryData };
+    if (userId) {
+      Object.assign(updateData, updateModelTimestamp(userId));
+    }
+    await updateDoc(docRef, updateData);
   },
 
   // Delete category
@@ -126,5 +127,90 @@ export const categoryService = {
         updatedAt: data.updatedAt as Timestamp,
       } as Category;
     });
+  },
+
+  // Reorder category and adjust others
+  async reorderCategory(categoryId: string, newOrder: number, userId: string): Promise<void> {
+    try {
+      // Obtener todas las categorías
+      const allCategories = await this.getAll();
+      
+      // Encontrar la categoría a reordenar
+      const targetCategory = allCategories.find(cat => cat.id === categoryId);
+      if (!targetCategory) {
+        throw new Error('Categoría no encontrada');
+      }
+
+      const oldOrder = targetCategory.order ?? 999;
+      
+      // Si el orden no cambia, no hacer nada
+      if (oldOrder === newOrder) return;
+
+      // Preparar actualizaciones en lote
+      const updates: Array<{ id: string; order: number }> = [];
+
+      // Actualizar la categoría objetivo
+      updates.push({ id: categoryId, order: newOrder });
+
+      // Recalcular órdenes de las demás categorías
+      allCategories.forEach(cat => {
+        if (cat.id === categoryId) return; // Skip target
+        
+        const currentOrder = cat.order ?? 999;
+        
+        if (newOrder < oldOrder) {
+          // Moviendo hacia arriba (incluye movimiento a 0): las que están entre [newOrder, oldOrder) se empujan hacia abajo
+          if (currentOrder >= newOrder && currentOrder < oldOrder) {
+            updates.push({ id: cat.id, order: currentOrder + 1 });
+          }
+        } else {
+          // Moviendo hacia abajo: las que están entre (oldOrder, newOrder] se empujan hacia arriba
+          if (currentOrder > oldOrder && currentOrder <= newOrder) {
+            updates.push({ id: cat.id, order: currentOrder - 1 });
+          }
+        }
+      });
+
+      // Ejecutar todas las actualizaciones
+      await Promise.all(
+        updates.map(({ id, order }) => 
+          this.update(id, { order }, userId)
+        )
+      );
+    } catch (error) {
+      console.error('Error reordering category:', error);
+      throw new Error('No se pudo reordenar la categoría');
+    }
+  },
+
+  // Fix duplicate orders
+  async fixDuplicateOrders(userId: string): Promise<void> {
+    try {
+      const allCategories = await this.getAll();
+      
+      // Ordenar por order actual, luego por createdAt
+      const sorted = allCategories.sort((a, b) => {
+        const orderA = a.order ?? 999;
+        const orderB = b.order ?? 999;
+        if (orderA !== orderB) return orderA - orderB;
+        return a.createdAt.toMillis() - b.createdAt.toMillis();
+      });
+
+      // Reasignar órdenes consecutivos
+      const updates = sorted.map((cat, index) => ({
+        id: cat.id,
+        order: index + 1,
+      }));
+
+      // Ejecutar actualizaciones
+      await Promise.all(
+        updates.map(({ id, order }) => 
+          this.update(id, { order }, userId)
+        )
+      );
+    } catch (error) {
+      console.error('Error fixing duplicate orders:', error);
+      throw new Error('No se pudieron corregir los órdenes duplicados');
+    }
   },
 };
