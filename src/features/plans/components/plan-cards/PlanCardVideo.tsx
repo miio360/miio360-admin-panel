@@ -3,10 +3,23 @@ import { Badge } from '@/shared/components/ui/badge';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { Edit, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import type { VideoPlan } from '../../types/plan';
+import { VIDEO_MODE_LABELS } from '../../types/plan';
 
 
 function formatPrice(price: number): string {
   return `BOB ${price.toFixed(2)}`;
+}
+
+/**
+ * Formatea segundos a texto legible (ej: "1 min 30 seg", "2 min", "45 seg")
+ */
+function formatSecondsToReadable(seconds: number | undefined): string {
+  if (!seconds || seconds <= 0) return '-';
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  if (mins === 0) return `${secs} seg`;
+  if (secs === 0) return `${mins} min`;
+  return `${mins} min ${secs} seg`;
 }
 
 function PlanCardVideoHeader({ title, isActive }: { title: string; isActive: boolean }) {
@@ -25,24 +38,60 @@ function PlanCardVideoHeader({ title, isActive }: { title: string; isActive: boo
   );
 }
 
-function PlanCardVideoDetails({ description, videoCount, videoDurationMinutes, price }: {
+interface PlanCardVideoDetailsProps {
   description: string;
-  videoCount: number;
-  videoDurationMinutes: number;
+  videoMode: 'video_count' | 'time_pool';
+  videoCount?: number;
+  maxDurationPerVideoSeconds?: number;
+  totalDurationSeconds?: number;
   price: number;
-}) {
+}
+
+function PlanCardVideoDetails({ 
+  description, 
+  videoMode, 
+  videoCount, 
+  maxDurationPerVideoSeconds, 
+  totalDurationSeconds, 
+  price 
+}: PlanCardVideoDetailsProps) {
   return (
     <>
       <p className="text-foreground/70 text-sm mb-4 line-clamp-2">{description}</p>
       <div className="space-y-2 mb-4">
         <div className="flex justify-between text-sm">
-          <span className="text-foreground/60">Cantidad de Videos:</span>
-          <span className="font-medium text-foreground">{videoCount}</span>
+          <span className="text-foreground/60">Tipo de Plan:</span>
+          <Badge 
+            variant="outline"
+            className={videoMode === 'video_count' 
+              ? 'bg-blue-50 text-blue-700 border-blue-200' 
+              : 'bg-purple-50 text-purple-700 border-purple-200'
+            }
+          >
+            {VIDEO_MODE_LABELS[videoMode] ?? 'Por cantidad de videos'}
+          </Badge>
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-foreground/60">Duracion por Video:</span>
-          <span className="font-medium text-foreground">{videoDurationMinutes} min</span>
-        </div>
+        {videoMode === 'video_count' ? (
+          <>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">Cantidad de Videos:</span>
+              <span className="font-medium text-foreground">{videoCount ?? 0}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">Duracion maxima por video:</span>
+              <span className="font-medium text-foreground">
+                {formatSecondsToReadable(maxDurationPerVideoSeconds)}
+              </span>
+            </div>
+          </>
+        ) : (
+          <div className="flex justify-between text-sm">
+            <span className="text-foreground/60">Tiempo total disponible:</span>
+            <span className="font-medium text-foreground">
+              {formatSecondsToReadable(totalDurationSeconds)}
+            </span>
+          </div>
+        )}
         <div className="flex justify-between text-sm">
           <span className="text-foreground/60">Precio:</span>
           <span className="font-semibold text-foreground">{formatPrice(price)}</span>
@@ -108,8 +157,10 @@ export function PlanCardVideo({ plan, onEdit, onToggleActive, onDelete }: PlanCa
       <PlanCardVideoHeader title={plan.title} isActive={plan.isActive} />
       <PlanCardVideoDetails
         description={plan.description}
+        videoMode={plan.videoMode ?? 'video_count'}
         videoCount={plan.videoCount}
-        videoDurationMinutes={plan.videoDurationMinutes}
+        maxDurationPerVideoSeconds={plan.maxDurationPerVideoSeconds}
+        totalDurationSeconds={plan.totalDurationSeconds}
         price={plan.price}
       />
       <PlanCardVideoActions

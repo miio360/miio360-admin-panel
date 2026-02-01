@@ -39,8 +39,10 @@ export function PlanVideoDialog({
       description: '',
       price: 0,
       isActive: true,
+      videoMode: 'video_count',
       videoCount: 1,
-      videoDurationMinutes: 1,
+      maxDurationPerVideoSeconds: 1800,
+      totalDurationSeconds: 1200,
     },
   });
 
@@ -51,8 +53,10 @@ export function PlanVideoDialog({
         description: plan.description,
         price: plan.price,
         isActive: plan.isActive,
-        videoCount: plan.videoCount,
-        videoDurationMinutes: plan.videoDurationMinutes,
+        videoMode: plan.videoMode ?? 'video_count',
+        videoCount: plan.videoCount ?? 1,
+        maxDurationPerVideoSeconds: plan.maxDurationPerVideoSeconds ?? 1800,
+        totalDurationSeconds: plan.totalDurationSeconds ?? 1200,
       });
     } else {
       form.reset({
@@ -60,8 +64,10 @@ export function PlanVideoDialog({
         description: '',
         price: 0,
         isActive: true,
+        videoMode: 'video_count',
         videoCount: 1,
-        videoDurationMinutes: 1,
+        maxDurationPerVideoSeconds: 1800,
+        totalDurationSeconds: 1200,
       });
     }
   }, [plan, form]);
@@ -78,7 +84,7 @@ export function PlanVideoDialog({
       setIsSubmitting(true);
       setError(null);
       if (isEditing && plan) {
-        await planService.update(plan.id, data);
+        await planService.updateVideoPlan(plan.id, data, user.id);
       } else {
         await planService.createVideoPlan(data, user.id);
       }
@@ -114,6 +120,8 @@ export function PlanVideoDialog({
               errors={form.formState.errors}
               isActive={form.watch('isActive')}
               onActiveChange={(val) => form.setValue('isActive', val)}
+              watch={form.watch}
+              setValue={form.setValue}
             />
 
             {error && (

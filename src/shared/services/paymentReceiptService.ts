@@ -10,10 +10,9 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { PaymentReceipt, PaymentReceiptStatus, RejectionReason } from '../types/payment';
-import type { AdvertisingPlanSummary, VideoPlanSummary, LivesPlanSummary } from '../types/summaries';
+import type { AdvertisingPlanSummary, VideoPlanSummary, LivesPlanSummary, SellerSummary } from '../types/summaries';
 import { updateModelTimestamp } from '../types/base';
 import { activePlanService } from './activePlanService';
-import type { ActivePlanSeller } from '../types/active-plan';
 
 const COLLECTION_NAME = 'payment_receipts';
 
@@ -82,7 +81,7 @@ export const paymentReceiptService = {
   async approve(
     id: string,
     userId: string,
-    sellerData: ActivePlanSeller
+    sellerData: SellerSummary
   ): Promise<{ activePlanId: string }> {
     try {
       // 1. Obtener el receipt para acceder a los datos del plan
@@ -101,6 +100,11 @@ export const paymentReceiptService = {
 
       if (plan.planType === 'advertising') {
         const advertisingPlan = plan as AdvertisingPlanSummary;
+        
+        if (!receipt.bannerImage) {
+          throw new Error('El banner es requerido para planes de publicidad');
+        }
+        
         activePlanId = await activePlanService.create({
           receiptId: id,
           seller: sellerData,
@@ -121,8 +125,10 @@ export const paymentReceiptService = {
           planTitle: plan.title,
           planPrice: plan.price,
           approvedBy: userId,
+          videoMode: videoPlan.videoMode,
           videoCount: videoPlan.videoCount,
-          videoDurationMinutes: videoPlan.videoDurationMinutes,
+          maxDurationPerVideoSeconds: videoPlan.maxDurationPerVideoSeconds,
+          totalDurationSeconds: videoPlan.totalDurationSeconds,
         });
       } else {
         const livesPlan = plan as LivesPlanSummary;
