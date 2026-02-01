@@ -1,6 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 import type { BaseModel, FileUploaded } from './base';
-import type { PlanType, AdvertisingType, VideoMode } from '@/features/plans/types/plan';
+import type { PlanType, AdvertisingType, AdvertisingPosition, VideoMode } from '@/features/plans/types/plan';
 import { ProductSummary, SellerSummary } from './summaries';
 
 // ========== ENUMS ==========
@@ -30,6 +30,7 @@ export interface BaseActivePlan extends BaseModel {
 export interface AdvertisingActivePlan extends BaseActivePlan {
   planType: 'advertising';
   advertisingType: AdvertisingType;
+  advertisingPosition: AdvertisingPosition;
   daysEnabled: number;
   daysUsed: number;
   bannerImage: FileUploaded;
@@ -89,6 +90,7 @@ interface BaseActivePlanInput {
 export interface CreateAdvertisingActivePlanInput extends BaseActivePlanInput {
   planType: 'advertising';
   advertisingType: AdvertisingType;
+  advertisingPosition: AdvertisingPosition;
   daysEnabled: number;
   bannerImage: FileUploaded;
 }
