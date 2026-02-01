@@ -140,6 +140,7 @@ export const activePlanService = {
       if (input.planType === 'advertising') {
         planSpecificData = {
           advertisingType: input.advertisingType,
+          advertisingPosition: input.advertisingPosition,
           daysEnabled: input.daysEnabled,
           daysUsed: 0,
           bannerImage: input.bannerImage,
@@ -211,6 +212,167 @@ export const activePlanService = {
     } catch (error) {
       console.error('Error cancelling active plan:', error);
       throw new Error('No se pudo cancelar el plan');
+    }
+  },
+
+  /**
+   * Activa un plan de publicidad (establece fechas de inicio y fin)
+   */
+  async activateAdvertisingPlan(
+    id: string,
+    userId: string,
+    startImmediately = true
+  ): Promise<void> {
+    try {
+      const planDoc = await this.getById(id);
+      if (!planDoc || planDoc.planType !== 'advertising') {
+        throw new Error('Plan no encontrado o no es de tipo publicidad');
+      }
+
+      const now = Timestamp.now();
+      const startDate = startImmediately ? now : planDoc.startDate || now;
+      
+      const startDateObj = startDate.toDate();
+      const endDateObj = new Date(startDateObj);
+      endDateObj.setDate(endDateObj.getDate() + planDoc.daysEnabled);
+      const endDate = Timestamp.fromDate(endDateObj);
+
+      const docRef = doc(db, COLLECTION_NAME, id);
+      await updateDoc(docRef, {
+        status: 'active' as const,
+        startDate,
+        endDate,
+        ...updateModelTimestamp(userId),
+      });
+    } catch (error) {
+      console.error('Error activating advertising plan:', error);
+      throw new Error('No se pudo activar el plan de publicidad');
+    }
+  },
+
+  /**
+   * Programa un plan de publicidad para activarse en una fecha futura
+   */
+  async scheduleAdvertisingPlan(
+    id: string,
+    startDate: Timestamp,
+    userId: string
+  ): Promise<void> {
+    try {
+      const planDoc = await this.getById(id);
+      if (!planDoc || planDoc.planType !== 'advertising') {
+        throw new Error('Plan no encontrado o no es de tipo publicidad');
+      }
+
+      const startDateObj = startDate.toDate();
+      const endDateObj = new Date(startDateObj);
+      endDateObj.setDate(endDateObj.getDate() + planDoc.daysEnabled);
+      const endDate = Timestamp.fromDate(endDateObj);
+
+      const docRef = doc(db, COLLECTION_NAME, id);
+      await updateDoc(docRef, {
+        status: 'scheduled' as const,
+        startDate,
+        endDate,
+        ...updateModelTimestamp(userId),
+      });
+    } catch (error) {
+      console.error('Error scheduling advertising plan:', error);
+      throw new Error('No se pudo programar el plan de publicidad');
+    }
+  },
+
+  /**
+   * Asigna un producto a un plan de publicidad de tipo product
+   */
+  async assignProductToAdvertisingPlan(
+    id: string,
+    productSummary: import('../types/summaries').ProductSummary,
+    userId: string,
+    activateImmediately = true
+  ): Promise<void> {
+    try {
+      const planDoc = await this.getById(id);
+      if (!planDoc || planDoc.planType !== 'advertising') {
+        throw new Error('Plan no encontrado o no es de tipo publicidad');
+      }
+
+      if (planDoc.advertisingType !== 'product') {
+        throw new Error('Solo se pueden asignar productos a planes de tipo producto');
+      }
+
+      const updateData: Record<string, unknown> = {
+        assignedProduct: productSummary,
+        ...updateModelTimestamp(userId),
+      };
+
+      if (activateImmediately) {
+        const now = Timestamp.now();
+        const endDateObj = new Date(now.toDate());
+        endDateObj.setDate(endDateObj.getDate() + planDoc.daysEnabled);
+        const endDate = Timestamp.fromDate(endDateObj);
+
+        updateData.status = 'active' as const;
+        updateData.startDate = now;
+        updateData.endDate = endDate;
+      } else {
+        updateData.status = 'scheduled' as const;
+      }
+
+      const docRef = doc(db, COLLECTION_NAME, id);
+      await updateDoc(docRef, updateData);
+    } catch (error) {
+      console.error('Error assigning product to advertising plan:', error);
+      throw new Error('No se pudo asignar el producto al plan');
+    }
+  },
+
+  /**
+   * Incrementa los dias usados de un plan de publicidad
+   */
+  async incrementDaysUsed(id: string): Promise<void> {
+    try {
+      const planDoc = await this.getById(id);
+      if (!planDoc || planDoc.planType !== 'advertising') {
+        throw new Error('Plan no encontrado o no es de tipo publicidad');
+      }
+
+      const newDaysUsed = planDoc.daysUsed + 1;
+      const docRef = doc(db, COLLECTION_NAME, id);
+      
+      const updateData: Record<string, unknown> = {
+        daysUsed: newDaysUsed,
+      };
+
+      if (newDaysUsed >= planDoc.daysEnabled) {
+        updateData.status = 'expired' as const;
+      }
+
+      await updateDoc(docRef, updateData);
+    } catch (error) {
+      console.error('Error incrementing days used:', error);
+      throw new Error('No se pudo actualizar los dias usados');
+    }
+  },
+
+  /**
+   * Verifica y actualiza planes expirados
+   */
+  async checkAndExpirePlans(): Promise<void> {
+    try {
+      const activePlans = await this.getByStatus('active');
+      const now = Timestamp.now();
+
+      for (const plan of activePlans) {
+        if (plan.planType === 'advertising' && plan.endDate) {
+          if (plan.endDate.toMillis() <= now.toMillis()) {
+            await this.updateStatus(plan.id, 'expired', 'system');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error checking expired plans:', error);
+      throw new Error('No se pudieron verificar los planes expirados');
     }
   },
 };

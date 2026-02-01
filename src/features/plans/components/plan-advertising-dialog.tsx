@@ -40,6 +40,7 @@ export function PlanAdvertisingDialog({
       price: 0,
       isActive: true,
       advertisingType: 'store_banner',
+      advertisingPosition: 'carousel_top',
       daysEnabled: 1,
     },
   });
@@ -52,6 +53,7 @@ export function PlanAdvertisingDialog({
         price: plan.price,
         isActive: plan.isActive,
         advertisingType: plan.advertisingType,
+        advertisingPosition: plan.advertisingPosition,
         daysEnabled: plan.daysEnabled,
       });
     } else {
@@ -61,6 +63,7 @@ export function PlanAdvertisingDialog({
         price: 0,
         isActive: true,
         advertisingType: 'store_banner',
+        advertisingPosition: 'carousel_top',
         daysEnabled: 1,
       });
     }
@@ -115,9 +118,9 @@ export function PlanAdvertisingDialog({
               isActive={form.watch('isActive')}
               onActiveChange={(val) => form.setValue('isActive', val)}
               advertisingType={form.watch('advertisingType')}
-              onAdvertisingTypeChange={(val) =>
-                form.setValue('advertisingType', val)
-              }
+              onAdvertisingTypeChange={(val) => form.setValue('advertisingType', val)}
+              advertisingPosition={form.watch('advertisingPosition')}
+              onAdvertisingPositionChange={(val) => form.setValue('advertisingPosition', val)}
             />
 
             {error && (

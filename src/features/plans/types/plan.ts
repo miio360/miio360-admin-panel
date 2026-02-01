@@ -4,7 +4,25 @@ import { BaseModel } from '@/shared/types/base';
 
 export type PlanType = 'video' | 'advertising' | 'lives';
 
+/**
+ * Tipo de contenido publicitario
+ * - store_banner: Banner promocional de toda la tienda
+ * - product: Publicidad de un producto específico
+ */
 export type AdvertisingType = 'store_banner' | 'product';
+
+/**
+ * Posicionamiento de la publicidad en el home
+ * - carousel_top: Carrusel inicial superior (acepta store_banner o product)
+ * - product_carousel: Carrusel de productos publicitados (solo product)
+ * - mini_banner: Banner mini entre productos (acepta store_banner o product)
+ * - product_card: Card de publicidad en fila de productos (solo product)
+ */
+export type AdvertisingPosition = 
+  | 'carousel_top' 
+  | 'product_carousel' 
+  | 'mini_banner' 
+  | 'product_card';
 
 /**
  * Modalidad del plan de video:
@@ -46,6 +64,7 @@ export interface VideoPlan extends BasePlan {
 export interface AdvertisingPlan extends BasePlan {
   planType: 'advertising';
   advertisingType: AdvertisingType;
+  advertisingPosition: AdvertisingPosition;
   daysEnabled: number;
 }
 
@@ -81,6 +100,7 @@ export interface AdvertisingPlanFormData {
   price: number;
   isActive: boolean;
   advertisingType: AdvertisingType;
+  advertisingPosition: AdvertisingPosition;
   daysEnabled: number;
 }
 
@@ -108,4 +128,18 @@ export const VIDEO_MODE_LABELS: Record<VideoMode, string> = {
 export const ADVERTISING_TYPE_LABELS: Record<AdvertisingType, string> = {
   store_banner: 'Banner de Tienda',
   product: 'Publicidad de Producto',
+};
+
+export const ADVERTISING_POSITION_LABELS: Record<AdvertisingPosition, string> = {
+  carousel_top: 'Carrusel Inicial',
+  product_carousel: 'Carrusel de Productos',
+  mini_banner: 'Banner Mini entre Productos',
+  product_card: 'Card de Publicidad',
+};
+
+export const ADVERTISING_POSITION_DESCRIPTIONS: Record<AdvertisingPosition, string> = {
+  carousel_top: 'Banner superior en carrusel (acepta banner de tienda o producto)',
+  product_carousel: 'Carrusel de productos publicitados en cards',
+  mini_banner: 'Banner estático entre filas de productos',
+  product_card: 'Card publicitario al inicio de fila de productos',
 };

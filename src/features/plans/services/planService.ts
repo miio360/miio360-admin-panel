@@ -30,6 +30,7 @@ import type {
   AdvertisingPlanFormData,
   LivesPlanFormData,
 } from '../types/plan';
+import { isValidAdvertisingCombination } from '../utils/advertisingValidation';
 
 const COLLECTION_NAME = 'plans';
 const PAGE_SIZE = 6;
@@ -196,6 +197,12 @@ export const planService = {
     userId: string
   ): Promise<AdvertisingPlan> {
     try {
+      if (!isValidAdvertisingCombination(data.advertisingType, data.advertisingPosition)) {
+        throw new Error(
+          'Combinacion invalida de tipo y posicionamiento de publicidad'
+        );
+      }
+
       const planData = {
         ...data,
         planType: 'advertising' as const,
