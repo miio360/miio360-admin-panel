@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Category, Subcategory } from "@/shared/types";
 import { TableExpandableGlobal, TableExpandableColumn } from "@/shared/components/table-expandable-global";
 import { TableRow, TableCell } from "@/shared/components/ui/table";
@@ -62,11 +62,10 @@ const getColumns = (onOrderChange: (categoryId: string, newOrder: number) => Pro
     align: 'center',
     render: (category) => (
       <div className="flex justify-center">
-        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded ${
-          category.isActive 
-            ? "text-green-700 bg-green-50" 
+        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded ${category.isActive
+            ? "text-green-700 bg-green-50"
             : "text-gray-600 bg-gray-100"
-        }`}>
+          }`}>
           {category.isActive ? "✓ Activo" : "Inactivo"}
         </span>
       </div>
@@ -102,7 +101,7 @@ export function CategoryTableExpandable({
             Subcategoría
           </ButtonGlobal>
           <ButtonGlobal variant="ghost" size="sm" className="hover:bg-gray-100 h-8 w-8" onClick={() => navigate(`/categories/${category.id}/edit`)}>
-              <Edit className="h-3.5 w-3.5 text-gray-600" />
+            <Edit className="h-3.5 w-3.5 text-gray-600" />
           </ButtonGlobal>
           <ButtonGlobal
             variant="ghost"
@@ -115,13 +114,12 @@ export function CategoryTableExpandable({
         </>
       )}
       renderSubItem={(sub, parent, isEven) => (
-        <TableRow 
-          key={sub.id} 
-          className={`transition-colors border-b ${
-            isEven
+        <TableRow
+          key={sub.id}
+          className={`transition-colors border-b ${isEven
               ? 'bg-gray-100 hover:bg-gray-200'
               : 'bg-gray-50 hover:bg-gray-100'
-          }`}
+            }`}
         >
           <TableCell></TableCell>
           <TableCell className="w-[10%]"></TableCell>
@@ -141,11 +139,10 @@ export function CategoryTableExpandable({
           </TableCell>
           <TableCell className="text-center w-[10%]">
             <div className="flex justify-center">
-              <span className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded ${
-                sub.isActive 
-                  ? "text-green-700 bg-green-50" 
+              <span className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded ${sub.isActive
+                  ? "text-green-700 bg-green-50"
                   : "text-gray-600 bg-gray-100"
-              }`}>
+                }`}>
                 {sub.isActive ? "✓ Activo" : "Inactivo"}
               </span>
             </div>
