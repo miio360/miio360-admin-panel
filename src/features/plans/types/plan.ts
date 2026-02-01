@@ -2,7 +2,7 @@ import { BaseModel } from '@/shared/types/base';
 
 // ========== ENUMS ==========
 
-export type PlanType = 'video' | 'advertising' | 'lives';
+export type PlanType = 'video' | 'advertising' | 'lives' | 'product_order';
 
 export type AdvertisingType = 'store_banner' | 'product';
 
@@ -77,6 +77,7 @@ export const PLAN_TYPE_LABELS: Record<PlanType, string> = {
   video: 'Plan Video',
   advertising: 'Plan Publicidad',
   lives: 'Plan Lives',
+  product_order: 'Pedidos de Productos',
 };
 
 export const ADVERTISING_TYPE_LABELS: Record<AdvertisingType, string> = {

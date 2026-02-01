@@ -5,9 +5,9 @@ import { CalendarDays, Filter } from 'lucide-react';
 interface FilterGlobalProps {
   search: string;
   setSearch: (v: string) => void;
-  planFilter: string;
-  setPlanFilter: (v: string) => void;
-  planOptions: string[];
+  planFilter?: string;
+  setPlanFilter?: (v: string) => void;
+  planOptions?: string[];
   statusFilter: string;
   setStatusFilter: (v: string) => void;
   dateFrom?: string;
@@ -20,6 +20,7 @@ interface FilterGlobalProps {
   searchPlaceholder?: string;
   showStatusFilter?: boolean;
   customStatusOptions?: { value: string; label: string }[];
+  hidePlanFilter?: boolean;
 }
 
 export function FilterGlobal({
@@ -34,7 +35,8 @@ export function FilterGlobal({
   planLabel = 'Plan',
   searchPlaceholder = 'Buscar...',
   showStatusFilter = true,
-  customStatusOptions
+  customStatusOptions,
+  hidePlanFilter = false
 }: FilterGlobalProps) {
   return (
     <div className="flex flex-col md:flex-row md:items-end gap-6 w-full">
@@ -60,30 +62,32 @@ export function FilterGlobal({
           >
             {customStatusOptions
               ? customStatusOptions.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))
               : <>
-                  <option value="all">Todos</option>
-                  <option value="active">Activos</option>
-                  <option value="inactive">Inactivos</option>
-                </>
+                <option value="all">Todos</option>
+                <option value="active">Activos</option>
+                <option value="inactive">Inactivos</option>
+              </>
             }
           </SelectGlobal>
         </div>
       )}
-      <div className="min-w-[190px] w-full md:w-auto">
-        <label className="text-sm font-medium text-foreground mb-1 block">Filtrar por {planLabel}</label>
-        <SelectGlobal
-          value={planFilter}
-          onChange={e => setPlanFilter(e.target.value)}
-          className="w-full bg-background border border-primary/30 rounded-lg px-3 py-2 focus:border-primary focus:ring-2 focus:ring-primary/30 transition"
-        >
-          <option value="all">Todos</option>
-          {planOptions.map(plan => (
-            <option key={plan} value={plan}>{plan}</option>
-          ))}
-        </SelectGlobal>
-      </div>
+      {!hidePlanFilter && planFilter && setPlanFilter && planOptions && (
+        <div className="min-w-[190px] w-full md:w-auto">
+          <label className="text-sm font-medium text-foreground mb-1 block">Filtrar por {planLabel}</label>
+          <SelectGlobal
+            value={planFilter}
+            onChange={e => setPlanFilter(e.target.value)}
+            className="w-full bg-background border border-primary/30 rounded-lg px-3 py-2 focus:border-primary focus:ring-2 focus:ring-primary/30 transition"
+          >
+            <option value="all">Todos</option>
+            {planOptions.map(plan => (
+              <option key={plan} value={plan}>{plan}</option>
+            ))}
+          </SelectGlobal>
+        </div>
+      )}
       {showDate && setDateFrom && setDateTo && (
         <>
           <div className="flex flex-col gap-1 min-w-[180px]">

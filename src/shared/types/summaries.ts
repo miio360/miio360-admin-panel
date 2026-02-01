@@ -1,6 +1,12 @@
 import { CustomLocation, Rating } from '.';
 import type { PlanType, AdvertisingType } from '@/features/plans/types/plan';
 
+export interface ClientSummary {
+  id: string;
+  name: string;
+  phone?: string;
+}
+
 export interface SellerSummary {
   id: string;
   name: string;
