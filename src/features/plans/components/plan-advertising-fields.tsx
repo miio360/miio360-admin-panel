@@ -10,8 +10,10 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import type { Control, UseFormRegister, FieldErrors } from 'react-hook-form';
-import type { AdvertisingPlanFormData, AdvertisingType } from '../types/plan';
-import { ADVERTISING_TYPE_LABELS } from '../types/plan';
+import type { AdvertisingPlanFormData, AdvertisingType, AdvertisingPosition } from '../types/plan';
+import { ADVERTISING_TYPE_LABELS, ADVERTISING_POSITION_LABELS, ADVERTISING_POSITION_DESCRIPTIONS } from '../types/plan';
+import { getValidTypesForPosition, getValidPositionsForType } from '../utils/advertisingValidation';
+import { useMemo } from 'react';
 
 interface PlanAdvertisingFieldsProps {
   register: UseFormRegister<AdvertisingPlanFormData>;
@@ -21,6 +23,8 @@ interface PlanAdvertisingFieldsProps {
   onActiveChange: (value: boolean) => void;
   advertisingType: AdvertisingType;
   onAdvertisingTypeChange: (value: AdvertisingType) => void;
+  advertisingPosition: AdvertisingPosition;
+  onAdvertisingPositionChange: (value: AdvertisingPosition) => void;
 }
 
 export function PlanAdvertisingFields({
@@ -31,7 +35,35 @@ export function PlanAdvertisingFields({
   onActiveChange,
   advertisingType,
   onAdvertisingTypeChange,
+  advertisingPosition,
+  onAdvertisingPositionChange,
 }: PlanAdvertisingFieldsProps) {
+  const validTypes = useMemo(
+    () => getValidTypesForPosition(advertisingPosition),
+    [advertisingPosition]
+  );
+
+  const validPositions = useMemo(
+    () => getValidPositionsForType(advertisingType),
+    [advertisingType]
+  );
+
+  const handleTypeChange = (newType: AdvertisingType) => {
+    onAdvertisingTypeChange(newType);
+    const validPositionsForNewType = getValidPositionsForType(newType);
+    if (!validPositionsForNewType.includes(advertisingPosition)) {
+      onAdvertisingPositionChange(validPositionsForNewType[0]);
+    }
+  };
+
+  const handlePositionChange = (newPosition: AdvertisingPosition) => {
+    onAdvertisingPositionChange(newPosition);
+    const validTypesForNewPosition = getValidTypesForPosition(newPosition);
+    if (!validTypesForNewPosition.includes(advertisingType)) {
+      onAdvertisingTypeChange(validTypesForNewPosition[0]);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -99,19 +131,28 @@ export function PlanAdvertisingFields({
           </Label>
           <Select
             value={advertisingType}
-            onValueChange={(val) => onAdvertisingTypeChange(val as AdvertisingType)}
+            onValueChange={(val) => handleTypeChange(val as AdvertisingType)}
           >
             <SelectTrigger className="h-11 border border-gray-400/40">
               <SelectValue placeholder="Selecciona tipo" />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(ADVERTISING_TYPE_LABELS).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
+                <SelectItem 
+                  key={key} 
+                  value={key}
+                  disabled={!validTypes.includes(key as AdvertisingType)}
+                >
                   {label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-gray-500 mt-1">
+            {advertisingType === 'store_banner' 
+              ? 'Banner de toda la tienda' 
+              : 'Producto especifico'}
+          </p>
         </div>
 
         <div>
@@ -136,6 +177,39 @@ export function PlanAdvertisingFields({
             </p>
           )}
         </div>
+      </div>
+
+      <div>
+        <Label className="text-sm font-medium mb-1 block">
+          Posicionamiento en Home
+        </Label>
+        <Select
+          value={advertisingPosition}
+          onValueChange={(val) => handlePositionChange(val as AdvertisingPosition)}
+        >
+          <SelectTrigger className="h-11 border border-gray-400/40">
+            <SelectValue placeholder="Selecciona posicionamiento" />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(ADVERTISING_POSITION_LABELS).map(([key, label]) => (
+              <SelectItem 
+                key={key} 
+                value={key}
+                disabled={!validPositions.includes(key as AdvertisingPosition)}
+              >
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">{label}</span>
+                  <span className="text-xs text-gray-600">
+                    {ADVERTISING_POSITION_DESCRIPTIONS[key as AdvertisingPosition]}
+                  </span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-gray-500 mt-1">
+          Posicion donde aparecera la publicidad
+        </p>
       </div>
     </div>
   );

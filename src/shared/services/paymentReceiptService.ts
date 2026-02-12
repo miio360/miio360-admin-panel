@@ -157,6 +157,7 @@ export const paymentReceiptService = {
           planPrice: plan.price,
           approvedBy: userId,
           advertisingType: advertisingPlan.advertisingType,
+          advertisingPosition: advertisingPlan.advertisingPosition,
           daysEnabled: advertisingPlan.daysEnabled,
           bannerImage: receipt.bannerImage,
         });

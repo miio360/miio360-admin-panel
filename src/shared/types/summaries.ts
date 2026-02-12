@@ -1,5 +1,5 @@
 import { CustomLocation, Rating } from '.';
-import type { PlanType, AdvertisingType, VideoMode } from '@/features/plans/types/plan';
+import type { PlanType, AdvertisingType, AdvertisingPosition, VideoMode } from '@/features/plans/types/plan';
 
 export interface ClientSummary {
   id: string;
@@ -10,7 +10,9 @@ export interface ClientSummary {
 export interface SellerSummary {
   id: string;
   name: string;
+  storeName?: string;
   avatar?: string;
+  profileImage?: string;
   rating?: Rating;
   location?: CustomLocation;
   phone?: string;
@@ -43,6 +45,7 @@ export interface VideoPlanSummary extends BasePlanSummary {
 export interface AdvertisingPlanSummary extends BasePlanSummary {
   planType: 'advertising';
   advertisingType: AdvertisingType;
+  advertisingPosition: AdvertisingPosition;
   daysEnabled: number;
 }
 

@@ -1,7 +1,7 @@
 import { Badge } from '@/shared/components/ui/badge';
 import type { TableGlobalColumn } from '@/shared/components/table-global';
 import type { AdvertisingPlan } from '../types/plan';
-import { ADVERTISING_TYPE_LABELS } from '../types/plan';
+import { ADVERTISING_TYPE_LABELS, ADVERTISING_POSITION_LABELS } from '../types/plan';
 
 export function getAdvertisingPlanColumns(formatPrice: (price: number) => string): TableGlobalColumn<AdvertisingPlan>[] {
   return [
@@ -23,20 +23,30 @@ export function getAdvertisingPlanColumns(formatPrice: (price: number) => string
     },
     {
       key: 'advertisingType',
-      header: 'Tipo de Publicidad',
+      header: 'Tipo',
       align: 'center',
       render: (row) => (
-        <span className="font-medium text-foreground">
+        <span className="font-medium text-foreground text-sm">
           {ADVERTISING_TYPE_LABELS[row.advertisingType]}
         </span>
       ),
     },
     {
-      key: 'daysEnabled',
-      header: 'Dias Habilitados',
+      key: 'advertisingPosition',
+      header: 'Posicionamiento',
       align: 'center',
       render: (row) => (
-        <span className="text-foreground">{row.daysEnabled} dias</span>
+        <span className="font-medium text-foreground text-sm">
+          {ADVERTISING_POSITION_LABELS[row.advertisingPosition]}
+        </span>
+      ),
+    },
+    {
+      key: 'daysEnabled',
+      header: 'Dias',
+      align: 'center',
+      render: (row) => (
+        <span className="text-foreground">{row.daysEnabled}</span>
       ),
     },
     {
