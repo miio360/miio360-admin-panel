@@ -14,6 +14,9 @@ import {
   Radio,
   ChevronDown,
   ChevronRight,
+  Receipt,
+  QrCode,
+  ShoppingBag,
 } from "lucide-react";
 
 interface NavItem {
@@ -38,6 +41,9 @@ const navItems: NavItem[] = [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
   { title: "Categorias", href: "/categories", icon: FolderTree },
   { title: "Gestionar Usuarios", href: "/users", icon: Users },
+  { title: "Comprobantes de Pago", href: "/payment-receipts", icon: Receipt },
+  { title: "QR de Pago", href: "/payment-qr", icon: QrCode },
+  { title: "Pedidos", href: "/orders", icon: ShoppingBag },
 ];
 
 const navGroups: NavGroup[] = [

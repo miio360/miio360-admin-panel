@@ -3,7 +3,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import { ButtonGlobal } from '@/shared/components/button-global';
 import { Edit, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import type { AdvertisingPlan } from '../../types/plan';
-import { ADVERTISING_TYPE_LABELS } from '../../types/plan';
+import { ADVERTISING_TYPE_LABELS, ADVERTISING_POSITION_LABELS } from '../../types/plan';
 
 function formatPrice(price: number): string {
   return `BOB ${price.toFixed(2)}`;
@@ -34,12 +34,16 @@ export function PlanCardAdvertising({ plan, onEdit, onToggleActive, onDelete }: 
       </p>
       <div className="space-y-2 mb-4">
         <div className="flex justify-between text-sm">
-          <span className="text-foreground/60">Tipo de Publicidad:</span>
+          <span className="text-foreground/60">Tipo:</span>
           <span className="font-medium text-foreground">{ADVERTISING_TYPE_LABELS[plan.advertisingType]}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-foreground/60">Dias Habilitados:</span>
-          <span className="font-medium text-foreground">{plan.daysEnabled} dias</span>
+          <span className="text-foreground/60">Posicionamiento:</span>
+          <span className="font-medium text-foreground">{ADVERTISING_POSITION_LABELS[plan.advertisingPosition]}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-foreground/60">Dias:</span>
+          <span className="font-medium text-foreground">{plan.daysEnabled}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-foreground/60">Precio:</span>

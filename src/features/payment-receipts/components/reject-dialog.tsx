@@ -11,6 +11,7 @@ import { ButtonGlobal } from '@/shared/components/button-global';
 import { SelectGlobal } from '@/shared/components/select-global';
 import type { RejectionReason } from '@/shared/types/payment';
 import { REJECTION_REASON_LABELS } from '@/shared/types/payment';
+import { Loader2 } from 'lucide-react';
 
 interface RejectDialogProps {
   open: boolean;
@@ -86,7 +87,9 @@ export function RejectDialog({ open, onOpenChange, onConfirm, isLoading }: Rejec
             onClick={handleConfirm}
             disabled={(reason === 'other' && !comment.trim()) || isLoading}
           >
-            {isLoading ? 'Rechazando...' : 'Rechazar'}
+            {isLoading ? (
+            <><Loader2 className="w-4 h-4 animate-spin mr-1.5" />Rechazando...</>
+          ) : 'Rechazar'}
           </ButtonGlobal>
         </DialogFooter>
       </DialogContent>

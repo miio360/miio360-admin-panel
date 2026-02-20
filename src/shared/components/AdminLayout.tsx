@@ -1,8 +1,11 @@
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./layout/Sidebar";
 import { MobileHeader } from "./layout/MobileHeader";
+import { usePushNotifications } from "../hooks/usePushNotifications";
 
 export const AdminLayout = () => {
+  usePushNotifications();
+
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <div className="hidden lg:block">

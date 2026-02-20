@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Receipt,
   QrCode,
+  ShoppingBag,
 } from "lucide-react";
 
 interface NavItem {
@@ -67,6 +68,12 @@ const navItems: NavItem[] = [
     title: "QR de Pago",
     href: "/payment-qr",
     icon: QrCode,
+    section: "GENERAL",
+  },
+  {
+    title: "Pedidos",
+    href: "/orders",
+    icon: ShoppingBag,
     section: "GENERAL",
   },
 ];

@@ -1,23 +1,38 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Category, Subcategory } from "@/shared/types";
 import { TableExpandableGlobal, TableExpandableColumn } from "@/shared/components/table-expandable-global";
 import { TableRow, TableCell } from "@/shared/components/ui/table";
 import { ButtonGlobal } from "@/shared/components/button-global";
 import { Edit, Trash2, Plus } from "lucide-react";
 import { EmptyStateGlobal } from "@/shared/components/empty-state-global";
+import { CategoryOrderInput } from "./category-order-input";
 
 interface CategoryTableExpandableProps {
   categories: Category[];
   subcategories: Record<string, Subcategory[]>;
   onDelete: (id: string, type: "category" | "subcategory") => void;
   onCreateSubcategory: (categoryId: string) => void;
+  onOrderChange: (categoryId: string, newOrder: number) => Promise<void>;
 }
 
-const columns: TableExpandableColumn<Category>[] = [
+const getColumns = (onOrderChange: (categoryId: string, newOrder: number) => Promise<void>): TableExpandableColumn<Category>[] => [
+  {
+    key: 'order',
+    header: 'Orden',
+    width: 'w-[10%]',
+    align: 'center',
+    render: (category) => (
+      <CategoryOrderInput
+        currentOrder={category.order ?? 999}
+        categoryId={category.id}
+        onOrderChange={onOrderChange}
+      />
+    ),
+  },
   {
     key: 'name',
     header: 'Nombre',
-    width: 'w-[20%]',
+    width: 'w-[18%]',
     render: (category) => (
       <div className="flex items-center gap-2">
         <span className="font-semibold text-gray-900">{category.name}</span>
@@ -27,13 +42,13 @@ const columns: TableExpandableColumn<Category>[] = [
   {
     key: 'slug',
     header: 'Slug',
-    width: 'w-[18%]',
+    width: 'w-[16%]',
     className: 'text-sm text-gray-500 font-mono',
   },
   {
     key: 'description',
     header: 'Descripción',
-    width: 'w-[32%]',
+    width: 'w-[28%]',
     render: (category) => (
       <div className="truncate text-sm text-gray-600">
         {category.description || <span className="italic text-gray-400">Sin descripción</span>}
@@ -43,15 +58,14 @@ const columns: TableExpandableColumn<Category>[] = [
   {
     key: 'isActive',
     header: 'Estado',
-    width: 'w-[12%]',
+    width: 'w-[10%]',
     align: 'center',
     render: (category) => (
       <div className="flex justify-center">
-        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded ${
-          category.isActive 
-            ? "text-green-700 bg-green-50" 
+        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded ${category.isActive
+            ? "text-green-700 bg-green-50"
             : "text-gray-600 bg-gray-100"
-        }`}>
+          }`}>
           {category.isActive ? "✓ Activo" : "Inactivo"}
         </span>
       </div>
@@ -64,13 +78,14 @@ export function CategoryTableExpandable({
   subcategories,
   onDelete,
   onCreateSubcategory,
+  onOrderChange,
 }: CategoryTableExpandableProps) {
   const navigate = useNavigate();
 
   return (
     <TableExpandableGlobal<Category, Subcategory>
       data={categories}
-      columns={columns}
+      columns={getColumns(onOrderChange)}
       getRowId={(category) => category.id}
       getSubItems={(category) => subcategories[category.id]}
       actions={(category) => (
@@ -86,7 +101,7 @@ export function CategoryTableExpandable({
             Subcategoría
           </ButtonGlobal>
           <ButtonGlobal variant="ghost" size="sm" className="hover:bg-gray-100 h-8 w-8" onClick={() => navigate(`/categories/${category.id}/edit`)}>
-              <Edit className="h-3.5 w-3.5 text-gray-600" />
+            <Edit className="h-3.5 w-3.5 text-gray-600" />
           </ButtonGlobal>
           <ButtonGlobal
             variant="ghost"
@@ -99,36 +114,35 @@ export function CategoryTableExpandable({
         </>
       )}
       renderSubItem={(sub, parent, isEven) => (
-        <TableRow 
-          key={sub.id} 
-          className={`transition-colors border-b ${
-            isEven
+        <TableRow
+          key={sub.id}
+          className={`transition-colors border-b ${isEven
               ? 'bg-gray-100 hover:bg-gray-200'
               : 'bg-gray-50 hover:bg-gray-100'
-          }`}
+            }`}
         >
           <TableCell></TableCell>
-          <TableCell className="pl-12 w-[20%]">
+          <TableCell className="w-[10%]"></TableCell>
+          <TableCell className="pl-12 w-[18%]">
             <div className="flex items-center gap-2 text-sm">
               <span className="text-gray-400">└─</span>
               <span className="text-gray-700">{sub.name}</span>
             </div>
           </TableCell>
-          <TableCell className="text-sm text-gray-500 font-mono w-[18%]">
+          <TableCell className="text-sm text-gray-500 font-mono w-[16%]">
             {sub.slug}
           </TableCell>
-          <TableCell className="text-sm text-gray-600 w-[32%]">
+          <TableCell className="text-sm text-gray-600 w-[28%]">
             <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-medium border border-emerald-200">
               Subcategoría
             </span>
           </TableCell>
-          <TableCell className="text-center w-[12%]">
+          <TableCell className="text-center w-[10%]">
             <div className="flex justify-center">
-              <span className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded ${
-                sub.isActive 
-                  ? "text-green-700 bg-green-50" 
+              <span className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded ${sub.isActive
+                  ? "text-green-700 bg-green-50"
                   : "text-gray-600 bg-gray-100"
-              }`}>
+                }`}>
                 {sub.isActive ? "✓ Activo" : "Inactivo"}
               </span>
             </div>

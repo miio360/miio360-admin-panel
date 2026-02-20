@@ -30,6 +30,7 @@ import type {
   AdvertisingPlanFormData,
   LivesPlanFormData,
 } from '../types/plan';
+import { isValidAdvertisingCombination } from '../utils/advertisingValidation';
 
 const COLLECTION_NAME = 'plans';
 const PAGE_SIZE = 6;
@@ -155,14 +156,34 @@ export const planService = {
     userId: string
   ): Promise<VideoPlan> {
     try {
-      const planData = {
-        ...data,
+      // Construir datos base
+      const basePlanData = {
+        title: data.title,
+        description: data.description,
+        price: data.price,
+        isActive: data.isActive,
+        videoMode: data.videoMode,
         planType: 'video' as const,
-        isDeleted: false,
         deletedAt: null,
         deletedBy: null,
         ...createBaseModel(userId),
       };
+
+      // Agregar campos segun modalidad (evitamos undefined que Firestore rechaza)
+      let planData;
+      if (data.videoMode === 'video_count') {
+        planData = {
+          ...basePlanData,
+          videoCount: data.videoCount ?? 0,
+          maxDurationPerVideoSeconds: data.maxDurationPerVideoSeconds ?? 0,
+        };
+      } else {
+        planData = {
+          ...basePlanData,
+          totalDurationSeconds: data.totalDurationSeconds ?? 0,
+        };
+      }
+
       const docRef = await addDoc(collection(db, COLLECTION_NAME), planData);
       return { id: docRef.id, ...planData } as unknown as VideoPlan;
     } catch (error) {
@@ -176,10 +197,15 @@ export const planService = {
     userId: string
   ): Promise<AdvertisingPlan> {
     try {
+      if (!isValidAdvertisingCombination(data.advertisingType, data.advertisingPosition)) {
+        throw new Error(
+          'Combinacion invalida de tipo y posicionamiento de publicidad'
+        );
+      }
+
       const planData = {
         ...data,
         planType: 'advertising' as const,
-        isDeleted: false,
         deletedAt: null,
         deletedBy: null,
         ...createBaseModel(userId),
@@ -200,7 +226,6 @@ export const planService = {
       const planData = {
         ...data,
         planType: 'lives' as const,
-        isDeleted: false,
         deletedAt: null,
         deletedBy: null,
         ...createBaseModel(userId),
@@ -213,12 +238,16 @@ export const planService = {
     }
   },
 
-  async update(id: string, data: Partial<Plan>): Promise<void> {
+  async update(id: string, data: Partial<Plan>, userId?: string): Promise<void> {
     try {
       const docRef = doc(db, COLLECTION_NAME, id);
+      // Filtrar propiedades undefined para evitar error de Firestore
+      const cleanData = Object.fromEntries(
+        Object.entries(data).filter(([, value]) => value !== undefined)
+      );
       await updateDoc(docRef, {
-        ...data,
-        ...updateModelTimestamp(),
+        ...cleanData,
+        ...(userId ? updateModelTimestamp(userId) : {}),
       });
     } catch (error) {
       console.error('Error updating plan:', error);
@@ -226,12 +255,57 @@ export const planService = {
     }
   },
 
-  async toggleActive(id: string, isActive: boolean): Promise<void> {
+  async updateVideoPlan(
+    id: string,
+    data: VideoPlanFormData,
+    userId: string
+  ): Promise<void> {
+    try {
+      const docRef = doc(db, COLLECTION_NAME, id);
+      
+      // Construir datos base
+      const baseUpdateData = {
+        title: data.title,
+        description: data.description,
+        price: data.price,
+        isActive: data.isActive,
+        videoMode: data.videoMode,
+        ...updateModelTimestamp(userId),
+      };
+
+      // Agregar campos segun modalidad
+      let updateData;
+      if (data.videoMode === 'video_count') {
+        updateData = {
+          ...baseUpdateData,
+          videoCount: data.videoCount ?? 0,
+          maxDurationPerVideoSeconds: data.maxDurationPerVideoSeconds ?? 0,
+          // Limpiar campos de la otra modalidad
+          totalDurationSeconds: null,
+        };
+      } else {
+        updateData = {
+          ...baseUpdateData,
+          totalDurationSeconds: data.totalDurationSeconds ?? 0,
+          // Limpiar campos de la otra modalidad
+          videoCount: null,
+          maxDurationPerVideoSeconds: null,
+        };
+      }
+
+      await updateDoc(docRef, updateData);
+    } catch (error) {
+      console.error('Error updating video plan:', error);
+      throw new Error('No se pudo actualizar el plan de video');
+    }
+  },
+
+  async toggleActive(id: string, isActive: boolean, userId?: string): Promise<void> {
     try {
       const docRef = doc(db, COLLECTION_NAME, id);
       await updateDoc(docRef, {
         isActive,
-        ...updateModelTimestamp(),
+        ...(userId ? updateModelTimestamp(userId) : {}),
       });
     } catch (error) {
       console.error('Error toggling plan status:', error);
@@ -244,7 +318,7 @@ export const planService = {
       const docRef = doc(db, COLLECTION_NAME, id);
       await updateDoc(docRef, {
         ...softDeleteModel(userId),
-        ...updateModelTimestamp(),
+        ...updateModelTimestamp(userId),
       });
     } catch (error) {
       console.error('Error deleting plan:', error);

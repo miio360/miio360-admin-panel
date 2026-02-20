@@ -83,9 +83,11 @@ export function QRDialog({
                 value={planType}
                 onChange={(e) => setPlanType(e.target.value as PlanType)}
               >
-                <option value="video">{PLAN_TYPE_LABELS.video}</option>
-                <option value="advertising">{PLAN_TYPE_LABELS.advertising}</option>
-                <option value="lives">{PLAN_TYPE_LABELS.lives}</option>
+                {Object.entries(PLAN_TYPE_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
               </SelectGlobal>
             </div>
           )}

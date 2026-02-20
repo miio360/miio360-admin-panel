@@ -4,6 +4,7 @@ import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 import { getFunctions } from "firebase/functions";
 import { getStorage } from "firebase/storage";
+import { getMessaging, isSupported } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -22,3 +23,13 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const functions = getFunctions(app, 'southamerica-east1');
 export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+
+/**
+ * Firebase Cloud Messaging instance.
+ * Returns null on browsers that don't support FCM (e.g. Firefox in some configs).
+ */
+export const getFirebaseMessaging = async () => {
+  const supported = await isSupported();
+  if (!supported) return null;
+  return getMessaging(app);
+};
