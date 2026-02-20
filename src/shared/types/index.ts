@@ -5,3 +5,4 @@ export * from './user';
 export * from './payment';
 export * from './summaries';
 export * from './active-plan';
+export * from './order';
