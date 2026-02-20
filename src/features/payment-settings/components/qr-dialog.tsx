@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,14 @@ export function QRDialog({
   const [planType, setPlanType] = useState<PlanType>(editingSetting?.planType || 'video');
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setPlanType(editingSetting?.planType || 'video');
+      setFile(null);
+      setPreviewUrl(null);
+    }
+  }, [open, editingSetting]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];

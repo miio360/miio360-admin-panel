@@ -94,8 +94,8 @@ export function PaymentQRPage() {
       ) : (
         <QRTable
           settings={paginatedSettings}
-          onEdit={setEditingSetting}
-          onDelete={setDeletingSetting}
+          onEdit={(setting) => { setEditingSetting(setting); setDialogOpen(true); }}
+          onDelete={(setting) => { setDeletingSetting(setting); setDeleteDialogOpen(true); }}
           onDisable={async (setting) => {
             if (!user?.id) return;
             try {
