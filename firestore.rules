@@ -23,5 +23,13 @@ service cloud.firestore {
       allow read: if true;
       allow write: if true;
     }
+
+    // Video views — one doc per user, create-only for deduplication
+    match /videos/{videoId}/views/{userId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+    }
   }
 }
