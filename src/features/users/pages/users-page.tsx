@@ -3,7 +3,6 @@ import { ButtonGlobal } from '@/shared/components/button-global';
 import { useNavigate } from 'react-router-dom';
 import { UserTable } from '../components/user-table';
 import { useUsers } from '../hooks/useUsers';
-import { UserStats } from '../components/user-stats';
 import { PageHeaderGlobal } from '@/shared/components/page-header-global';
 import { LoadingGlobal } from '@/shared/components/loading-global';
 import { ErrorGlobal } from '@/shared/components/error-global';
@@ -12,7 +11,7 @@ import { Plus } from 'lucide-react';
 export function UsersPage() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(6);
-  const { data, total, isLoading, stats, error, refetch } = useUsers(page - 1, pageSize);
+  const { data, total, isLoading, error, refetch } = useUsers(page - 1, pageSize);
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -42,7 +41,6 @@ export function UsersPage() {
           </div>
         }
       />
-      <UserStats {...stats} />
       <UserTable
         data={data}
         loading={isLoading}

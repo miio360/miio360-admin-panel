@@ -76,7 +76,7 @@ export const MobileHeader = () => {
       <header className="lg:hidden flex items-center justify-between h-14 px-4 border-b border-white/10 bg-gradient-to-b from-slate-900 to-slate-800 z-30 relative">
         <div className="flex items-center gap-2">
           <img src="/miio.jpeg" alt="Miio Logo" className="w-8 h-8 rounded-md object-cover" onClick={() => navigate(`/`)}/>
-          <span className="text-lg font-bold text-white tracking-tight">Miio</span>
+          <span className="text-lg font-bold text-white tracking-tight">M!!o Market</span>
         </div>
         <ButtonGlobal
           aria-label="Abrir menú"

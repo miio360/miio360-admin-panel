@@ -26,15 +26,17 @@ export function useCategoriesWithSubcategories(): UseCategoriesWithSubcategories
       try {
         const cats = await categoryService.getAll();
         setCategories(cats);
-        // Para cada categoría, obtener subcolección "subcategories"
+        // Obtener todas las subcolecciones en paralelo (evita N+1 secuencial)
+        const subSnapshots = await Promise.all(
+          cats.map((cat) => getDocs(collection(db, "categories", cat.id, "subcategories")))
+        );
         const subsByCat: Record<string, Subcategory[]> = {};
-        for (const cat of cats) {
-          const subSnap = await getDocs(collection(db, "categories", cat.id, "subcategories"));
-          subsByCat[cat.id] = subSnap.docs.map((doc) => ({
+        cats.forEach((cat, i) => {
+          subsByCat[cat.id] = subSnapshots[i].docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
           })) as Subcategory[];
-        }
+        });
         setSubcategories(subsByCat);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Error desconocido");

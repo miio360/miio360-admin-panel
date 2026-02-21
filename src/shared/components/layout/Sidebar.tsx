@@ -144,7 +144,7 @@ export const Sidebar = () => {
           className="w-8 h-8 rounded-md object-cover"
           />
         </div>
-        <span className="text-lg font-bold text-white tracking-tight">Miio</span>
+        <span className="text-lg font-bold text-white tracking-tight">M!!o Market</span>
       </div>
 
       <ScrollArea className="flex-1 py-4">
