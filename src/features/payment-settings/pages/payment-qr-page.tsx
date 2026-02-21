@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { usePaymentSettings } from '../hooks/usePaymentSettings';
 import { paymentSettingsService } from '@/shared/services/paymentSettingsService';
 import { useAuth } from '@/shared/hooks/useAuth';
@@ -20,7 +20,8 @@ import type { PaymentSettings } from '@/shared/types/payment';
 export function PaymentQRPage() {
   const { user } = useAuth();
   const { settings, isLoading, error, refetch } = usePaymentSettings();
-  const [activeQRs, setActiveQRs] = useState<PaymentSettings[]>([]);
+  // Derivado directamente de settings — sin fetch adicional
+  const activeQRs = settings.filter((s) => s.isActive);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingSetting, setEditingSetting] = useState<PaymentSettings | null>(null);
@@ -35,20 +36,6 @@ export function PaymentQRPage() {
     currentPage, setCurrentPage,
     paginatedSettings, totalPages, filteredSettings
   } = useQRTableFilters(settings, 6);
-
-  useEffect(() => {
-    const loadActiveQRs = async () => {
-      try {
-        const actives = await paymentSettingsService.getActiveQRs();
-        setActiveQRs(actives);
-      } catch (err) {
-        console.error('Error loading active QRs:', err);
-      }
-    };
-    if (!isLoading) {
-      loadActiveQRs();
-    }
-  }, [settings, isLoading]);
 
   if (isLoading) return <LoadingGlobal message="Cargando configuración de QR..." />;
   if (error) return <ErrorGlobal message={error} onRetry={refetch} />;

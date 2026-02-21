@@ -174,14 +174,14 @@ export function PlansReceiptsTab() {
             <div className="space-y-4">
 
                 {/* ── Filter tabs + pagination ─────────────────────────────── */}
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <div className="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="grid grid-cols-4 sm:inline-flex sm:w-auto w-full items-center gap-1 bg-slate-100 p-1 rounded-lg">
                         {STATUS_TABS.map(({ value, label }) => (
                             <button
                                 key={value}
                                 onClick={() => handleStatusTab(value)}
                                 className={cn(
-                                    'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150',
+                                    'px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all duration-150 text-center',
                                     activeTab === value
                                         ? 'bg-white text-slate-900 shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700'
@@ -192,7 +192,7 @@ export function PlansReceiptsTab() {
                         ))}
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 self-end sm:self-auto">
                         <Button variant="outline" size="sm" onClick={prevPage} disabled={!hasPrevPage || isLoading} className="h-8 w-8 p-0">
                             <ChevronLeft className="w-4 h-4" />
                         </Button>
