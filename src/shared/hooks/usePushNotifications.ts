@@ -80,7 +80,7 @@ export function usePushNotifications(): void {
     }
 
     // ── Logged out: remove the stored token from Firestore ──────────────────
-    if (!user?.uid) {
+    if (!user?.id) {
       if (tokenRef.current && userIdRef.current) {
         removePushToken(userIdRef.current, tokenRef.current).catch(() => {});
         tokenRef.current = null;
@@ -89,7 +89,7 @@ export function usePushNotifications(): void {
       return;
     }
 
-    const userId = user.uid;
+    const userId = user.id;
     userIdRef.current = userId;
     let cancelled = false;
 
@@ -145,5 +145,5 @@ export function usePushNotifications(): void {
         unsubForegroundRef.current = null;
       }
     };
-  }, [user?.uid]);
+  }, [user?.id]);
 }

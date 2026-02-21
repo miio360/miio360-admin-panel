@@ -26,25 +26,77 @@ export function getNotificationPermission(): NotificationPermission | 'unsupport
 
 // ─── FCM token ─────────────────────────────────────────────────────────────────
 
+const FCM_SW_URL = '/firebase-messaging-sw.js';
+
 /**
- * Waits for the firebase-messaging-sw.js service worker to be registered
- * and returns its registration. FCM will use this SW for background messages.
+ * Waits for the firebase-messaging-sw.js SW specifically to become active.
+ * Unlike `navigator.serviceWorker.ready` (which returns ANY active SW),
+ * this resolves only once our FCM SW controls the page.
  */
+async function waitForSwActive(registration: ServiceWorkerRegistration): Promise<void> {
+  if (registration.active) return;
+
+  return new Promise((resolve, reject) => {
+    const sw = registration.installing ?? registration.waiting;
+    if (!sw) {
+      reject(new Error('[push] SW has no installing/waiting/active state'));
+      return;
+    }
+
+    const timeout = setTimeout(() => reject(new Error('[push] SW activation timed out')), 10_000);
+
+    sw.addEventListener('statechange', () => {
+      console.log('[push] SW state →', sw.state);
+      if (sw.state === 'activated') {
+        clearTimeout(timeout);
+        resolve();
+      } else if (sw.state === 'redundant') {
+        clearTimeout(timeout);
+        reject(new Error('[push] SW became redundant before activating'));
+      }
+    });
+  });
+}
+
 async function getFcmServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | undefined> {
-  if (!('serviceWorker' in navigator)) return undefined;
+  if (!('serviceWorker' in navigator)) {
+    console.warn('[push] serviceWorker API not available.');
+    return undefined;
+  }
+
+  // Log all currently registered SWs for diagnosis
+  const existing = await navigator.serviceWorker.getRegistrations();
+  console.log('[push] Registered SWs:', existing.map((r) => `${r.scope} [${r.active?.scriptURL ?? 'no active'}]`));
 
   try {
-    // Register (or retrieve if already registered) the FCM-specific SW
-    const registration = await navigator.serviceWorker.register(
-      '/firebase-messaging-sw.js',
-      { scope: '/' },
-    );
-    // Wait until the SW is active
-    await navigator.serviceWorker.ready;
+    console.log('[push] Registering firebase-messaging-sw.js …');
+    const registration = await navigator.serviceWorker.register(FCM_SW_URL, { scope: '/' });
+    console.log('[push] SW registered. active?', !!registration.active, '| installing?', !!registration.installing, '| waiting?', !!registration.waiting);
+
+    await waitForSwActive(registration);
+    console.log('[push] firebase-messaging-sw.js is active ✓');
     return registration;
   } catch (err) {
-    console.warn('[push] Could not register firebase-messaging-sw.js:', err);
+    console.error('[push] Failed to register/activate firebase-messaging-sw.js:', err);
     return undefined;
+  }
+}
+
+/**
+ * Deletes any existing push subscription on a registration so FCM can create a fresh one.
+ */
+async function clearPushSubscription(registration: ServiceWorkerRegistration): Promise<void> {
+  try {
+    const sub = await registration.pushManager.getSubscription();
+    if (sub) {
+      console.log('[push] Clearing stale push subscription …');
+      await sub.unsubscribe();
+      console.log('[push] Stale subscription cleared ✓');
+    } else {
+      console.log('[push] No existing push subscription to clear.');
+    }
+  } catch (err) {
+    console.warn('[push] Could not clear push subscription:', err);
   }
 }
 
@@ -53,24 +105,30 @@ async function getFcmServiceWorkerRegistration(): Promise<ServiceWorkerRegistrat
  * Requires notification permission to have been granted first.
  */
 export async function getFcmToken(): Promise<string | null> {
+  console.log('[push] getFcmToken() called. VAPID key present?', !!VAPID_KEY);
+
   if (!VAPID_KEY) {
     console.error('[push] VITE_FIREBASE_VAPID_KEY is not set.');
     return null;
   }
 
   const messaging = await getFirebaseMessaging();
-  if (!messaging) {
-    console.warn('[push] Firebase Messaging is not supported in this browser.');
-    return null;
-  }
+  console.log('[push] Firebase Messaging supported?', !!messaging);
+  if (!messaging) return null;
 
-  const serviceWorkerRegistration = await getFcmServiceWorkerRegistration();
+  const swReg = await getFcmServiceWorkerRegistration();
+  console.log('[push] SW registration obtained?', !!swReg);
+
+  // On first attempt, clear any stale push subscription to avoid AbortError
+  if (swReg) await clearPushSubscription(swReg);
 
   try {
+    console.log('[push] Calling getToken() …');
     const token = await getToken(messaging as Messaging, {
       vapidKey: VAPID_KEY,
-      serviceWorkerRegistration,
+      serviceWorkerRegistration: swReg,
     });
+    console.log('[push] Token obtained ✓', token ? token.slice(0, 20) + '…' : '(empty)');
     return token ?? null;
   } catch (err) {
     console.error('[push] Failed to get FCM token:', err);

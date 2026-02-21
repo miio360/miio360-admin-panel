@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "sonner";
 import { AuthProvider } from "./shared/hooks/useAuth";
 import { ModalProvider } from "./shared/hooks/useModal";
 import { ModalGlobal } from "./shared/components/modal-global";
@@ -24,6 +25,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <ModalProvider>
+          <Toaster position="top-right" richColors />
           <ModalGlobal />
           <Routes>
             <Route path="/login" element={<LoginPage />} />
