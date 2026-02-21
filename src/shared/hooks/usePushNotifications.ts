@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { Timestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { useAuth } from './useAuth';
 import { db } from '../services/firebase';
@@ -11,72 +10,104 @@ import {
   onForegroundMessage,
 } from '../services/push-notification-service';
 
-/**
- * Saves a web FCM token to the user's `pushTokens` array in Firestore.
- * Avoids duplicates by not inserting if the token already exists.
- */
-async function savePushToken(userId: string, token: string): Promise<void> {
-  const userRef = doc(db, 'users', userId);
-  const now = Timestamp.now();
-  await updateDoc(userRef, {
-    pushTokens: arrayUnion({
-      token,
-      platform: 'web',
-      createdAt: now,
-      updatedAt: now,
-    }),
-  });
+interface StoredPushToken {
+  token: string;
+  platform: 'android' | 'ios' | 'web';
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 }
 
 /**
- * Removes a web FCM token from the user's `pushTokens` array in Firestore.
- * Matches on the `token` string value.
+ * Saves (or refreshes) the web FCM token in the user's `pushTokens` array.
+ * Reads the current array, removes any existing web token with the same value
+ * to prevent duplicates caused by Timestamp drift, then appends the fresh entry.
+ */
+async function savePushToken(userId: string, token: string): Promise<void> {
+  const userRef = doc(db, 'users', userId);
+  const snap = await getDoc(userRef);
+  if (!snap.exists()) return;
+
+  const current: StoredPushToken[] = (snap.data()?.pushTokens ?? []) as StoredPushToken[];
+  // Strip any stale web entries for this exact token string
+  const without = current.filter((t) => !(t.platform === 'web' && t.token === token));
+  const now = Timestamp.now();
+  without.push({ token, platform: 'web', createdAt: now, updatedAt: now });
+
+  await updateDoc(userRef, { pushTokens: without });
+}
+
+/**
+ * Removes a web FCM token from Firestore by reading the array and filtering it.
+ * `arrayRemove` cannot be used here because it requires an exact object match
+ * including Timestamps that are unknown at removal time.
  */
 async function removePushToken(userId: string, token: string): Promise<void> {
-  // arrayRemove requires the exact object. Since we can't know createdAt,
-  // we query first — here we do a best-effort approach: rely on the
-  // notification-sender cleanup on next send, and only call deleteToken() locally.
-  // The server-side notification-sender already removes stale tokens automatically.
   try {
     const userRef = doc(db, 'users', userId);
-    // We stored with specific Timestamps so we cannot reliably use arrayRemove.
-    // Instead we mark the token for removal via a best-effort approach:
-    // The FCM service worker is unregistered, so sends will fail and the
-    // server-side cleanup in notification-sender.ts will remove invalid tokens.
-    console.info('[push] Token will be cleaned up server-side on next send:', token.slice(0, 20));
-    // Attempt removal anyway (works when the exact object can be reconstructed)
-    await updateDoc(userRef, {
-      pushTokens: arrayRemove({ token, platform: 'web' }),
-    });
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return;
+
+    const current: StoredPushToken[] = (snap.data()?.pushTokens ?? []) as StoredPushToken[];
+    const filtered = current.filter((t) => !(t.platform === 'web' && t.token === token));
+    await updateDoc(userRef, { pushTokens: filtered });
   } catch {
-    // Non-critical — server side cleanup handles stale tokens
+    // Non-critical — stale tokens are cleaned server-side after a failed send
   }
 }
 
 /**
- * Initialises push notifications for the currently authenticated admin user.
- * - Requests browser notification permission on first call.
- * - Registers the FCM service worker and obtains a device token.
- * - Persists the token to Firestore (`users/{uid}.pushTokens`).
- * - Shows foreground notifications as toasts while the tab is open.
- * - Cleans up on logout / unmount.
+ * Manages the full web push notification lifecycle for the authenticated admin:
+ * - Asks for browser notification permission on first login.
+ * - Registers the FCM service worker and stores the device token in Firestore.
+ * - Listens for foreground messages and shows them as toasts.
+ * - Removes the token from Firestore only when the user explicitly logs out.
+ *   (The token is intentionally kept alive across page navigation and hot-reload
+ *    so background notifications continue working while the tab is closed.)
  */
 export function usePushNotifications(): void {
   const { user } = useAuth();
-  // Keep a ref to the current token so we can remove it on cleanup
+
   const tokenRef = useRef<string | null>(null);
-  // Keep unsubscribe fn for foreground messages
+  // Tracks the userId that owns the current token so logout cleanup works correctly
+  const userIdRef = useRef<string | null>(null);
   const unsubForegroundRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    if (!user?.uid) return;
+    // Always cancel any active foreground subscription first
+    if (unsubForegroundRef.current) {
+      unsubForegroundRef.current();
+      unsubForegroundRef.current = null;
+    }
+
+    // ── Logged out: remove the stored token from Firestore ──────────────────
+    if (!user?.uid) {
+      if (tokenRef.current && userIdRef.current) {
+        removePushToken(userIdRef.current, tokenRef.current).catch(() => {});
+        tokenRef.current = null;
+      }
+      userIdRef.current = null;
+      return;
+    }
 
     const userId = user.uid;
+    userIdRef.current = userId;
     let cancelled = false;
 
     async function init() {
-      // Skip if already denied — don't pester the user each render
-      if (getNotificationPermission() === 'denied') return;
+      const permission = getNotificationPermission();
+
+      if (permission === 'denied') {
+        console.warn('[push] Notification permission denied — cannot register push token.');
+        return;
+      }
+
+      // Prompt the user with a friendly toast if they haven't decided yet
+      if (permission === 'default') {
+        toast.info('Activa las notificaciones', {
+          description: 'Permite las notificaciones para recibir alertas de comprobantes en tiempo real.',
+          duration: 8000,
+        });
+      }
 
       const granted = await requestNotificationPermission();
       if (!granted || cancelled) return;
@@ -84,44 +115,34 @@ export function usePushNotifications(): void {
       const token = await getFcmToken();
       if (!token || cancelled) return;
 
-      tokenRef.current = token;
-
-      try {
-        await savePushToken(userId, token);
-      } catch (err) {
-        console.warn('[push] Could not save push token:', err);
+      // Skip the Firestore write if the token hasn't changed in this session
+      if (tokenRef.current !== token) {
+        tokenRef.current = token;
+        savePushToken(userId, token).catch((err) =>
+          console.warn('[push] Could not save push token:', err)
+        );
       }
 
-      // Subscribe to foreground messages and show as toasts
       const unsub = await onForegroundMessage((payload) => {
         const title = payload.notification?.title ?? 'Nueva notificación';
         const body = payload.notification?.body;
         toast.info(title, { description: body });
       });
 
-      if (cancelled) {
-        unsub();
-        return;
-      }
-
+      if (cancelled) { unsub(); return; }
       unsubForegroundRef.current = unsub;
     }
 
     init();
 
+    // On unmount (navigation, hot-reload) only cancel the async init and
+    // unsubscribe foreground messages. DO NOT remove the Firestore token —
+    // the background SW needs it to deliver notifications to closed tabs.
     return () => {
       cancelled = true;
-
-      // Stop listening to foreground messages
       if (unsubForegroundRef.current) {
         unsubForegroundRef.current();
         unsubForegroundRef.current = null;
-      }
-
-      // Remove token from Firestore on logout
-      if (tokenRef.current) {
-        removePushToken(userId, tokenRef.current).catch(() => {});
-        tokenRef.current = null;
       }
     };
   }, [user?.uid]);
