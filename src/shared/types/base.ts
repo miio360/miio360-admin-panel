@@ -88,6 +88,7 @@ export interface Rating {
 }
 
 export interface CustomLocation {
+  id?: string;
   latitude: number;
   longitude: number;
   address?: string;

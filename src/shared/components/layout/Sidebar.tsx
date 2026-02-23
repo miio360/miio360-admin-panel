@@ -16,6 +16,7 @@ import {
   Receipt,
   QrCode,
   ShoppingBag,
+  MapPin,
 } from "lucide-react";
 
 interface NavItem {
@@ -74,6 +75,12 @@ const navItems: NavItem[] = [
     title: "Pedidos",
     href: "/orders",
     icon: ShoppingBag,
+    section: "GENERAL",
+  },
+  {
+    title: "Precios de Envío",
+    href: "/shipment-prices",
+    icon: MapPin,
     section: "GENERAL",
   },
 ];
@@ -139,9 +146,9 @@ export const Sidebar = () => {
       <div className="flex items-center gap-3 h-14 px-5 border-b border-white/10">
         <div className="flex items-center justify-center w-10 h-14">
           <img
-          src="/miio.jpeg"
-          alt="Miio Logo"
-          className="w-8 h-8 rounded-md object-cover"
+            src="/miio.jpeg"
+            alt="Miio Logo"
+            className="w-8 h-8 rounded-md object-cover"
           />
         </div>
         <span className="text-lg font-bold text-white tracking-tight">Miio</span>
