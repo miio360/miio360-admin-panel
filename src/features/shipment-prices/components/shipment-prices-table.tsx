@@ -25,6 +25,7 @@ function TableSkeleton() {
                     <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                     <TableCell className="text-right pr-5">
                         <div className="flex justify-end gap-1.5">
                             <Skeleton className="h-7 w-7 rounded-md" />
@@ -57,7 +58,8 @@ export function ShipmentPricesTable({ prices, isLoading, onRefetch, onEdit }: Sh
                             <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Origen</TableHead>
                             <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Destino</TableHead>
                             <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tipo de Envío</TableHead>
-                            <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Precio</TableHead>
+                            <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Precio Base</TableHead>
+                            <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Kg Extra</TableHead>
                             <TableHead className="text-xs font-semibold text-slate-500 uppercase tracking-wide text-right pr-5">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -66,7 +68,7 @@ export function ShipmentPricesTable({ prices, isLoading, onRefetch, onEdit }: Sh
                             <TableSkeleton />
                         ) : prices.length === 0 ? (
                             <TableRow className="hover:bg-transparent">
-                                <TableCell colSpan={6} className="py-16 text-center">
+                                <TableCell colSpan={7} className="py-16 text-center">
                                     <div className="flex flex-col items-center gap-3 text-slate-400">
                                         <MapPin className="w-10 h-10 opacity-40" />
                                         <p className="text-sm font-medium">No se encontraron precios de envío</p>
@@ -98,6 +100,9 @@ export function ShipmentPricesTable({ prices, isLoading, onRefetch, onEdit }: Sh
                                         </TableCell>
                                         <TableCell className="text-sm font-semibold text-slate-800 tabular-nums">
                                             {formatAmount(price.price || 0)}
+                                        </TableCell>
+                                        <TableCell className="text-sm font-semibold text-slate-800 tabular-nums">
+                                            {formatAmount(price.excessPerKgPrice || 0)}
                                         </TableCell>
                                         <TableCell className="text-right pr-5">
                                             <div className="flex justify-end gap-1">
@@ -173,7 +178,16 @@ export function ShipmentPricesTable({ prices, isLoading, onRefetch, onEdit }: Sh
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                                    <span className="font-semibold text-slate-800">{formatAmount(price.price || 0)}</span>
+                                    <div className="flex gap-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-xs text-slate-500">Precio Base</span>
+                                            <span className="font-semibold text-slate-800">{formatAmount(price.price || 0)}</span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs text-slate-500">Kg Extra</span>
+                                            <span className="font-semibold text-slate-800">{formatAmount(price.excessPerKgPrice || 0)}</span>
+                                        </div>
+                                    </div>
                                     <div className="flex gap-1">
                                         <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-600 hover:bg-blue-50" onClick={() => onEdit && onEdit(price)}>
                                             <Edit2 className="w-4 h-4" />

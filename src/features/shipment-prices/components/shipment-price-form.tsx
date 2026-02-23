@@ -31,6 +31,7 @@ interface FormValues {
     to: string;
     type: 'local' | 'national';
     price: number;
+    excessPerKgPrice: number;
 }
 
 export function ShipmentPriceForm({ isOpen, onClose, onSuccess, initialData }: { isOpen: boolean, onClose: () => void, onSuccess: () => void, initialData?: ShipmentPrice | null }) {
@@ -49,6 +50,7 @@ export function ShipmentPriceForm({ isOpen, onClose, onSuccess, initialData }: {
             to: '',
             type: 'local',
             price: 20,
+            excessPerKgPrice: 10,
         }
     });
 
@@ -61,6 +63,7 @@ export function ShipmentPriceForm({ isOpen, onClose, onSuccess, initialData }: {
                 to: initialData.to,
                 type: initialData.type as 'local' | 'national',
                 price: initialData.price,
+                excessPerKgPrice: initialData.excessPerKgPrice ?? 10,
             });
         } else {
             reset({
@@ -68,6 +71,7 @@ export function ShipmentPriceForm({ isOpen, onClose, onSuccess, initialData }: {
                 to: '',
                 type: 'local',
                 price: 20,
+                excessPerKgPrice: 10,
             });
         }
     }, [initialData, reset, isOpen]);
@@ -253,6 +257,10 @@ export function ShipmentPriceForm({ isOpen, onClose, onSuccess, initialData }: {
                         <div className="space-y-1.5">
                             <Label>Precio Sugerido (Bs.)</Label>
                             <Input type="number" step="0.5" {...register('price', { valueAsNumber: true })} />
+                        </div>
+                        <div className="space-y-1.5 col-span-2">
+                            <Label>Precio Kg Extra (Bs.)</Label>
+                            <Input type="number" step="0.5" {...register('excessPerKgPrice', { valueAsNumber: true })} />
                         </div>
                     </div>
 
