@@ -16,6 +16,7 @@ import {
   Receipt,
   QrCode,
   ShoppingBag,
+  MapPin,
   Settings,
 } from "lucide-react";
 
@@ -75,6 +76,12 @@ const navItems: NavItem[] = [
     title: "Pedidos",
     href: "/orders",
     icon: ShoppingBag,
+    section: "GENERAL",
+  },
+  {
+    title: "Precios de Envío",
+    href: "/shipment-prices",
+    icon: MapPin,
     section: "GENERAL",
   },
   {
