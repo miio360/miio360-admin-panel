@@ -17,6 +17,7 @@ import {
   QrCode,
   ShoppingBag,
   MapPin,
+  Settings,
 } from "lucide-react";
 
 interface NavItem {
@@ -83,6 +84,12 @@ const navItems: NavItem[] = [
     icon: MapPin,
     section: "GENERAL",
   },
+  {
+    title: "Configuracion",
+    href: "/settings",
+    icon: Settings,
+    section: "CONFIG",
+  },
 ];
 
 const navGroups: NavGroup[] = [
@@ -106,6 +113,7 @@ export const Sidebar = () => {
 
   const generalItems = navItems.filter((item) => item.section === "GENERAL");
   const generalGroups = navGroups.filter((group) => group.section === "GENERAL");
+  const configItems = navItems.filter((item) => item.section === "CONFIG");
 
   const toggleGroup = (title: string) => {
     setExpandedGroups((prev) =>
@@ -151,7 +159,7 @@ export const Sidebar = () => {
             className="w-8 h-8 rounded-md object-cover"
           />
         </div>
-        <span className="text-lg font-bold text-white tracking-tight">Miio</span>
+        <span className="text-lg font-bold text-white tracking-tight">M!!o Market</span>
       </div>
 
       <ScrollArea className="flex-1 py-4">
@@ -209,6 +217,14 @@ export const Sidebar = () => {
                 </div>
               );
             })}
+          </nav>
+        </div>
+
+        {/* CONFIG section */}
+        <div className="px-3 mb-4">
+          <p className="text-[10px] font-bold text-white/50 mb-2 px-3 tracking-wider">CONFIGURACION</p>
+          <nav className="space-y-0.5">
+            {configItems.map(renderNavItem)}
           </nav>
         </div>
       </ScrollArea>
