@@ -23,20 +23,22 @@ import { useAuth } from '@/shared/hooks/useAuth';
 import { RejectDialog } from './reject-dialog';
 import { ErrorGlobal } from '@/shared/components/error-global';
 import type { PaymentReceipt, PaymentReceiptStatus, RejectionReason } from '@/shared/types/payment';
+import type { AdvertisingPlanSummary } from '@/shared/types/summaries';
+import { ADVERTISING_TYPE_LABELS, ADVERTISING_POSITION_LABELS } from '@/features/plans/types/plan';
 
 // ─── Status helpers ────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<PaymentReceiptStatus, { label: string; className: string; dot: string }> = {
-    pending:  { label: 'Pendiente', className: 'bg-amber-50 text-amber-700 border border-amber-200',   dot: 'bg-amber-400' },
-    approved: { label: 'Aprobado',  className: 'bg-emerald-50 text-emerald-700 border border-emerald-200', dot: 'bg-emerald-500' },
-    rejected: { label: 'Rechazado', className: 'bg-rose-50 text-rose-700 border border-rose-200',      dot: 'bg-rose-500' },
+    pending: { label: 'Pendiente', className: 'bg-amber-50 text-amber-700 border border-amber-200', dot: 'bg-amber-400' },
+    approved: { label: 'Aprobado', className: 'bg-emerald-50 text-emerald-700 border border-emerald-200', dot: 'bg-emerald-500' },
+    rejected: { label: 'Rechazado', className: 'bg-rose-50 text-rose-700 border border-rose-200', dot: 'bg-rose-500' },
 };
 
 type StatusFilter = PaymentReceiptStatus | 'all';
 
 const STATUS_TABS: { value: StatusFilter; label: string }[] = [
-    { value: 'all',      label: 'Todos' },
-    { value: 'pending',  label: 'Pendientes' },
+    { value: 'all', label: 'Todos' },
+    { value: 'pending', label: 'Pendientes' },
     { value: 'approved', label: 'Aprobados' },
     { value: 'rejected', label: 'Rechazados' },
 ];
@@ -258,9 +260,24 @@ export function PlansReceiptsTab() {
                                             </TableCell>
                                             <TableCell>
                                                 <p className="text-sm text-slate-800">{receipt.plan?.title || '—'}</p>
-                                                <span className="inline-block mt-1 px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded">
-                                                    {receipt.plan?.planType || '—'}
-                                                </span>
+                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                    <span className="inline-block px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded">
+                                                        {receipt.plan?.planType || '—'}
+                                                    </span>
+                                                    {receipt.plan?.planType === 'advertising' && (() => {
+                                                        const adPlan = receipt.plan as AdvertisingPlanSummary;
+                                                        return (
+                                                            <>
+                                                                <span className="inline-block px-1.5 py-0.5 text-[10px] font-medium bg-blue-50 text-blue-600 rounded">
+                                                                    {ADVERTISING_TYPE_LABELS[adPlan.advertisingType]}
+                                                                </span>
+                                                                <span className="inline-block px-1.5 py-0.5 text-[10px] font-medium bg-violet-50 text-violet-600 rounded">
+                                                                    {ADVERTISING_POSITION_LABELS[adPlan.advertisingPosition]}
+                                                                </span>
+                                                            </>
+                                                        );
+                                                    })()}
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-sm font-semibold text-slate-800 tabular-nums">
                                                 {formatAmount(receipt.plan?.price || 0)}
