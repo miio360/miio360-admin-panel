@@ -19,6 +19,7 @@ import { PlanLivesPage } from "./features/plans/pages/plan-lives-page";
 import { PaymentReceiptsPage } from "./features/payment-receipts/pages/payment-receipts-page";
 import { PaymentQRPage } from "./features/payment-settings/pages/payment-qr-page";
 import { OrdersTrackingPage } from "./features/orders/pages/orders-tracking-page";
+import { SettingsPage } from "./features/settings/pages/settings-page";
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
               <Route path="payment-receipts" element={<PaymentReceiptsPage />} />
               <Route path="payment-qr" element={<PaymentQRPage />} />
               <Route path="orders" element={<OrdersTrackingPage />} />
+              <Route path="settings" element={<SettingsPage />} />
 
             </Route>
 

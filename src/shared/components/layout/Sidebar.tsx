@@ -16,6 +16,7 @@ import {
   Receipt,
   QrCode,
   ShoppingBag,
+  Settings,
 } from "lucide-react";
 
 interface NavItem {
@@ -76,6 +77,12 @@ const navItems: NavItem[] = [
     icon: ShoppingBag,
     section: "GENERAL",
   },
+  {
+    title: "Configuracion",
+    href: "/settings",
+    icon: Settings,
+    section: "CONFIG",
+  },
 ];
 
 const navGroups: NavGroup[] = [
@@ -99,6 +106,7 @@ export const Sidebar = () => {
 
   const generalItems = navItems.filter((item) => item.section === "GENERAL");
   const generalGroups = navGroups.filter((group) => group.section === "GENERAL");
+  const configItems = navItems.filter((item) => item.section === "CONFIG");
 
   const toggleGroup = (title: string) => {
     setExpandedGroups((prev) =>
@@ -139,9 +147,9 @@ export const Sidebar = () => {
       <div className="flex items-center gap-3 h-14 px-5 border-b border-white/10">
         <div className="flex items-center justify-center w-10 h-14">
           <img
-          src="/miio.jpeg"
-          alt="Miio Logo"
-          className="w-8 h-8 rounded-md object-cover"
+            src="/miio.jpeg"
+            alt="Miio Logo"
+            className="w-8 h-8 rounded-md object-cover"
           />
         </div>
         <span className="text-lg font-bold text-white tracking-tight">M!!o Market</span>
@@ -202,6 +210,14 @@ export const Sidebar = () => {
                 </div>
               );
             })}
+          </nav>
+        </div>
+
+        {/* CONFIG section */}
+        <div className="px-3 mb-4">
+          <p className="text-[10px] font-bold text-white/50 mb-2 px-3 tracking-wider">CONFIGURACION</p>
+          <nav className="space-y-0.5">
+            {configItems.map(renderNavItem)}
           </nav>
         </div>
       </ScrollArea>
