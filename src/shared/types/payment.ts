@@ -5,7 +5,7 @@ import type { PlanType } from '@/features/plans/types/plan';
 
 export type PaymentReceiptStatus = 'pending' | 'approved' | 'rejected';
 
-export type RejectionReason = 
+export type RejectionReason =
   | 'illegible'
   | 'incorrect_data'
   | 'duplicate'
@@ -16,7 +16,10 @@ export interface PaymentReceipt extends BaseModel {
   seller: SellerSummary;
   plan: PlanSummary;
   receiptImage: FileUploaded;
+  /** Banner image for store_banner advertising plans (required for store_banner) */
   bannerImage?: FileUploaded;
+  /** Product image for product-type advertising plans (Plans 3–6) */
+  productImage?: FileUploaded;
   status: PaymentReceiptStatus;
   rejectionReason?: RejectionReason;
   rejectionComment?: string;

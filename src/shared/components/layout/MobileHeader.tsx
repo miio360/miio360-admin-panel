@@ -17,6 +17,7 @@ import {
   Receipt,
   QrCode,
   ShoppingBag,
+  Settings,
 } from "lucide-react";
 
 interface NavItem {
@@ -44,6 +45,10 @@ const navItems: NavItem[] = [
   { title: "Comprobantes de Pago", href: "/payment-receipts", icon: Receipt },
   { title: "QR de Pago", href: "/payment-qr", icon: QrCode },
   { title: "Pedidos", href: "/orders", icon: ShoppingBag },
+];
+
+const configNavItems: NavItem[] = [
+  { title: "Configuracion", href: "/settings", icon: Settings },
 ];
 
 const navGroups: NavGroup[] = [
@@ -75,8 +80,8 @@ export const MobileHeader = () => {
     <>
       <header className="lg:hidden flex items-center justify-between h-14 px-4 border-b border-white/10 bg-gradient-to-b from-slate-900 to-slate-800 z-30 relative">
         <div className="flex items-center gap-2">
-          <img src="/miio.jpeg" alt="Miio Logo" className="w-8 h-8 rounded-md object-cover" onClick={() => navigate(`/`)}/>
-          <span className="text-lg font-bold text-white tracking-tight">Miio</span>
+          <img src="/miio.jpeg" alt="Miio Logo" className="w-8 h-8 rounded-md object-cover" onClick={() => navigate(`/`)} />
+          <span className="text-lg font-bold text-white tracking-tight">M!!o Market</span>
         </div>
         <ButtonGlobal
           aria-label="Abrir menú"
@@ -188,6 +193,34 @@ export const MobileHeader = () => {
                   );
                 })}
               </nav>
+
+              {/* CONFIGURACION section */}
+              <div className="mt-4">
+                <p className="text-[10px] font-bold text-white/50 mb-2 px-3 tracking-wider">CONFIGURACION</p>
+                <nav className="flex flex-col gap-1">
+                  {configNavItems.map((item) => {
+                    const isActive = location.pathname === item.href ||
+                      (item.href !== "/" && location.pathname.startsWith(item.href));
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        to={item.href}
+                        onClick={() => setMenuOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all text-white text-sm",
+                          isActive
+                            ? "bg-primary/90 text-foreground font-semibold shadow-sm"
+                            : "hover:bg-primary/20 hover:text-foreground/90"
+                        )}
+                      >
+                        <Icon className="h-4 w-4 flex-shrink-0" />
+                        <span className="font-medium flex-1">{item.title}</span>
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
             </ScrollArea>
             <div className="p-4 border-t border-white/10 flex flex-col gap-2">
               <button

@@ -23,20 +23,22 @@ import { useAuth } from '@/shared/hooks/useAuth';
 import { RejectDialog } from './reject-dialog';
 import { ErrorGlobal } from '@/shared/components/error-global';
 import type { PaymentReceipt, PaymentReceiptStatus, RejectionReason } from '@/shared/types/payment';
+import type { AdvertisingPlanSummary } from '@/shared/types/summaries';
+import { ADVERTISING_TYPE_LABELS, ADVERTISING_POSITION_LABELS } from '@/features/plans/types/plan';
 
 // ─── Status helpers ────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<PaymentReceiptStatus, { label: string; className: string; dot: string }> = {
-    pending:  { label: 'Pendiente', className: 'bg-amber-50 text-amber-700 border border-amber-200',   dot: 'bg-amber-400' },
-    approved: { label: 'Aprobado',  className: 'bg-emerald-50 text-emerald-700 border border-emerald-200', dot: 'bg-emerald-500' },
-    rejected: { label: 'Rechazado', className: 'bg-rose-50 text-rose-700 border border-rose-200',      dot: 'bg-rose-500' },
+    pending: { label: 'Pendiente', className: 'bg-amber-50 text-amber-700 border border-amber-200', dot: 'bg-amber-400' },
+    approved: { label: 'Aprobado', className: 'bg-emerald-50 text-emerald-700 border border-emerald-200', dot: 'bg-emerald-500' },
+    rejected: { label: 'Rechazado', className: 'bg-rose-50 text-rose-700 border border-rose-200', dot: 'bg-rose-500' },
 };
 
 type StatusFilter = PaymentReceiptStatus | 'all';
 
 const STATUS_TABS: { value: StatusFilter; label: string }[] = [
-    { value: 'all',      label: 'Todos' },
-    { value: 'pending',  label: 'Pendientes' },
+    { value: 'all', label: 'Todos' },
+    { value: 'pending', label: 'Pendientes' },
     { value: 'approved', label: 'Aprobados' },
     { value: 'rejected', label: 'Rechazados' },
 ];
@@ -174,14 +176,14 @@ export function PlansReceiptsTab() {
             <div className="space-y-4">
 
                 {/* ── Filter tabs + pagination ─────────────────────────────── */}
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <div className="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="grid grid-cols-4 sm:inline-flex sm:w-auto w-full items-center gap-1 bg-slate-100 p-1 rounded-lg">
                         {STATUS_TABS.map(({ value, label }) => (
                             <button
                                 key={value}
                                 onClick={() => handleStatusTab(value)}
                                 className={cn(
-                                    'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150',
+                                    'px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all duration-150 text-center',
                                     activeTab === value
                                         ? 'bg-white text-slate-900 shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700'
@@ -192,7 +194,7 @@ export function PlansReceiptsTab() {
                         ))}
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 self-end sm:self-auto">
                         <Button variant="outline" size="sm" onClick={prevPage} disabled={!hasPrevPage || isLoading} className="h-8 w-8 p-0">
                             <ChevronLeft className="w-4 h-4" />
                         </Button>
@@ -258,9 +260,24 @@ export function PlansReceiptsTab() {
                                             </TableCell>
                                             <TableCell>
                                                 <p className="text-sm text-slate-800">{receipt.plan?.title || '—'}</p>
-                                                <span className="inline-block mt-1 px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded">
-                                                    {receipt.plan?.planType || '—'}
-                                                </span>
+                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                    <span className="inline-block px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded">
+                                                        {receipt.plan?.planType || '—'}
+                                                    </span>
+                                                    {receipt.plan?.planType === 'advertising' && (() => {
+                                                        const adPlan = receipt.plan as AdvertisingPlanSummary;
+                                                        return (
+                                                            <>
+                                                                <span className="inline-block px-1.5 py-0.5 text-[10px] font-medium bg-blue-50 text-blue-600 rounded">
+                                                                    {ADVERTISING_TYPE_LABELS[adPlan.advertisingType]}
+                                                                </span>
+                                                                <span className="inline-block px-1.5 py-0.5 text-[10px] font-medium bg-violet-50 text-violet-600 rounded">
+                                                                    {ADVERTISING_POSITION_LABELS[adPlan.advertisingPosition]}
+                                                                </span>
+                                                            </>
+                                                        );
+                                                    })()}
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-sm font-semibold text-slate-800 tabular-nums">
                                                 {formatAmount(receipt.plan?.price || 0)}

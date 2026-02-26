@@ -145,9 +145,24 @@ export const paymentReceiptService = {
       if (plan.planType === 'advertising') {
         const advertisingPlan = plan as AdvertisingPlanSummary;
 
-        if (!receipt.bannerImage) {
-          throw new Error('El banner es requerido para planes de publicidad');
+        // Banner required for:
+        // - store_banner plans (Plans 1 & 2): promotional store banner
+        // - product + mini_banner (Plan 5): static product banner between product rows
+        const requiresBanner =
+          advertisingPlan.advertisingType === 'store_banner' ||
+          (advertisingPlan.advertisingType === 'product' &&
+            advertisingPlan.advertisingPosition === 'mini_banner');
+
+        if (requiresBanner && !receipt.bannerImage) {
+          const label =
+            advertisingPlan.advertisingType === 'store_banner'
+              ? 'Banner de Tienda'
+              : 'Banner de Producto';
+          throw new Error(`El ${label} es requerido para este plan de publicidad`);
         }
+
+        // Resolve the creative image: banner if present, productImage as fallback
+        const creativeImage = receipt.bannerImage ?? receipt.productImage;
 
         activePlanId = await activePlanService.create({
           receiptId: id,
@@ -159,7 +174,7 @@ export const paymentReceiptService = {
           advertisingType: advertisingPlan.advertisingType,
           advertisingPosition: advertisingPlan.advertisingPosition,
           daysEnabled: advertisingPlan.daysEnabled,
-          bannerImage: receipt.bannerImage,
+          ...(creativeImage ? { bannerImage: creativeImage } : {}),
         });
       } else if (plan.planType === 'video') {
         const videoPlan = plan as VideoPlanSummary;
