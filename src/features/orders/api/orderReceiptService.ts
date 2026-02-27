@@ -103,7 +103,7 @@ export const orderReceiptService = {
      * Approves a payment receipt by calling the confirmPayment Cloud Function.
      * This updates both the order and the receipt atomically, and sends notifications.
      */
-    async approve(receiptId: string, orderId: string): Promise<void> {
+    async approve(_receiptId: string, orderId: string): Promise<void> {
         try {
             const confirmPaymentFn = httpsCallable(functions, 'confirmPayment');
             const result = await confirmPaymentFn({ orderId });
@@ -123,7 +123,7 @@ export const orderReceiptService = {
      * This reverts the order to RESERVED and notifies the client.
      */
     async reject(
-        receiptId: string,
+        _receiptId: string,
         orderId: string,
         reason: RejectionReason,
         comment?: string

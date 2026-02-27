@@ -7,7 +7,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from './ui/dialog';
-import { X, CheckCircle2, XCircle, AlertTriangle, Info } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertTriangle, Info } from 'lucide-react';
+
 import { useModalContext } from '@/shared/hooks/useModal';
 import { ButtonGlobal } from './button-global';
 import { cn } from '@/shared/lib/utils';

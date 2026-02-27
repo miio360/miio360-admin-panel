@@ -78,11 +78,11 @@ export const subcategoryService = {
 
 
   // Actualizar subcategoría (en subcolección de la categoría)
-  async update(categoryId: string, subcategoryId: string, subcategoryData: Partial<Subcategory>): Promise<void> {
+  async update(categoryId: string, subcategoryId: string, subcategoryData: Partial<Subcategory>, userId: string = 'system'): Promise<void> {
     const docRef = doc(db, CATEGORY_COLLECTION, categoryId, SUBCOLLECTION_NAME, subcategoryId);
     await updateDoc(docRef, {
       ...subcategoryData,
-      ...updateModelTimestamp(),
+      ...updateModelTimestamp(userId),
     });
   },
 

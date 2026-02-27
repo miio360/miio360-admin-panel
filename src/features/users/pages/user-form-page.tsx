@@ -23,7 +23,6 @@ export default function UserFormPage() {
   const { onSubmit: handleSubmit } = useUserFormSubmit();
   const [currentStep, setCurrentStep] = useState(0);
   const [stepsSnapshot, setStepsSnapshot] = useState<string[]>(['Perfil', 'Rol']);
-  const [canSubmit, setCanSubmit] = useState(false);
 
   const activeRole = form.watch('activeRole');
 
@@ -54,15 +53,13 @@ export default function UserFormPage() {
     }
   }, [activeRole]);
 
-  useEffect(() => {
-    setCanSubmit(currentStep === stepsSnapshot.length - 1);
-  }, [currentStep, stepsSnapshot]);
+
 
   const isLastStep = currentStep === stepsSnapshot.length - 1;
 
   const validateCurrentStep = async () => {
     const fieldsToValidate: (keyof UserFormData)[] = [];
-    
+
     if (currentStep === 0) {
       fieldsToValidate.push('firstName', 'lastName', 'email', 'phone', 'password');
     } else if (currentStep === 1) {
@@ -154,9 +151,9 @@ export default function UserFormPage() {
                 </ButtonGlobal>
                 {/* Solo mostrar submit si es el último step y el step de rol no es el último para seller/courier */}
                 {(activeRole === UserRole.CUSTOMER && isLastStep && stepsSnapshot.length === 2 && currentStep === 1) ||
-                 (activeRole === UserRole.ADMIN && isLastStep && stepsSnapshot.length === 2 && currentStep === 1) ||
-                 (activeRole === UserRole.SELLER && isLastStep && currentStep === 2) ||
-                 (activeRole === UserRole.COURIER && isLastStep && currentStep === 2) ? (
+                  (activeRole === UserRole.ADMIN && isLastStep && stepsSnapshot.length === 2 && currentStep === 1) ||
+                  (activeRole === UserRole.SELLER && isLastStep && currentStep === 2) ||
+                  (activeRole === UserRole.COURIER && isLastStep && currentStep === 2) ? (
                   <ButtonGlobal
                     type="submit"
                     disabled={isSubmitting}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { paymentReceiptService } from '@/shared/services/paymentReceiptService';
 import type { PaymentReceipt, PaymentReceiptStatus } from '@/shared/types/payment';
 
@@ -30,40 +30,7 @@ export function usePaymentReceipts(initialStatus?: PaymentReceiptStatus): UsePay
   const [cursors, setCursors] = useState<any[]>([]); // Array to store the last document of each page
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchReceipts = useCallback(async (targetPage: number, currentCursors: any[], currentStatus?: PaymentReceiptStatus) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // Determine the cursor to start after
-      // Page 1: startAfter undefined
-      // Page 2: startAfter cursors[0]
-      const startAfterDoc = targetPage > 1 ? currentCursors[targetPage - 2] : undefined;
-
-      const { receipts: newReceipts, lastDoc } = await paymentReceiptService.getPaginated(
-        PAGE_SIZE,
-        startAfterDoc,
-        currentStatus || 'all'
-      );
-
-      setReceipts(newReceipts);
-      setHasMore(newReceipts.length === PAGE_SIZE); // Heuristic
-
-      // Update cursors if we just loaded a page we haven't mapped yet
-      if (lastDoc && targetPage > currentCursors.length) {
-        // Create a new array to avoid mutation issues, though we are setting state
-        // Actually, we should only update cursors if we moved *forward* to a new page
-      }
-      return lastDoc;
-
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
-      setError(message);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  // fetchReceipts is replaced by inline IIFE in useEffect below
 
   // Initial load and filter change
   useEffect(() => {
@@ -141,7 +108,7 @@ export function usePaymentReceipts(initialStatus?: PaymentReceiptStatus): UsePay
 
     setIsLoading(true);
     try {
-      const { receipts: newReceipts, lastDoc } = await paymentReceiptService.getPaginated(PAGE_SIZE, cursor, status || 'all');
+      const { receipts: newReceipts, lastDoc: _lastDoc } = await paymentReceiptService.getPaginated(PAGE_SIZE, cursor, status || 'all');
       setReceipts(newReceipts);
       setPage(prevPageNum);
       setHasMore(true); // If we went back, we definitely have more forward (usually)
