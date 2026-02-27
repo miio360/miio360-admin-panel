@@ -27,7 +27,7 @@ export function ReceiptCardDetails({ receipt }: ReceiptCardDetailsProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
         <ReceiptStat label="Tipo" value={PLAN_TYPE_LABELS[receipt.plan.planType]} />
         {receipt.plan.planType === 'video' && (
-          <ReceiptStat label="Videos" value={`${receipt.plan.videoCount} (${receipt.plan.videoDurationMinutes} min)`} />
+          <ReceiptStat label="Videos" value={`${receipt.plan.videoCount ?? '-'} (${receipt.plan.totalDurationSeconds != null ? Math.round(receipt.plan.totalDurationSeconds / 60) : '-'} min)`} />
         )}
         {receipt.plan.planType === 'advertising' && (
           <ReceiptStat label="Duración" value={`${receipt.plan.daysEnabled} días`} />

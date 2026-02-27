@@ -47,7 +47,7 @@ const TYPE_CONFIG: Record<string, { label: string; className: string; dot: strin
     national: { label: 'Nacional', className: 'bg-indigo-50 text-indigo-700 border border-indigo-200', dot: 'bg-indigo-500' },
 };
 
-export function ShipmentPricesTable({ prices, isLoading, onRefetch, onEdit }: ShipmentPricesTableProps) {
+export function ShipmentPricesTable({ prices, isLoading, onEdit }: ShipmentPricesTableProps) {
     return (
         <TooltipProvider delayDuration={300}>
             <div className="hidden sm:block rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">

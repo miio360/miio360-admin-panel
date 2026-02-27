@@ -29,6 +29,8 @@ interface CreateUserInput {
   vehicleType?: string;
   vehiclePlate?: string;
   licenseNumber?: string;
+  cities?: string[];
+  currentCity?: string;
   businessName?: string;
   businessType?: string;
   taxId?: string;
@@ -73,6 +75,8 @@ async function createUser(formData: CreateUserInput): Promise<string> {
       payload.vehicleType = (formData.vehicleType as 'bike' | 'motorcycle' | 'car' | 'walking') ?? 'bike';
       payload.vehiclePlate = formData.vehiclePlate;
       payload.licenseNumber = formData.licenseNumber;
+      payload.cities = formData.cities;
+      payload.currentCity = formData.currentCity;
     }
 
     const result = await createUserFn(payload);
@@ -238,11 +242,10 @@ export const userService = {
 
       if (formData.activeRole === UserRole.COURIER) {
         const courierProfile: Partial<CourierProfile> = {};
-        if (formData.vehicleType) {
-          courierProfile.vehicleType = formData.vehicleType as 'bike' | 'motorcycle' | 'car' | 'walking';
-        }
         if (formData.vehiclePlate) courierProfile.vehiclePlate = formData.vehiclePlate;
         if (formData.licenseNumber) courierProfile.licenseNumber = formData.licenseNumber;
+        if (formData.cities !== undefined) courierProfile.cities = formData.cities;
+        if (formData.currentCity !== undefined) courierProfile.currentCity = formData.currentCity;
         updateData.courierProfile = courierProfile;
       }
 

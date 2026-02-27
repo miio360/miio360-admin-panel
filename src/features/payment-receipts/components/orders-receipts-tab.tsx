@@ -15,7 +15,6 @@ import {
     TableRow,
 } from '@/shared/components/ui/table';
 import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
 import {
     AlertDialog,
