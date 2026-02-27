@@ -98,14 +98,20 @@ export default function UserProfilePage() {
             <div className="mt-4 p-4 rounded-lg bg-primary/10 border border-primary/20 w-full">
               <div className="font-semibold text-primary mb-2">Datos de repartidor</div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm w-full">
-                <div className="text-gray-500">Tipo de vehículo</div>
-                <div className="text-foreground">{courierProfile.vehicleType}</div>
                 <div className="text-gray-500">Placa</div>
                 <div className="text-foreground">{courierProfile.vehiclePlate || '-'}</div>
                 <div className="text-gray-500">Licencia</div>
                 <div className="text-foreground">{courierProfile.licenseNumber || '-'}</div>
                 <div className="text-gray-500">Disponible</div>
                 <div className="text-foreground">{courierProfile.isAvailable ? 'Sí' : 'No'}</div>
+                <div className="text-gray-500">Ciudad actual</div>
+                <div className="text-foreground">{courierProfile.currentCity || '-'}</div>
+                <div className="text-gray-500 sm:col-span-2">Ciudades donde opera</div>
+                <div className="text-foreground sm:col-span-2">
+                  {courierProfile.cities && courierProfile.cities.length > 0
+                    ? courierProfile.cities.join(', ')
+                    : '-'}
+                </div>
               </div>
             </div>
           )}

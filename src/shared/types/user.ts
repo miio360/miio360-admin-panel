@@ -57,12 +57,13 @@ export interface SellerProfile {
 }
 
 export interface CourierProfile {
-  vehicleType: 'bike' | 'motorcycle' | 'car' | 'walking';
   vehiclePlate?: string;
   licenseNumber?: string;
   isAvailable: boolean;
   rating: Rating;
   totalDeliveries: number;
+  cities?: string[];      // cities where the courier can receive orders
+  currentCity?: string;  // city where the courier is currently operating
 }
 
 export interface User extends BaseModel {
