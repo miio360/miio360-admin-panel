@@ -143,7 +143,8 @@ export const activePlanService = {
           advertisingPosition: input.advertisingPosition,
           daysEnabled: input.daysEnabled,
           daysUsed: 0,
-          bannerImage: input.bannerImage,
+          // bannerImage is required for store_banner plans; product plans may have it from productImage
+          ...(input.bannerImage ? { bannerImage: input.bannerImage } : {}),
         };
       } else if (input.planType === 'video') {
         const videoData: Record<string, unknown> = {
@@ -231,7 +232,7 @@ export const activePlanService = {
 
       const now = Timestamp.now();
       const startDate = startImmediately ? now : planDoc.startDate || now;
-      
+
       const startDateObj = startDate.toDate();
       const endDateObj = new Date(startDateObj);
       endDateObj.setDate(endDateObj.getDate() + planDoc.daysEnabled);
@@ -339,7 +340,7 @@ export const activePlanService = {
 
       const newDaysUsed = planDoc.daysUsed + 1;
       const docRef = doc(db, COLLECTION_NAME, id);
-      
+
       const updateData: Record<string, unknown> = {
         daysUsed: newDaysUsed,
       };

@@ -21,6 +21,7 @@ import { PaymentQRPage } from "./features/payment-settings/pages/payment-qr-page
 import { OrdersTrackingPage } from "./features/orders/pages/orders-tracking-page";
 import { ShipmentPricesPage } from "./features/shipment-prices/pages/shipment-prices-page";
 import { CouriersPage } from "./features/couriers/pages/couriers-page";
+import { SettingsPage } from "./features/settings/pages/settings-page";
 
 function App() {
   return (
@@ -59,6 +60,7 @@ function App() {
               <Route path="orders" element={<OrdersTrackingPage />} />
               <Route path="shipment-prices" element={<ShipmentPricesPage />} />
               <Route path="couriers" element={<CouriersPage />} />
+              <Route path="settings" element={<SettingsPage />} />
 
             </Route>
 

@@ -33,7 +33,8 @@ export interface AdvertisingActivePlan extends BaseActivePlan {
   advertisingPosition: AdvertisingPosition;
   daysEnabled: number;
   daysUsed: number;
-  bannerImage: FileUploaded;
+  /** Required for store_banner plans. For product plans, the product image is used instead. */
+  bannerImage?: FileUploaded;
   startDate?: Timestamp;
   endDate?: Timestamp;
   assignedProduct?: ProductSummary;
@@ -92,7 +93,8 @@ export interface CreateAdvertisingActivePlanInput extends BaseActivePlanInput {
   advertisingType: AdvertisingType;
   advertisingPosition: AdvertisingPosition;
   daysEnabled: number;
-  bannerImage: FileUploaded;
+  /** Required for store_banner plans. Optional for product plans. */
+  bannerImage?: FileUploaded;
 }
 
 export interface CreateVideoActivePlanInput extends BaseActivePlanInput {
