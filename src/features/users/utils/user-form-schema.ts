@@ -15,7 +15,8 @@ export const userFormSchema = z.object({
   vehicleType: z.string().min(2, 'Selecciona un tipo de vehículo').optional(),
   vehiclePlate: z.string().optional(),
   licenseNumber: z.string().optional(),
-  workingZones: z.string().optional(), // se separa por coma
+  cities: z.array(z.string()).optional(),  // cities where the courier operates
+  currentCity: z.string().optional(),      // current operating city
   isAvailable: z.boolean().optional(),
   // Seller fields
   businessName: z.string().optional(),
