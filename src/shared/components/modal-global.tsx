@@ -12,6 +12,7 @@ import { CheckCircle2, XCircle, AlertTriangle, Info } from 'lucide-react';
 import { useModalContext } from '@/shared/hooks/useModal';
 import { ButtonGlobal } from './button-global';
 import { cn } from '@/shared/lib/utils';
+import { useState } from 'react';
 
 const iconMap = {
   success: CheckCircle2,
@@ -31,6 +32,7 @@ const colorMap = {
 
 export function ModalGlobal() {
   const { isOpen, data, closeModal } = useModalContext();
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen || !data) return null;
 
@@ -39,7 +41,12 @@ export function ModalGlobal() {
 
   const handleConfirm = async () => {
     if (data.onConfirm) {
-      await data.onConfirm();
+      setIsLoading(true);
+      try {
+        await data.onConfirm();
+      } finally {
+        setIsLoading(false);
+      }
     }
     closeModal();
   };
@@ -80,12 +87,15 @@ export function ModalGlobal() {
                 variant="outline"
                 onClick={handleCancel}
                 className="min-w-[100px]"
+                disabled={isLoading}
               >
                 {data.cancelText || 'Cancelar'}
               </ButtonGlobal>
               <ButtonGlobal
                 onClick={handleConfirm}
                 className="min-w-[100px]"
+                loading={isLoading}
+                disabled={isLoading}
               >
                 {data.confirmText || 'Confirmar'}
               </ButtonGlobal>

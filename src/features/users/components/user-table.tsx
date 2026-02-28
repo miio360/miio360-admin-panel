@@ -14,6 +14,8 @@ interface UserTableProps {
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
+  onDelete: (id: string) => void;
+  isDeleting?: boolean;
 }
 
 const columns: TableGlobalColumn<User>[] = [
@@ -50,8 +52,8 @@ const columns: TableGlobalColumn<User>[] = [
     render: (u) => (
       <div className="flex justify-center">
         <span className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded ${u.status === UserStatus.ACTIVE
-            ? "text-green-700 bg-green-50"
-            : "text-gray-600 bg-gray-100"
+          ? "text-green-700 bg-green-50"
+          : "text-gray-600 bg-gray-100"
           }`}>
           {u.status === UserStatus.ACTIVE ? "✓ Activo" : "Inactivo"}
         </span>
@@ -68,13 +70,13 @@ const columns: TableGlobalColumn<User>[] = [
 ];
 
 const ROLE_CONFIG: Record<string, { label: string; className: string }> = {
-  customer:  { label: 'Comprador',     className: 'bg-blue-50 text-blue-700 border border-blue-200' },
-  seller:    { label: 'Vendedor',      className: 'bg-violet-50 text-violet-700 border border-violet-200' },
-  courier:   { label: 'Repartidor',    className: 'bg-amber-50 text-amber-700 border border-amber-200' },
-  admin:     { label: 'Administrador', className: 'bg-rose-50 text-rose-700 border border-rose-200' },
+  customer: { label: 'Comprador', className: 'bg-blue-50 text-blue-700 border border-blue-200' },
+  seller: { label: 'Vendedor', className: 'bg-violet-50 text-violet-700 border border-violet-200' },
+  courier: { label: 'Repartidor', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
+  admin: { label: 'Administrador', className: 'bg-rose-50 text-rose-700 border border-rose-200' },
 };
 
-export function UserTable({ data, loading, currentPage, pageSize, total, onPageChange }: UserTableProps) {
+export function UserTable({ data, loading, currentPage, pageSize, total, onPageChange, onDelete, isDeleting = false }: UserTableProps) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const navigate = useNavigate();
 
@@ -102,6 +104,8 @@ export function UserTable({ data, loading, currentPage, pageSize, total, onPageC
                 variant="ghost"
                 size="sm"
                 className="hover:bg-red-50 h-8 w-8"
+                onClick={() => onDelete(u.id)}
+                disabled={isDeleting}
               >
                 <Trash2 className="w-3.5 h-3.5 text-red-600" />
               </ButtonGlobal>
@@ -182,6 +186,8 @@ export function UserTable({ data, loading, currentPage, pageSize, total, onPageC
                     variant="ghost"
                     size="sm"
                     className="hover:bg-red-50 h-8 w-8"
+                    onClick={() => onDelete(u.id)}
+                    disabled={isDeleting}
                   >
                     <Trash2 className="w-3.5 h-3.5 text-red-600" />
                   </ButtonGlobal>

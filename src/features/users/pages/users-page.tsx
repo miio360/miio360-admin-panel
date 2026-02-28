@@ -7,12 +7,36 @@ import { PageHeaderGlobal } from '@/shared/components/page-header-global';
 import { LoadingGlobal } from '@/shared/components/loading-global';
 import { ErrorGlobal } from '@/shared/components/error-global';
 import { Plus } from 'lucide-react';
+import { useModal } from '@/shared/hooks/useModal';
+import { userService } from '@/shared/services/userService';
 
 export function UsersPage() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(6);
   const { data, total, isLoading, error, refetch } = useUsers(page - 1, pageSize);
   const navigate = useNavigate();
+  const modal = useModal();
+
+  const handleDelete = (id: string) => {
+    modal.showConfirm(
+      '¿Estás seguro de que deseas eliminar este usuario? Esta acción eliminará su cuenta de autenticación y no se puede deshacer.',
+      async () => {
+        try {
+          await userService.deleteUser(id);
+          modal.showSuccess('Usuario eliminado correctamente');
+          refetch();
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Error al eliminar el usuario';
+          modal.showError(message);
+        }
+      },
+      {
+        title: 'Eliminar usuario',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+      }
+    );
+  };
 
   if (isLoading) {
     return <LoadingGlobal message="Cargando usuarios..." />;
@@ -48,7 +72,9 @@ export function UsersPage() {
         pageSize={pageSize}
         total={total}
         onPageChange={(newPage) => setPage(newPage)}
+        onDelete={handleDelete}
       />
     </div>
   );
 }
+

@@ -10,6 +10,7 @@ import {
   Timestamp,
   type DocumentData,
   type QueryDocumentSnapshot,
+  type UpdateData,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { UserRole, UserStatus } from '@/shared/types';
@@ -42,10 +43,10 @@ interface CreateUserInput {
 
 async function createUser(formData: CreateUserInput): Promise<string> {
   console.log('[Frontend] Llamando a Cloud Function createUser...');
-  
+
   try {
     const createUserFn = httpsCallable<CreateUserInput, CreateUserResponse>(functions, 'createUser');
-    
+
     const payload: CreateUserInput = {
       email: formData.email,
       password: formData.password,
@@ -63,7 +64,7 @@ async function createUser(formData: CreateUserInput): Promise<string> {
       payload.businessPhone = formData.businessPhone;
       payload.businessEmail = formData.businessEmail;
       payload.businessAddress = formData.businessAddress;
-      
+
       if (typeof formData.categories === 'string') {
         payload.categories = formData.categories.split(',').map((c: string) => c.trim());
       } else {
@@ -193,7 +194,7 @@ export const userService = {
       const { updateDoc, doc } = await import('firebase/firestore');
       const userDoc = doc(db, COLLECTION_NAME, id);
 
-      const updateData: Record<string, unknown> = {};
+      const updateData: UpdateData<DocumentData> = {};
 
       if (formData.firstName || formData.lastName || formData.phone || formData.email) {
         const profile: Partial<UserProfile> = {};
@@ -259,4 +260,23 @@ export const userService = {
   },
 
   createUser,
+
+  async deleteUser(uid: string): Promise<void> {
+    try {
+      const deleteUserFn = httpsCallable<{ uid: string }, { success: boolean; message: string }>(
+        functions,
+        'deleteUser'
+      );
+      const result = await deleteUserFn({ uid });
+      if (!result.data.success) {
+        throw new Error(result.data.message);
+      }
+    } catch (error) {
+      console.error('[userService] Error deleting user:', error);
+      if (error instanceof Error) {
+        throw new Error(`Error al eliminar usuario: ${error.message}`);
+      }
+      throw new Error('No se pudo eliminar el usuario');
+    }
+  },
 };

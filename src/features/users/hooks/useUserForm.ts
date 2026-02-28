@@ -14,7 +14,7 @@ export function useUserForm(id?: string) {
       firstName: '',
       lastName: '',
       phone: '',
-        activeRole: undefined,
+      activeRole: undefined,
       status: UserStatus.ACTIVE,
     },
   });
@@ -24,6 +24,8 @@ export function useUserForm(id?: string) {
     if (isEditing && id) {
       userService.getById(id).then(user => {
         if (user) {
+          const seller = user.sellerProfile;
+          const courier = user.courierProfile;
           reset({
             email: user.profile?.email || '',
             firstName: user.profile?.firstName || '',
@@ -31,6 +33,20 @@ export function useUserForm(id?: string) {
             phone: user.profile?.phone || '',
             activeRole: user.activeRole || undefined,
             status: user.status || UserStatus.ACTIVE,
+            // Seller fields
+            businessName: seller?.businessName || '',
+            businessType: seller?.businessType || '',
+            businessPhone: seller?.businessPhone || '',
+            businessEmail: seller?.businessEmail || '',
+            taxId: seller?.taxId || '',
+            categories: seller?.categories?.join(', ') || '',
+            isVerified: seller?.isVerified || false,
+            // Courier fields
+            vehiclePlate: courier?.vehiclePlate || '',
+            licenseNumber: courier?.licenseNumber || '',
+            cities: courier?.cities || [],
+            currentCity: courier?.currentCity || '',
+            isAvailable: courier?.isAvailable || false,
           });
         }
       });
