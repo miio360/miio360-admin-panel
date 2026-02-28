@@ -6,11 +6,13 @@ import { useShipmentPrices } from '../hooks/useShipmentPrices';
 import { Button } from '@/shared/components/ui/button';
 import { Plus } from 'lucide-react';
 import { ShipmentPrice } from '@/shared/types/shipment-price';
+import { useModal } from '@/shared/hooks/useModal';
 
 export function ShipmentPricesPage() {
-    const { prices, isLoading, refetch } = useShipmentPrices();
+    const { prices, isLoading, refetch, deletePrice } = useShipmentPrices();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [priceToEdit, setPriceToEdit] = useState<ShipmentPrice | null>(null);
+    const modal = useModal();
 
     const handleOpenForm = () => {
         setPriceToEdit(null);
@@ -20,6 +22,25 @@ export function ShipmentPricesPage() {
     const handleEdit = (price: ShipmentPrice) => {
         setPriceToEdit(price);
         setIsFormOpen(true);
+    };
+
+    const handleDelete = (id: string) => {
+        modal.showConfirm(
+            '¿Estás seguro de que deseas eliminar este precio de envío? Esta acción no se puede deshacer.',
+            async () => {
+                try {
+                    await deletePrice(id);
+                    modal.showSuccess('Precio de envío eliminado correctamente');
+                } catch (err: unknown) {
+                    const message = err instanceof Error ? err.message : 'Error al eliminar';
+                    modal.showError(message);
+                }
+            },
+            {
+                title: 'Eliminar precio de envío',
+                confirmText: 'Eliminar',
+            }
+        );
     };
 
     return (
@@ -40,6 +61,7 @@ export function ShipmentPricesPage() {
                 isLoading={isLoading}
                 onRefetch={refetch}
                 onEdit={handleEdit}
+                onDelete={handleDelete}
             />
 
             <ShipmentPriceForm

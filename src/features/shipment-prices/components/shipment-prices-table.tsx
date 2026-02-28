@@ -13,6 +13,7 @@ interface ShipmentPricesTableProps {
     isLoading: boolean;
     onRefetch: () => void;
     onEdit?: (price: ShipmentPrice) => void;
+    onDelete?: (id: string) => void;
 }
 
 function TableSkeleton() {
@@ -47,7 +48,7 @@ const TYPE_CONFIG: Record<string, { label: string; className: string; dot: strin
     national: { label: 'Nacional', className: 'bg-indigo-50 text-indigo-700 border border-indigo-200', dot: 'bg-indigo-500' },
 };
 
-export function ShipmentPricesTable({ prices, isLoading, onEdit }: ShipmentPricesTableProps) {
+export function ShipmentPricesTable({ prices, isLoading, onEdit, onDelete }: ShipmentPricesTableProps) {
     return (
         <TooltipProvider delayDuration={300}>
             <div className="hidden sm:block rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
@@ -123,6 +124,7 @@ export function ShipmentPricesTable({ prices, isLoading, onEdit }: ShipmentPrice
                                                         <Button
                                                             variant="ghost" size="icon"
                                                             className="h-7 w-7 text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition-colors"
+                                                            onClick={() => onDelete && onDelete(price.id)}
                                                         >
                                                             <Trash2 className="w-4 h-4" />
                                                         </Button>
@@ -192,7 +194,12 @@ export function ShipmentPricesTable({ prices, isLoading, onEdit }: ShipmentPrice
                                         <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-600 hover:bg-blue-50" onClick={() => onEdit && onEdit(price)}>
                                             <Edit2 className="w-4 h-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-rose-600 hover:bg-rose-50">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7 text-rose-600 hover:bg-rose-50"
+                                            onClick={() => onDelete && onDelete(price.id)}
+                                        >
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </div>
