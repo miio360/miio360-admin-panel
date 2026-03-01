@@ -7,6 +7,7 @@ interface CloudFunctionResponse {
     orderId?: string;
     orderNumber?: string;
     status?: string;
+    code?: string;
 }
 
 export const ordersTrackingService = {
@@ -45,6 +46,25 @@ export const ordersTrackingService = {
             console.error('Error marking payment user completed:', error);
             if (error instanceof Error) throw error;
             throw new Error('No se pudo marcar el pago como completado');
+        }
+    },
+    /**
+     * Assigns a courier to an order manually (admin only).
+     * Calls the assignCourierToOrder cloud function.
+     */
+    async assignCourier(orderId: string, courierId: string): Promise<CloudFunctionResponse> {
+        try {
+            const assignFn = httpsCallable(functions, 'assignCourierToOrder');
+            const result = await assignFn({ orderId, courierId });
+            const data = result.data as CloudFunctionResponse;
+            if (!data.success) {
+                throw new Error(data.message || 'Error al asignar el repartidor');
+            }
+            return data;
+        } catch (error) {
+            console.error('Error assigning courier:', error);
+            if (error instanceof Error) throw error;
+            throw new Error('No se pudo asignar el repartidor');
         }
     },
 };

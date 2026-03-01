@@ -6,7 +6,7 @@ import {
     ShoppingBag, AlertCircle, Loader2, X,
     Truck, User, Store, Package, CreditCard,
     DollarSign, MapPin, Phone, Clock,
-    CheckCircle2, Ban,
+    CheckCircle2, Ban, UserPlus,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -26,6 +26,7 @@ import { PageHeaderGlobal } from '@/shared/components/page-header-global';
 import { ErrorGlobal } from '@/shared/components/error-global';
 import { useOrdersTracking } from '@/features/orders/hooks/useOrdersTracking';
 import { ordersTrackingService } from '@/features/orders/api/ordersTrackingService';
+import { AssignCourierModal } from '@/features/orders/components/assign-courier-modal';
 import type { Order, OrderStatus as OrderStatusType } from '@/shared/types/order';
 import {
     OrderStatus, PaymentStatus,
@@ -130,7 +131,15 @@ function CardSkeleton() {
 
 // ─── Expandable details section ────────────────────────────────────────────────
 
-function OrderExpandedDetails({ order, onManagePayment }: { order: Order; onManagePayment: (order: Order) => void }) {
+function OrderExpandedDetails({
+    order,
+    onManagePayment,
+    onAssignCourier,
+}: {
+    order: Order;
+    onManagePayment: (order: Order) => void;
+    onAssignCourier: (order: Order) => void;
+}) {
     return (
         <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-100">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -172,11 +181,20 @@ function OrderExpandedDetails({ order, onManagePayment }: { order: Order; onMana
                     <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
                         <Truck className="w-3.5 h-3.5" /> Courier
                     </h4>
-                    <div className="space-y-1 text-sm">
+                    <div className="space-y-1.5 text-sm">
                         {order.courierName ? (
                             <p className="font-medium text-slate-900">{order.courierName}</p>
                         ) : (
-                            <p className="text-slate-400 italic">Sin asignar</p>
+                            <>
+                                <p className="text-slate-400 italic">Sin asignar</p>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onAssignCourier(order); }}
+                                    className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 hover:underline transition-colors"
+                                >
+                                    <UserPlus className="w-3.5 h-3.5" />
+                                    Asignar courier
+                                </button>
+                            </>
                         )}
                     </div>
                 </div>
@@ -348,6 +366,7 @@ export function OrdersTrackingPage() {
     const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
     const [paymentOrder, setPaymentOrder] = useState<Order | null>(null);
     const [cancelOrder, setCancelOrder] = useState<Order | null>(null);
+    const [assignCourierOrder, setAssignCourierOrder] = useState<Order | null>(null);
     const [actionLoading, setActionLoading] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
 
@@ -568,6 +587,7 @@ export function OrdersTrackingPage() {
                                                         <OrderExpandedDetails
                                                             order={order}
                                                             onManagePayment={setPaymentOrder}
+                                                            onAssignCourier={setAssignCourierOrder}
                                                         />
                                                     </TableCell>
                                                 </TableRow>
@@ -624,7 +644,11 @@ export function OrdersTrackingPage() {
                                         </div>
                                     </button>
                                     {isExpanded && (
-                                        <OrderExpandedDetails order={order} onManagePayment={setPaymentOrder} />
+                                        <OrderExpandedDetails
+                                            order={order}
+                                            onManagePayment={setPaymentOrder}
+                                            onAssignCourier={setAssignCourierOrder}
+                                        />
                                     )}
                                 </div>
                             );
@@ -771,6 +795,13 @@ export function OrdersTrackingPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* ── Assign courier modal ──────────────────────────── */}
+            <AssignCourierModal
+                order={assignCourierOrder}
+                onClose={() => setAssignCourierOrder(null)}
+                onSuccess={() => setAssignCourierOrder(null)}
+            />
         </TooltipProvider>
     );
 }

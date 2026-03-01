@@ -1,23 +1,34 @@
 import { db, functions } from './firebase';
 import {
   collection,
-  getCountFromServer,
   getDocs,
+  getCountFromServer,
   limit,
   orderBy,
   query,
   startAfter,
+  where,
   Timestamp,
   type DocumentData,
   type QueryDocumentSnapshot,
-  type UpdateData,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { UserRole, UserStatus } from '@/shared/types';
-import type { User, UserProfile, SellerProfile, CourierProfile } from '@/shared/types';
+import type { User } from '@/shared/types';
 import { CreateUserResponse } from '@/shared/types/user';
 
 const COLLECTION_NAME = 'users';
+
+/** Minimal courier data needed for the assign-courier modal. */
+export interface CourierSummary {
+  id: string;
+  fullName: string;
+  phone: string;
+  cities: string[];
+  currentCity: string | null;
+  isAvailable: boolean;
+  totalDeliveries: number;
+}
 
 interface CreateUserInput {
   email: string;
@@ -163,6 +174,40 @@ export const userService = {
     return { users: res.users, total: res.total };
   },
 
+  /**
+   * Returns all active courier users for the assign-courier modal.
+   * Sorted by fewest deliveries first.
+   */
+  async getCouriers(): Promise<CourierSummary[]> {
+    try {
+      const usersRef = collection(db, COLLECTION_NAME);
+      const q = query(
+        usersRef,
+        where('activeRole', '==', UserRole.COURIER),
+        where('status', '==', UserStatus.ACTIVE),
+      );
+      const snapshot = await getDocs(q);
+
+      return snapshot.docs.map((docSnap) => {
+        const d = docSnap.data();
+        const firstName: string = d.profile?.firstName ?? '';
+        const lastName: string = d.profile?.lastName ?? '';
+        return {
+          id: docSnap.id,
+          fullName: `${firstName} ${lastName}`.trim() || 'Repartidor',
+          phone: (d.profile?.phone as string | undefined) ?? '',
+          cities: (d.courierProfile?.cities as string[] | undefined) ?? [],
+          currentCity: (d.courierProfile?.currentCity as string | undefined) ?? null,
+          isAvailable: (d.courierProfile?.isAvailable as boolean | undefined) ?? false,
+          totalDeliveries: (d.courierProfile?.totalDeliveries as number | undefined) ?? 0,
+        };
+      });
+    } catch (error) {
+      console.error('Error fetching couriers:', error);
+      throw new Error('No se pudieron cargar los repartidores');
+    }
+  },
+
   async getById(id: string): Promise<User | null> {
     try {
       const { doc, getDoc } = await import('firebase/firestore');
@@ -194,16 +239,12 @@ export const userService = {
       const { updateDoc, doc } = await import('firebase/firestore');
       const userDoc = doc(db, COLLECTION_NAME, id);
 
-      const updateData: UpdateData<DocumentData> = {};
+      const updateData: Record<string, any> = {};
 
-      if (formData.firstName || formData.lastName || formData.phone || formData.email) {
-        const profile: Partial<UserProfile> = {};
-        if (formData.firstName) profile.firstName = formData.firstName;
-        if (formData.lastName) profile.lastName = formData.lastName;
-        if (formData.phone) profile.phone = formData.phone;
-        if (formData.email) profile.email = formData.email;
-        updateData.profile = profile;
-      }
+      if (formData.firstName) updateData['profile.firstName'] = formData.firstName;
+      if (formData.lastName) updateData['profile.lastName'] = formData.lastName;
+      if (formData.phone) updateData['profile.phone'] = formData.phone;
+      if (formData.email) updateData['profile.email'] = formData.email;
 
       if (formData.activeRole) {
         updateData.activeRole = formData.activeRole;
@@ -215,14 +256,13 @@ export const userService = {
       }
 
       if (formData.activeRole === UserRole.SELLER) {
-        const sellerProfile: Partial<SellerProfile> = {};
-        if (formData.businessName) sellerProfile.businessName = formData.businessName;
-        if (formData.businessType) sellerProfile.businessType = formData.businessType;
-        if (formData.taxId) sellerProfile.taxId = formData.taxId;
-        if (formData.businessPhone) sellerProfile.businessPhone = formData.businessPhone;
-        if (formData.businessEmail) sellerProfile.businessEmail = formData.businessEmail;
+        if (formData.businessName) updateData['sellerProfile.businessName'] = formData.businessName;
+        if (formData.businessType) updateData['sellerProfile.businessType'] = formData.businessType;
+        if (formData.taxId) updateData['sellerProfile.taxId'] = formData.taxId;
+        if (formData.businessPhone) updateData['sellerProfile.businessPhone'] = formData.businessPhone;
+        if (formData.businessEmail) updateData['sellerProfile.businessEmail'] = formData.businessEmail;
         if (formData.businessAddress) {
-          sellerProfile.businessAddress = {
+          updateData['sellerProfile.businessAddress'] = {
             id: '',
             street: formData.businessAddress,
             city: '',
@@ -233,21 +273,20 @@ export const userService = {
         }
         if (formData.categories) {
           if (typeof formData.categories === 'string') {
-            sellerProfile.categories = formData.categories.split(',').map((c: string) => c.trim());
+            updateData['sellerProfile.categories'] = formData.categories.split(',').map((c: string) => c.trim());
           } else {
-            sellerProfile.categories = formData.categories;
+            updateData['sellerProfile.categories'] = formData.categories;
           }
         }
-        updateData.sellerProfile = sellerProfile;
       }
 
       if (formData.activeRole === UserRole.COURIER) {
-        const courierProfile: Partial<CourierProfile> = {};
-        if (formData.vehiclePlate) courierProfile.vehiclePlate = formData.vehiclePlate;
-        if (formData.licenseNumber) courierProfile.licenseNumber = formData.licenseNumber;
-        if (formData.cities !== undefined) courierProfile.cities = formData.cities;
-        if (formData.currentCity !== undefined) courierProfile.currentCity = formData.currentCity;
-        updateData.courierProfile = courierProfile;
+        if (formData.vehiclePlate) updateData['courierProfile.vehiclePlate'] = formData.vehiclePlate;
+        if (formData.licenseNumber) updateData['courierProfile.licenseNumber'] = formData.licenseNumber;
+        if (formData.cities !== undefined) updateData['courierProfile.cities'] = formData.cities;
+        if (formData.currentCity !== undefined) updateData['courierProfile.currentCity'] = formData.currentCity;
+        // Setear siempre en true al editar un repartidor
+        updateData['courierProfile.isAvailable'] = true;
       }
 
       updateData.updatedAt = Timestamp.fromDate(new Date());
