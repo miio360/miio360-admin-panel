@@ -12,11 +12,11 @@ interface CloudFunctionResponse {
 
 export const ordersTrackingService = {
     /**
-     * Calls the cancelOrderAdmin cloud function to cancel an order from admin.
+     * Calls the cancelOrder cloud function to cancel an order.
      */
     async cancelOrder(orderId: string, reason?: string): Promise<CloudFunctionResponse> {
         try {
-            const cancelOrderFn = httpsCallable(functions, 'cancelOrderAdmin');
+            const cancelOrderFn = httpsCallable(functions, 'cancelOrder');
             const result = await cancelOrderFn({ orderId, reason });
             const data = result.data as CloudFunctionResponse;
             if (!data.success) {

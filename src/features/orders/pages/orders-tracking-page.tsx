@@ -336,7 +336,7 @@ function PaymentUserStatusSection({ order, onManagePayment }: { order: Order; on
                     </span>
                 </div>
                 <div className="text-sm text-slate-600">
-                    Total: <span className="font-bold text-slate-800">{formatAmount(order.total)}</span>
+                    Total: <span className="font-bold text-slate-800">{formatAmount(pus.amount ?? order.total)}</span>
                 </div>
             </div>
             {pus.status === PaymentStatus.PENDING && (
@@ -709,7 +709,7 @@ export function OrdersTrackingPage() {
                                     )}
                                 </>
                             )}
-                            <p className="text-lg font-bold text-slate-900 pt-1">{paymentOrder ? formatAmount(paymentOrder.total) : ''}</p>
+                            <p className="text-lg font-bold text-slate-900 pt-1">{paymentOrder ? formatAmount(paymentOrder.paymentUserStatus?.amount ?? paymentOrder.total) : ''}</p>
                         </div>
 
                         {/* QR del vendedor si aplica */}

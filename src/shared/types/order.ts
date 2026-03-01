@@ -78,6 +78,7 @@ export interface OrderPayment {
 export interface PaymentUserStatus {
   toUser: 'client' | 'seller';
   status: PaymentStatus;
+  amount?: number;
 }
 
 // ─── Order ─────────────────────────────────────────────────────────────────────
