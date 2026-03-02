@@ -1,12 +1,12 @@
-import { useState, useCallback, Fragment } from 'react';
+import { useState, useCallback, Fragment, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
     ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
     ShoppingBag, AlertCircle, Loader2, X,
-    Truck, User, Store, Package, CreditCard,
+    Truck, Store, Package, CreditCard,
     DollarSign, MapPin, Phone, Clock,
-    CheckCircle2, Ban, UserPlus,
+    CheckCircle2, Ban, UserPlus, User2,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -26,6 +26,8 @@ import { PageHeaderGlobal } from '@/shared/components/page-header-global';
 import { ErrorGlobal } from '@/shared/components/error-global';
 import { useOrdersTracking } from '@/features/orders/hooks/useOrdersTracking';
 import { ordersTrackingService } from '@/features/orders/api/ordersTrackingService';
+import { userService } from '@/shared/services/userService';
+import type { User } from '@/shared/types';
 import { AssignCourierModal } from '@/features/orders/components/assign-courier-modal';
 import type { Order, OrderStatus as OrderStatusType } from '@/shared/types/order';
 import {
@@ -36,8 +38,8 @@ import {
 // ─── Status styling ────────────────────────────────────────────────────────────
 
 const ORDER_STATUS_CONFIG: Record<string, { label: string; className: string; dot: string }> = {
-    [OrderStatus.RESERVED]: { label: 'Reservado', className: 'bg-amber-50 text-amber-700 border border-amber-200', dot: 'bg-amber-400' },
-    [OrderStatus.PENDING_PAY_CONFIRMATION]: { label: 'Pago pendiente', className: 'bg-orange-50 text-orange-700 border border-orange-200', dot: 'bg-orange-400' },
+    [OrderStatus.RESERVED]: { label: 'Pendiente de pago', className: 'bg-amber-50 text-amber-700 border border-amber-200', dot: 'bg-amber-400' },
+    [OrderStatus.PENDING_PAY_CONFIRMATION]: { label: 'Pendiente validación pago', className: 'bg-orange-50 text-orange-700 border border-orange-200', dot: 'bg-orange-400' },
     [OrderStatus.PAID]: { label: 'Pagado', className: 'bg-blue-50 text-blue-700 border border-blue-200', dot: 'bg-blue-500' },
     [OrderStatus.PREPARING]: { label: 'Preparando', className: 'bg-indigo-50 text-indigo-700 border border-indigo-200', dot: 'bg-indigo-500' },
     [OrderStatus.PENDING_PICKUP]: { label: 'Esperando courier', className: 'bg-purple-50 text-purple-700 border border-purple-200', dot: 'bg-purple-500' },
@@ -62,8 +64,8 @@ type StatusFilter = OrderStatusType | 'all';
 
 const STATUS_TABS: { value: StatusFilter; label: string }[] = [
     { value: 'all', label: 'Todos' },
-    { value: OrderStatus.RESERVED, label: 'Reservados' },
-    { value: OrderStatus.PENDING_PAY_CONFIRMATION, label: 'Pend. Pago' },
+    { value: OrderStatus.RESERVED, label: 'Pend. Pago' },
+    { value: OrderStatus.PENDING_PAY_CONFIRMATION, label: 'Pend. Validación' },
     { value: OrderStatus.PAID, label: 'Pagados' },
     { value: OrderStatus.IN_TRANSIT, label: 'En tránsito' },
     { value: OrderStatus.DELIVERED, label: 'Entregados' },
@@ -146,7 +148,7 @@ function OrderExpandedDetails({
                 {/* Comprador */}
                 <div className="space-y-2">
                     <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
-                        <User className="w-3.5 h-3.5" /> Comprador
+                        <User2 className="w-3.5 h-3.5" /> Comprador
                     </h4>
                     <div className="space-y-1 text-sm">
                         <p className="font-medium text-slate-900">{order.userName}</p>
@@ -369,6 +371,22 @@ export function OrdersTrackingPage() {
     const [assignCourierOrder, setAssignCourierOrder] = useState<Order | null>(null);
     const [actionLoading, setActionLoading] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
+
+    const [clientUser, setClientUser] = useState<User | null>(null);
+    const [isFetchingClient, setIsFetchingClient] = useState(false);
+
+    useEffect(() => {
+        if (paymentOrder?.paymentUserStatus?.toUser === 'client' && paymentOrder.userId) {
+            setIsFetchingClient(true);
+            userService.getById(paymentOrder.userId)
+                .then(user => setClientUser(user))
+                .catch(err => console.error('Error fetching client user data:', err))
+                .finally(() => setIsFetchingClient(false));
+        } else {
+            setClientUser(null);
+            setIsFetchingClient(false);
+        }
+    }, [paymentOrder]);
 
     const activeTab: StatusFilter = statusFilter ?? 'all';
 
@@ -702,10 +720,26 @@ export function OrdersTrackingPage() {
                             ) : (
                                 <>
                                     <p className="text-sm font-medium text-slate-900">{paymentOrder?.userName}</p>
-                                    {paymentOrder?.userPhone && (
+                                    {isFetchingClient ? (
                                         <p className="text-sm text-slate-500 flex items-center gap-1">
-                                            <Phone className="w-3 h-3" /> {paymentOrder.userPhone}
+                                            <Loader2 className="w-3 h-3 animate-spin" /> Cargando teléfono...
                                         </p>
+                                    ) : (clientUser?.profile?.phone || paymentOrder?.userPhone) ? (
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-sm text-slate-500 flex items-center gap-1">
+                                                <Phone className="w-3 h-3" /> {clientUser?.profile?.phone || paymentOrder?.userPhone}
+                                            </p>
+                                            <a
+                                                href={`https://wa.me/${String(clientUser?.profile?.phone || paymentOrder?.userPhone).replace(/[^0-9]/g, '')}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2 py-1 rounded transition-colors"
+                                            >
+                                                Contactar por WhatsApp
+                                            </a>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-slate-400 italic">Celular no disponible</p>
                                     )}
                                 </>
                             )}

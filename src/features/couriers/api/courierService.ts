@@ -10,13 +10,14 @@ import {
   where,
   doc,
   updateDoc,
+  type FieldValue,
   type DocumentData,
   type QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { db, functions } from '@/shared/services/firebase';
 import { httpsCallable } from 'firebase/functions';
 import { UserRole, UserStatus } from '@/shared/types';
-import type { User, CourierProfile } from '@/shared/types';
+import type { User } from '@/shared/types';
 import type { CreateUserResponse } from '@/shared/types/user';
 
 const COLLECTION = 'users';
@@ -117,30 +118,24 @@ export async function createCourier(input: CreateCourierInput): Promise<string> 
   throw new Error(response.message);
 }
 
-/** Update basic courier data and courierProfile fields in Firestore. */
+/** Update basic courier data and courierProfile fields in Firestore using dot notation to avoid overwriting nested objects. */
 export async function updateCourier(id: string, input: UpdateCourierInput): Promise<void> {
   const userDoc = doc(db, COLLECTION, id);
 
-  const updateData: Record<string, unknown> = {
+  const updateData: Record<string, FieldValue | Partial<unknown> | undefined> = {
     updatedAt: Timestamp.fromDate(new Date()),
   };
 
-  if (input.firstName || input.lastName || input.phone) {
-    const profile: Record<string, unknown> = {};
-    if (input.firstName) profile.firstName = input.firstName;
-    if (input.lastName) profile.lastName = input.lastName;
-    if (input.phone) profile.phone = input.phone;
-    updateData.profile = profile;
-  }
+  if (input.firstName !== undefined) updateData['profile.firstName'] = input.firstName;
+  if (input.lastName !== undefined) updateData['profile.lastName'] = input.lastName;
+  if (input.phone !== undefined) updateData['profile.phone'] = input.phone;
 
-  if (input.status) updateData.status = input.status;
+  if (input.status !== undefined) updateData.status = input.status;
 
-  const courierProfile: Partial<CourierProfile> = {};
-  if (input.vehiclePlate !== undefined) courierProfile.vehiclePlate = input.vehiclePlate;
-  if (input.licenseNumber !== undefined) courierProfile.licenseNumber = input.licenseNumber;
-  if (input.cities !== undefined) courierProfile.cities = input.cities;
-  if (input.currentCity !== undefined) courierProfile.currentCity = input.currentCity;
-  if (Object.keys(courierProfile).length > 0) updateData.courierProfile = courierProfile;
+  if (input.vehiclePlate !== undefined) updateData['courierProfile.vehiclePlate'] = input.vehiclePlate;
+  if (input.licenseNumber !== undefined) updateData['courierProfile.licenseNumber'] = input.licenseNumber;
+  if (input.cities !== undefined) updateData['courierProfile.cities'] = input.cities;
+  if (input.currentCity !== undefined) updateData['courierProfile.currentCity'] = input.currentCity;
 
   await updateDoc(userDoc, updateData);
 }
