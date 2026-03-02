@@ -7,6 +7,7 @@ import {
     Truck, Store, Package, CreditCard,
     DollarSign, MapPin, Phone, Clock,
     CheckCircle2, Ban, UserPlus, User2,
+    Image, FileText,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -133,14 +134,53 @@ function CardSkeleton() {
 
 // ─── Expandable details section ────────────────────────────────────────────────
 
+function EvidenceThumb({ label, file, onView }: {
+    label: string;
+    file: { url: string; name?: string } | undefined;
+    onView: (url: string, label: string) => void;
+}) {
+    if (!file?.url) {
+        return (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-white p-5 text-slate-400">
+                <FileText className="w-6 h-6 opacity-40" />
+                <p className="text-xs">{label}</p>
+                <p className="text-xs italic">Sin comprobante</p>
+            </div>
+        );
+    }
+    const isImage = /\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(file.url) || file.url.includes('firebasestorage');
+    return (
+        <button
+            onClick={() => onView(file.url, label)}
+            className="group relative flex flex-col items-center gap-2 rounded-xl border border-slate-200 bg-white p-3 hover:border-indigo-300 hover:shadow-sm transition-all text-left w-full"
+        >
+            {isImage ? (
+                <img
+                    src={file.url}
+                    alt={label}
+                    className="w-full h-28 object-cover rounded-lg"
+                />
+            ) : (
+                <div className="flex h-28 w-full items-center justify-center rounded-lg bg-slate-50">
+                    <FileText className="w-10 h-10 text-slate-400" />
+                </div>
+            )}
+            <p className="text-xs font-medium text-slate-600 group-hover:text-indigo-600 truncate w-full text-center">{label}</p>
+            <span className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded font-medium">Ver</span>
+        </button>
+    );
+}
+
 function OrderExpandedDetails({
     order,
     onManagePayment,
     onAssignCourier,
+    onViewEvidence,
 }: {
     order: Order;
     onManagePayment: (order: Order) => void;
     onAssignCourier: (order: Order) => void;
+    onViewEvidence: (url: string, label: string) => void;
 }) {
     return (
         <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-100">
@@ -282,6 +322,30 @@ function OrderExpandedDetails({
                     <PaymentUserStatusSection order={order} onManagePayment={onManagePayment} />
                 </div>
 
+                {/* Comprobantes de envío y recepción */}
+                <div className="space-y-2 md:col-span-3">
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+                        <Image className="w-3.5 h-3.5" /> Comprobantes de entrega
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3">
+                        <EvidenceThumb
+                            label="Comprobante de envío"
+                            file={order.shippingInfo?.fileShippingNote}
+                            onView={onViewEvidence}
+                        />
+                        <EvidenceThumb
+                            label="Comprobante de recepción"
+                            file={order.shippingInfo?.filePhotoDelibered}
+                            onView={onViewEvidence}
+                        />
+                    </div>
+                    {order.shippingInfo?.shipmentCode && (
+                        <p className="text-xs text-slate-500">
+                            Código de envío: <span className="font-mono font-semibold text-slate-700">{order.shippingInfo.shipmentCode}</span>
+                        </p>
+                    )}
+                </div>
+
                 {/* Notas / Razón de cancelación */}
                 {(order.notes || order.cancelReason) && (
                     <div className="space-y-2 md:col-span-3">
@@ -371,6 +435,7 @@ export function OrdersTrackingPage() {
     const [assignCourierOrder, setAssignCourierOrder] = useState<Order | null>(null);
     const [actionLoading, setActionLoading] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
+    const [evidenceModal, setEvidenceModal] = useState<{ url: string; label: string } | null>(null);
 
     const [clientUser, setClientUser] = useState<User | null>(null);
     const [isFetchingClient, setIsFetchingClient] = useState(false);
@@ -606,6 +671,7 @@ export function OrdersTrackingPage() {
                                                             order={order}
                                                             onManagePayment={setPaymentOrder}
                                                             onAssignCourier={setAssignCourierOrder}
+                                                            onViewEvidence={(url, label) => setEvidenceModal({ url, label })}
                                                         />
                                                     </TableCell>
                                                 </TableRow>
@@ -666,6 +732,7 @@ export function OrdersTrackingPage() {
                                             order={order}
                                             onManagePayment={setPaymentOrder}
                                             onAssignCourier={setAssignCourierOrder}
+                                            onViewEvidence={(url, label) => setEvidenceModal({ url, label })}
                                         />
                                     )}
                                 </div>
@@ -836,6 +903,59 @@ export function OrdersTrackingPage() {
                 onClose={() => setAssignCourierOrder(null)}
                 onSuccess={() => setAssignCourierOrder(null)}
             />
+
+            {/* ── Evidence preview modal ────────────────────────── */}
+            <Dialog open={!!evidenceModal} onOpenChange={(open) => !open && setEvidenceModal(null)}>
+                <DialogContent className="max-w-2xl p-0 overflow-hidden">
+                    <DialogHeader className="px-5 pt-5 pb-0">
+                        <DialogTitle className="flex items-center gap-2 text-base">
+                            <Image className="w-4 h-4 text-indigo-600" />
+                            {evidenceModal?.label}
+                        </DialogTitle>
+                        <DialogDescription className="sr-only">
+                            Vista previa del comprobante de entrega
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="p-4">
+                        {evidenceModal && (() => {
+                            const isImage = /\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(evidenceModal.url) || evidenceModal.url.includes('firebasestorage');
+                            return isImage ? (
+                                <img
+                                    src={evidenceModal.url}
+                                    alt={evidenceModal.label}
+                                    className="w-full max-h-[70vh] object-contain rounded-lg border border-slate-100"
+                                />
+                            ) : (
+                                <div className="flex flex-col items-center gap-4 py-10">
+                                    <FileText className="w-16 h-16 text-slate-300" />
+                                    <p className="text-sm text-slate-500">Este comprobante es un archivo no previsualizable.</p>
+                                    <a
+                                        href={evidenceModal.url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                                    >
+                                        Abrir archivo
+                                    </a>
+                                </div>
+                            );
+                        })()}
+                    </div>
+                    <div className="px-4 pb-4 flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setEvidenceModal(null)}>Cerrar</Button>
+                        {evidenceModal && (
+                            <a
+                                href={evidenceModal.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+                            >
+                                Abrir en nueva pestaña
+                            </a>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </TooltipProvider>
     );
 }

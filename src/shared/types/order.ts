@@ -81,6 +81,24 @@ export interface PaymentUserStatus {
   amount?: number;
 }
 
+export interface ShipmentFile {
+  url: string;
+  path?: string;
+  name?: string;
+}
+
+/** Evidence files uploaded by the courier during pickup and delivery. */
+export interface ShipmentInfo {
+  courierId?: string;
+  courierName?: string;
+  shipmentCode?: string;
+  /** Shipping note / pickup proof uploaded by the courier. */
+  fileShippingNote?: ShipmentFile;
+  /** Photo taken at delivery as proof of reception. */
+  filePhotoDelibered?: ShipmentFile;
+  deliveredAt?: { seconds: number; nanoseconds: number };
+}
+
 // ─── Order ─────────────────────────────────────────────────────────────────────
 
 export interface Order {
@@ -105,6 +123,7 @@ export interface Order {
   paymentUserStatus?: PaymentUserStatus;
 
   shippingAddress: ShippingAddress;
+  shippingInfo?: ShipmentInfo;
 
   courierId?: string;
   courierName?: string;
