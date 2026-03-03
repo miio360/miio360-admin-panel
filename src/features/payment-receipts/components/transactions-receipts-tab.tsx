@@ -216,9 +216,9 @@ export function TransactionsReceiptsTab() {
                                     <TableCell colSpan={6} className="py-16 text-center">
                                         <div className="flex flex-col items-center gap-3 text-slate-400">
                                             <CardIcon className="w-10 h-10 opacity-40" />
-                                            <p className="text-sm font-medium">No se encontraron transacciones</p>
+                                            <p className="text-sm font-medium">No se encontraron comprobantes de pago para validar</p>
                                             <p className="text-xs text-slate-400">
-                                                {activeTab !== 'all' ? 'No hay transacciones con este estado' : 'Las transacciones aparecerán aquí'}
+                                                {activeTab !== 'all' ? 'No hay comprobantes de pago con este estado' : 'Los comprobantes de pago aparecerán aquí'}
                                             </p>
                                         </div>
                                     </TableCell>

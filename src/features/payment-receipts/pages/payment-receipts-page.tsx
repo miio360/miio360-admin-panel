@@ -46,7 +46,7 @@ export function PaymentReceiptsPage() {
             }`}
         >
           <CreditCard className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate min-w-0">Transacciones</span>
+          <span className="truncate min-w-0">Saldos por Minuto</span>
         </button>
       </div>
 
