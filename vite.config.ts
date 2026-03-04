@@ -54,15 +54,7 @@ function firebaseMessagingSw(): Plugin {
     name: 'firebase-messaging-sw',
     enforce: 'post',
     configResolved(config) {
-      // Merge: process.env covers CI/CD (Cloudflare Pages, GitHub Actions),
-      // loadEnv covers local .env files. loadEnv takes precedence locally.
-      const fileEnv = loadEnv(config.mode, config.root, 'VITE_')
-      const processEnv = Object.fromEntries(
-        Object.entries(process.env)
-          .filter(([k]) => k.startsWith('VITE_'))
-          .map(([k, v]) => [k, v ?? ''])
-      )
-      const env = { ...processEnv, ...fileEnv }
+      const env = loadEnv(config.mode, config.root, 'VITE_')
       swContent = generateFirebaseSwContent(env)
     },
     configureServer(server) {
@@ -82,78 +74,57 @@ function firebaseMessagingSw(): Plugin {
 }
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
-  // Merge: process.env covers CI/CD runners (Cloudflare Pages, GitHub Actions)
-  // where no .env files exist. loadEnv takes precedence to keep local dev working.
-  const fileEnv = loadEnv(mode, process.cwd(), 'VITE_')
-  const processViteEnv = Object.fromEntries(
-    Object.entries(process.env)
-      .filter(([k]) => k.startsWith('VITE_'))
-      .map(([k, v]) => [k, v ?? ''])
-  )
-  const env = { ...processViteEnv, ...fileEnv }
-
-  // Explicitly replace import.meta.env.VITE_* at build time
-  const envDefines = Object.fromEntries(
-    Object.entries(env).map(([k, v]) => [`import.meta.env.${k}`, JSON.stringify(v)])
-  )
-
-  return {
-    plugins: [
-      react(),
-      VitePWA({
-        registerType: 'autoUpdate',
-        injectRegister: 'auto',
-        workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
-          navigateFallback: '/index.html',
-          // Exclude the FCM SW from workbox pre-caching to avoid conflicts
-          navigateFallbackDenylist: [/^\/firebase-messaging-sw\.js$/],
-          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        },
-        manifest: {
-          name: 'Miio Admin Panel',
-          short_name: 'Miio Admin',
-          description: 'Panel de administración de Miio360',
-          theme_color: '#0f172a',
-          background_color: '#0f172a',
-          display: 'standalone',
-          orientation: 'portrait',
-          scope: '/',
-          start_url: '/',
-          icons: [
-            {
-              src: '/MiioIcon.png',
-              sizes: '192x192',
-              type: 'image/png',
-            },
-            {
-              src: '/MiioIcon.png',
-              sizes: '512x512',
-              type: 'image/png',
-            },
-            {
-              src: '/MiioIcon.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'maskable',
-            },
-          ],
-        },
-        devOptions: {
-          enabled: false,
-        },
-      }),
-      firebaseMessagingSw(),
-    ],
-    define: envDefines,
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, './src'),
+export default defineConfig({
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
+        navigateFallback: '/index.html',
+        // Exclude the FCM SW from workbox pre-caching to avoid conflicts
+        navigateFallbackDenylist: [/^\/firebase-messaging-sw\.js$/],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
+      manifest: {
+        name: 'Miio Admin Panel',
+        short_name: 'Miio Admin',
+        description: 'Panel de administración de Miio360',
+        theme_color: '#0f172a',
+        background_color: '#0f172a',
+        display: 'standalone',
+        orientation: 'portrait',
+        scope: '/',
+        start_url: '/',
+        icons: [
+          {
+            src: '/MiioIcon.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: '/MiioIcon.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+          {
+            src: '/MiioIcon.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
+      devOptions: {
+        enabled: false,
+      },
+    }),
+    firebaseMessagingSw(),
+  ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
     },
-    build: {
-      chunkSizeWarningLimit: 2000,
-    },
-  }
+  },
 })
