@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle2, Loader2, MapPin, Package, Phone, Truck, User, Wifi, WifiOff } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, MapPin, Phone, Truck, User, Wifi, WifiOff } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import {
     Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
