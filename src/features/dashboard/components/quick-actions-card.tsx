@@ -28,7 +28,7 @@ export const QuickActionsCard = () => {
     {
       label: 'Configurar QR',
       icon: Settings,
-      onClick: () => navigate('/payment-settings'),
+      onClick: () => navigate('/settings'),
       variant: 'outline' as const,
     },
   ];
