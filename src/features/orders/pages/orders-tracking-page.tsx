@@ -396,9 +396,9 @@ function RecipientPaymentCard({ label, icon, status, recipient, onManage }: Reci
     const cfg = PAYMENT_USER_STATUS_CONFIG[status.status] ?? PAYMENT_USER_STATUS_CONFIG[PaymentStatus.PENDING];
 
     return (
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3">
-            <div className="space-y-1">
-                <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-lg border border-slate-100 bg-white px-4 py-3">
+            <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
                     {icon}
                     <p className="text-sm font-semibold text-slate-800">{label}</p>
                     <span className={cn(
@@ -409,18 +409,18 @@ function RecipientPaymentCard({ label, icon, status, recipient, onManage }: Reci
                         {cfg.label}
                     </span>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-slate-500">
-                    <span>Bruto: <span className="font-medium text-slate-700">{formatAmount(status.grossAmount)}</span></span>
-                    <span className="text-slate-300">|</span>
-                    <span>Comisión ({status.commissionPct}%): <span className="font-medium text-rose-600">-{formatAmount(status.commissionAmount)}</span></span>
-                    <span className="text-slate-300">|</span>
-                    <span>Neto: <span className="font-bold text-emerald-700">{formatAmount(status.netAmount)}</span></span>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
+                    <span className="whitespace-nowrap">Bruto: <span className="font-medium text-slate-700">{formatAmount(status.grossAmount)}</span></span>
+                    <span className="text-slate-300 hidden sm:inline">|</span>
+                    <span className="whitespace-nowrap">Comisión ({status.commissionPct}%): <span className="font-medium text-rose-600">-{formatAmount(status.commissionAmount)}</span></span>
+                    <span className="text-slate-300 hidden sm:inline">|</span>
+                    <span className="whitespace-nowrap">Neto: <span className="font-bold text-emerald-700">{formatAmount(status.netAmount)}</span></span>
                 </div>
             </div>
             {status.status === PaymentStatus.PENDING && (
                 <Button
                     size="sm"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shrink-0"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shrink-0 self-start sm:self-auto"
                     onClick={() => onManage(recipient)}
                 >
                     <DollarSign className="w-3.5 h-3.5" />
