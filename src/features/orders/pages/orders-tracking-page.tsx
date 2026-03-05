@@ -34,6 +34,7 @@ import type { Order, OrderStatus as OrderStatusType } from '@/shared/types/order
 import {
     OrderStatus, PaymentStatus,
     PAYMENT_METHOD_LABELS, PAYMENT_USER_STATUS_LABELS,
+    type PaymentRecipientStatus,
 } from '@/shared/types/order';
 
 // ─── Status styling ────────────────────────────────────────────────────────────
@@ -54,11 +55,11 @@ const ORDER_STATUS_CONFIG: Record<string, { label: string; className: string; do
     [OrderStatus.COMPLETED]: { label: 'Completado', className: 'bg-emerald-50 text-emerald-700 border border-emerald-200', dot: 'bg-emerald-500' },
 };
 
-const PAYMENT_USER_STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-    [PaymentStatus.PENDING]: { label: 'Pendiente', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
-    [PaymentStatus.COMPLETED]: { label: 'Completado', className: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
-    [PaymentStatus.FAILED]: { label: 'Fallido', className: 'bg-rose-50 text-rose-700 border border-rose-200' },
-    [PaymentStatus.REFUNDED]: { label: 'Reembolsado', className: 'bg-gray-50 text-gray-700 border border-gray-200' },
+const PAYMENT_USER_STATUS_CONFIG: Record<string, { label: string; className: string; dot: string }> = {
+    [PaymentStatus.PENDING]: { label: 'Pendiente', className: 'bg-amber-50 text-amber-700 border border-amber-200', dot: 'bg-amber-400' },
+    [PaymentStatus.COMPLETED]: { label: 'Completado', className: 'bg-emerald-50 text-emerald-700 border border-emerald-200', dot: 'bg-emerald-500' },
+    [PaymentStatus.FAILED]: { label: 'Fallido', className: 'bg-rose-50 text-rose-700 border border-rose-200', dot: 'bg-rose-500' },
+    [PaymentStatus.REFUNDED]: { label: 'Reembolsado', className: 'bg-gray-50 text-gray-700 border border-gray-200', dot: 'bg-gray-400' },
 };
 
 type StatusFilter = OrderStatusType | 'all';
@@ -178,7 +179,7 @@ function OrderExpandedDetails({
     onViewEvidence,
 }: {
     order: Order;
-    onManagePayment: (order: Order) => void;
+    onManagePayment: (order: Order, recipient: 'seller' | 'courier' | 'client') => void;
     onAssignCourier: (order: Order) => void;
     onViewEvidence: (url: string, label: string) => void;
 }) {
@@ -314,19 +315,26 @@ function OrderExpandedDetails({
                     </div>
                 </div>
 
-                {/* Pago a usuario (paymentUserStatus) */}
+                {/* Pagos coordinados */}
                 <div className="space-y-2 md:col-span-3">
                     <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
-                        <DollarSign className="w-3.5 h-3.5" /> Pago al usuario
+                        <DollarSign className="w-3.5 h-3.5" /> Pagos coordinados
                     </h4>
-                    <PaymentUserStatusSection order={order} onManagePayment={onManagePayment} />
+                    <PaymentRecipientsSection order={order} onManagePayment={onManagePayment} />
                 </div>
 
                 {/* Comprobantes de envío y recepción */}
                 <div className="space-y-2 md:col-span-3">
-                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
-                        <Image className="w-3.5 h-3.5" /> Comprobantes de entrega
-                    </h4>
+                    <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+                            <Image className="w-3.5 h-3.5" /> Comprobantes de entrega
+                        </h4>
+                        {order.shippingInfo?.shipmentCode && (
+                            <p className="text-xs text-slate-500">
+                                Nota de envío: <span className="font-mono font-semibold text-slate-700">{order.shippingInfo.shipmentCode}</span>
+                            </p>
+                        )}
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
                         <EvidenceThumb
                             label="Comprobante de envío"
@@ -339,11 +347,6 @@ function OrderExpandedDetails({
                             onView={onViewEvidence}
                         />
                     </div>
-                    {order.shippingInfo?.shipmentCode && (
-                        <p className="text-xs text-slate-500">
-                            Código de envío: <span className="font-mono font-semibold text-slate-700">{order.shippingInfo.shipmentCode}</span>
-                        </p>
-                    )}
                 </div>
 
                 {/* Notas / Razón de cancelación */}
@@ -368,53 +371,109 @@ function OrderExpandedDetails({
     );
 }
 
-// ─── Payment user status section ───────────────────────────────────────────────
+// ─── Payment recipients section ────────────────────────────────────────────────
 
-function PaymentUserStatusSection({ order, onManagePayment }: { order: Order; onManagePayment: (order: Order) => void }) {
-    if (!order.paymentUserStatus) {
+type PaymentRecipient = 'seller' | 'courier' | 'client';
+
+interface RecipientCardProps {
+    label: string;
+    icon: React.ReactNode;
+    status: PaymentRecipientStatus | undefined;
+    recipient: PaymentRecipient;
+    onManage: (recipient: PaymentRecipient) => void;
+}
+
+function RecipientPaymentCard({ label, icon, status, recipient, onManage }: RecipientCardProps) {
+    if (!status) {
+        return (
+            <div className="flex items-center gap-3 rounded-lg border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-400">
+                {icon}
+                <span>{label}: Sin pago pendiente</span>
+            </div>
+        );
+    }
+
+    const cfg = PAYMENT_USER_STATUS_CONFIG[status.status] ?? PAYMENT_USER_STATUS_CONFIG[PaymentStatus.PENDING];
+
+    return (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3">
+            <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                    {icon}
+                    <p className="text-sm font-semibold text-slate-800">{label}</p>
+                    <span className={cn(
+                        'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium',
+                        cfg.className,
+                    )}>
+                        <span className={cn('w-1.5 h-1.5 rounded-full', cfg.dot)} />
+                        {cfg.label}
+                    </span>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-slate-500">
+                    <span>Bruto: <span className="font-medium text-slate-700">{formatAmount(status.grossAmount)}</span></span>
+                    <span className="text-slate-300">|</span>
+                    <span>Comisión ({status.commissionPct}%): <span className="font-medium text-rose-600">-{formatAmount(status.commissionAmount)}</span></span>
+                    <span className="text-slate-300">|</span>
+                    <span>Neto: <span className="font-bold text-emerald-700">{formatAmount(status.netAmount)}</span></span>
+                </div>
+            </div>
+            {status.status === PaymentStatus.PENDING && (
+                <Button
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shrink-0"
+                    onClick={() => onManage(recipient)}
+                >
+                    <DollarSign className="w-3.5 h-3.5" />
+                    Gestionar
+                </Button>
+            )}
+        </div>
+    );
+}
+
+function PaymentRecipientsSection({ order, onManagePayment }: {
+    order: Order;
+    onManagePayment: (order: Order, recipient: PaymentRecipient) => void;
+}) {
+    const hasSeller = !!order.paymentSellerStatus;
+    const hasCourier = !!order.paymentCourierStatus;
+    const hasClient = !!order.paymentClientRefundStatus;
+
+    if (!hasSeller && !hasCourier && !hasClient) {
         return (
             <div className="flex items-center gap-3 bg-white rounded-lg px-4 py-3 border border-slate-100">
                 <AlertCircle className="w-4 h-4 text-slate-400 shrink-0" />
                 <div>
-                    <p className="text-sm text-slate-500">No hay pago pendiente al usuario.</p>
-                    <p className="text-xs text-slate-400">Revise los comprobantes de pago para más información.</p>
+                    <p className="text-sm text-slate-500">No hay pagos pendientes coordinados.</p>
+                    <p className="text-xs text-slate-400">Aparecerán al confirmar pago o al entregar el pedido.</p>
                 </div>
             </div>
         );
     }
 
-    const pus = order.paymentUserStatus;
-    const statusConfig = PAYMENT_USER_STATUS_CONFIG[pus.status] || { label: pus.status, className: 'bg-gray-50 text-gray-700 border border-gray-200' };
-    const toUserLabel = pus.toUser === 'seller' ? 'Vendedor' : 'Cliente';
-
     return (
-        <div className="flex items-center justify-between gap-4 bg-white rounded-lg px-4 py-3 border border-slate-100">
-            <div className="flex items-center gap-4">
-                <div>
-                    <p className="text-sm text-slate-600">
-                        Pago a: <span className="font-semibold text-slate-800">{toUserLabel}</span>
-                    </p>
-                    <span className={cn(
-                        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium mt-1',
-                        statusConfig.className,
-                    )}>
-                        {statusConfig.label}
-                    </span>
-                </div>
-                <div className="text-sm text-slate-600">
-                    Total: <span className="font-bold text-slate-800">{formatAmount(pus.amount ?? order.total)}</span>
-                </div>
-            </div>
-            {pus.status === PaymentStatus.PENDING && (
-                <Button
-                    size="sm"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
-                    onClick={() => onManagePayment(order)}
-                >
-                    <DollarSign className="w-3.5 h-3.5" />
-                    Gestionar pago
-                </Button>
-            )}
+        <div className="space-y-2">
+            <RecipientPaymentCard
+                label="Vendedor"
+                icon={<Store className="w-3.5 h-3.5 text-slate-500" />}
+                status={order.paymentSellerStatus}
+                recipient="seller"
+                onManage={(r) => onManagePayment(order, r)}
+            />
+            <RecipientPaymentCard
+                label="Courier"
+                icon={<Truck className="w-3.5 h-3.5 text-slate-500" />}
+                status={order.paymentCourierStatus}
+                recipient="courier"
+                onManage={(r) => onManagePayment(order, r)}
+            />
+            <RecipientPaymentCard
+                label="Reembolso cliente"
+                icon={<User2 className="w-3.5 h-3.5 text-slate-500" />}
+                status={order.paymentClientRefundStatus}
+                recipient="client"
+                onManage={(r) => onManagePayment(order, r)}
+            />
         </div>
     );
 }
@@ -431,6 +490,7 @@ export function OrdersTrackingPage() {
 
     const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
     const [paymentOrder, setPaymentOrder] = useState<Order | null>(null);
+    const [paymentRecipient, setPaymentRecipient] = useState<'seller' | 'courier' | 'client'>('seller');
     const [cancelOrder, setCancelOrder] = useState<Order | null>(null);
     const [assignCourierOrder, setAssignCourierOrder] = useState<Order | null>(null);
     const [actionLoading, setActionLoading] = useState(false);
@@ -441,7 +501,7 @@ export function OrdersTrackingPage() {
     const [isFetchingClient, setIsFetchingClient] = useState(false);
 
     useEffect(() => {
-        if (paymentOrder?.paymentUserStatus?.toUser === 'client' && paymentOrder.userId) {
+        if (paymentRecipient === 'client' && paymentOrder?.userId) {
             setIsFetchingClient(true);
             userService.getById(paymentOrder.userId)
                 .then(user => setClientUser(user))
@@ -451,7 +511,7 @@ export function OrdersTrackingPage() {
             setClientUser(null);
             setIsFetchingClient(false);
         }
-    }, [paymentOrder]);
+    }, [paymentOrder, paymentRecipient]);
 
     const activeTab: StatusFilter = statusFilter ?? 'all';
 
@@ -468,20 +528,25 @@ export function OrdersTrackingPage() {
         setStatusFilter(tab === 'all' ? undefined : tab as OrderStatusType);
     };
 
+    const handleOpenPaymentDialog = (order: Order, recipient: 'seller' | 'courier' | 'client') => {
+        setPaymentOrder(order);
+        setPaymentRecipient(recipient);
+    };
+
     // ── Payment management modal ──
     const handleMarkPaymentCompleted = useCallback(async () => {
         if (!paymentOrder) return;
         try {
             setActionLoading(true);
             setActionError(null);
-            await ordersTrackingService.markPaymentUserCompleted(paymentOrder.id);
+            await ordersTrackingService.markPaymentUserCompleted(paymentOrder.id, paymentRecipient);
             setPaymentOrder(null);
         } catch (err) {
             setActionError(err instanceof Error ? err.message : 'Error al marcar pago');
         } finally {
             setActionLoading(false);
         }
-    }, [paymentOrder]);
+    }, [paymentOrder, paymentRecipient]);
 
     // ── Cancel order ──
     const handleCancelOrder = useCallback(async () => {
@@ -505,7 +570,7 @@ export function OrdersTrackingPage() {
             <div className="space-y-6 p-4 sm:p-6">
                 <PageHeaderGlobal
                     title="Seguimiento de Pedidos"
-                    description="Visualiza y gestiona todos los pedidos en tiempo real"
+                    description=""
                 />
 
                 {/* Status filter tabs */}
@@ -645,18 +710,39 @@ export function OrdersTrackingPage() {
                                                 </TableCell>
 
                                                 <TableCell>
-                                                    {order.paymentUserStatus ? (
-                                                        <span className={cn(
-                                                            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap',
-                                                            paymentUserCfg?.className || 'bg-gray-50 text-gray-700 border border-gray-200',
-                                                        )}>
-                                                            {order.paymentUserStatus.toUser === 'seller' ? '→ Vendedor' : '→ Cliente'}
-                                                            {' · '}
-                                                            {paymentUserCfg?.label || order.paymentUserStatus.status}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-xs text-slate-400">—</span>
-                                                    )}
+                                                    <div className="flex flex-col gap-1.5">
+                                                        {order.paymentSellerStatus?.status === PaymentStatus.PENDING && (
+                                                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit">
+                                                                <Store className="w-3 h-3" /> P. Vendedor
+                                                            </span>
+                                                        )}
+                                                        {order.paymentCourierStatus?.status === PaymentStatus.PENDING && (
+                                                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit">
+                                                                <Truck className="w-3 h-3" /> P. Courier
+                                                            </span>
+                                                        )}
+                                                        {order.paymentClientRefundStatus?.status === PaymentStatus.PENDING && (
+                                                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit">
+                                                                <User2 className="w-3 h-3" /> P. Cliente
+                                                            </span>
+                                                        )}
+                                                        {!order.paymentSellerStatus && !order.paymentCourierStatus && !order.paymentClientRefundStatus && !order.paymentUserStatus && (
+                                                            <span className="text-xs text-slate-400">—</span>
+                                                        )}
+                                                        {/* Legacy format fallback */}
+                                                        {!order.paymentSellerStatus && !order.paymentCourierStatus && !order.paymentClientRefundStatus && order.paymentUserStatus?.status === PaymentStatus.PENDING && (
+                                                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit">
+                                                                <DollarSign className="w-3 h-3" /> P. {order.paymentUserStatus.toUser === 'seller' ? 'Vendedor' : 'Cliente'}
+                                                            </span>
+                                                        )}
+                                                        {/* Completed or no pending */}
+                                                        {(order.paymentSellerStatus || order.paymentCourierStatus || order.paymentClientRefundStatus) &&
+                                                            order.paymentSellerStatus?.status !== PaymentStatus.PENDING &&
+                                                            order.paymentCourierStatus?.status !== PaymentStatus.PENDING &&
+                                                            order.paymentClientRefundStatus?.status !== PaymentStatus.PENDING && (
+                                                                <span className="text-xs text-slate-400">—</span>
+                                                            )}
+                                                    </div>
                                                 </TableCell>
 
                                                 <TableCell className="text-sm text-slate-500 whitespace-nowrap">
@@ -669,7 +755,7 @@ export function OrdersTrackingPage() {
                                                     <TableCell colSpan={9} className="p-0">
                                                         <OrderExpandedDetails
                                                             order={order}
-                                                            onManagePayment={setPaymentOrder}
+                                                            onManagePayment={handleOpenPaymentDialog}
                                                             onAssignCourier={setAssignCourierOrder}
                                                             onViewEvidence={(url, label) => setEvidenceModal({ url, label })}
                                                         />
@@ -730,7 +816,7 @@ export function OrdersTrackingPage() {
                                     {isExpanded && (
                                         <OrderExpandedDetails
                                             order={order}
-                                            onManagePayment={setPaymentOrder}
+                                            onManagePayment={handleOpenPaymentDialog}
                                             onAssignCourier={setAssignCourierOrder}
                                             onViewEvidence={(url, label) => setEvidenceModal({ url, label })}
                                         />
@@ -763,19 +849,45 @@ export function OrdersTrackingPage() {
                             Gestionar pago — Pedido {paymentOrder?.orderNumber}
                         </DialogTitle>
                         <DialogDescription className="text-sm text-slate-500">
-                            {paymentOrder?.paymentUserStatus?.toUser === 'seller'
-                                ? 'Debe realizarse el pago al vendedor'
-                                : 'Debe realizarse el reembolso al cliente'}
+                            {paymentRecipient === 'seller' && 'Realizar pago al vendedor'}
+                            {paymentRecipient === 'courier' && 'Realizar pago al courier'}
+                            {paymentRecipient === 'client' && 'Realizar reembolso al cliente'}
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="space-y-4 pt-2">
-                        {/* Info del destinatario */}
+                        {/* Payout breakdown */}
+                        {(() => {
+                            const status =
+                                paymentRecipient === 'seller' ? paymentOrder?.paymentSellerStatus :
+                                    paymentRecipient === 'courier' ? paymentOrder?.paymentCourierStatus :
+                                        paymentOrder?.paymentClientRefundStatus;
+                            if (!status) return null;
+                            return (
+                                <div className="rounded-lg bg-slate-50 border border-slate-100 p-4 space-y-1 text-sm">
+                                    <div className="flex justify-between text-slate-600">
+                                        <span>Monto bruto</span>
+                                        <span className="font-medium">{formatAmount(status.grossAmount)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-slate-600">
+                                        <span>Comisión ({status.commissionPct}%)</span>
+                                        <span className="font-medium text-rose-600">-{formatAmount(status.commissionAmount)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-slate-900 font-bold pt-1 border-t border-slate-200 mt-1">
+                                        <span>Monto neto a pagar</span>
+                                        <span className="text-emerald-700">{formatAmount(status.netAmount)}</span>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
+                        {/* Recipient info */}
                         <div className="rounded-lg bg-slate-50 border border-slate-100 p-4 space-y-2">
                             <p className="text-xs font-bold text-slate-500 uppercase">
-                                {paymentOrder?.paymentUserStatus?.toUser === 'seller' ? 'Datos del vendedor' : 'Datos del cliente'}
+                                {paymentRecipient === 'seller' ? 'Datos del vendedor' :
+                                    paymentRecipient === 'courier' ? 'Datos del courier' : 'Datos del cliente'}
                             </p>
-                            {paymentOrder?.paymentUserStatus?.toUser === 'seller' ? (
+                            {paymentRecipient === 'seller' ? (
                                 <>
                                     <p className="text-sm font-medium text-slate-900">{paymentOrder?.sellerName}</p>
                                     {paymentOrder?.seller?.phone && (
@@ -783,6 +895,10 @@ export function OrdersTrackingPage() {
                                             <Phone className="w-3 h-3" /> {paymentOrder.seller.phone}
                                         </p>
                                     )}
+                                </>
+                            ) : paymentRecipient === 'courier' ? (
+                                <>
+                                    <p className="text-sm font-medium text-slate-900">{paymentOrder?.shippingInfo?.courierName ?? 'Courier asignado'}</p>
                                 </>
                             ) : (
                                 <>
@@ -810,11 +926,10 @@ export function OrdersTrackingPage() {
                                     )}
                                 </>
                             )}
-                            <p className="text-lg font-bold text-slate-900 pt-1">{paymentOrder ? formatAmount(paymentOrder.paymentUserStatus?.amount ?? paymentOrder.total) : ''}</p>
                         </div>
 
                         {/* QR del vendedor si aplica */}
-                        {paymentOrder?.paymentUserStatus?.toUser === 'seller' && paymentOrder?.payment?.qrImageUrl ? (
+                        {paymentRecipient === 'seller' && paymentOrder?.payment?.qrImageUrl ? (
                             <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
                                 <p className="text-xs font-bold text-slate-500 px-4 pt-3 uppercase">QR de pago del vendedor</p>
                                 <img
@@ -827,7 +942,7 @@ export function OrdersTrackingPage() {
                             <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
                                 <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
                                 <p className="text-sm text-amber-700">
-                                    Contacte al {paymentOrder?.paymentUserStatus?.toUser === 'seller' ? 'vendedor' : 'cliente'} para coordinar el pago.
+                                    Coordine el pago con el {paymentRecipient === 'seller' ? 'vendedor' : paymentRecipient === 'courier' ? 'courier' : 'cliente'}.
                                 </p>
                             </div>
                         )}

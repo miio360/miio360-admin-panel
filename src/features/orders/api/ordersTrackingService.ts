@@ -31,12 +31,13 @@ export const ordersTrackingService = {
     },
 
     /**
-     * Marks the paymentUserStatus as completed (paid to user).
+     * Marks the payment for a specific recipient as completed.
+     * @param recipient - 'seller' | 'courier' | 'client'
      */
-    async markPaymentUserCompleted(orderId: string): Promise<CloudFunctionResponse> {
+    async markPaymentUserCompleted(orderId: string, recipient: 'seller' | 'courier' | 'client'): Promise<CloudFunctionResponse> {
         try {
             const markPaymentFn = httpsCallable(functions, 'markPaymentUserCompleted');
-            const result = await markPaymentFn({ orderId });
+            const result = await markPaymentFn({ orderId, recipient });
             const data = result.data as CloudFunctionResponse;
             if (!data.success) {
                 throw new Error(data.message || 'Error al marcar pago como completado');

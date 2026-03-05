@@ -75,10 +75,20 @@ export interface OrderPayment {
   completedAt?: { seconds: number; nanoseconds: number };
 }
 
+/** @deprecated Use PaymentRecipientStatus fields instead */
 export interface PaymentUserStatus {
   toUser: 'client' | 'seller';
   status: PaymentStatus;
   amount?: number;
+}
+
+export interface PaymentRecipientStatus {
+  toUser: 'client' | 'seller' | 'courier';
+  status: PaymentStatus;
+  grossAmount: number;
+  commissionPct: number;
+  commissionAmount: number;
+  netAmount: number;
 }
 
 export interface ShipmentFile {
@@ -116,11 +126,16 @@ export interface Order {
 
   subtotal: number;
   shippingCost: number;
+  serviceFee: number;
   discount: number;
   total: number;
 
   payment: OrderPayment;
+  /** @deprecated Use paymentSellerStatus / paymentCourierStatus / paymentClientRefundStatus */
   paymentUserStatus?: PaymentUserStatus;
+  paymentSellerStatus?: PaymentRecipientStatus;
+  paymentCourierStatus?: PaymentRecipientStatus;
+  paymentClientRefundStatus?: PaymentRecipientStatus;
 
   shippingAddress: ShippingAddress;
   shippingInfo?: ShipmentInfo;
