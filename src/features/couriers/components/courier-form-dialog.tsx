@@ -251,7 +251,7 @@ export function CourierFormDialog({
                 <Switch
                   checked={field.value}
                   onCheckedChange={field.onChange}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || (isEditing && courier?.courierProfile?.isAvailable === true)}
                 />
               )}
             />
