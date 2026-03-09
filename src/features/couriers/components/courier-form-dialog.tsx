@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useForm, useController } from 'react-hook-form';
+import { useForm, useController, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Dialog,
@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '@/shared/components/ui/dialog';
 import { Label } from '@/shared/components/ui/label';
+import { Switch } from '@/shared/components/ui/switch';
 import { InputGlobal } from '@/shared/components/input-global';
 import { SelectGlobal } from '@/shared/components/select-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
@@ -50,6 +51,7 @@ export function CourierFormDialog({
       vehiclePlate: '',
       licenseNumber: '',
       status: UserStatus.ACTIVE,
+      isAvailable: true,
       cities: [],
       currentCity: '',
     },
@@ -68,6 +70,7 @@ export function CourierFormDialog({
         vehiclePlate: courier.courierProfile?.vehiclePlate ?? '',
         licenseNumber: courier.courierProfile?.licenseNumber ?? '',
         status: courier.status ?? UserStatus.ACTIVE,
+        isAvailable: courier.courierProfile?.isAvailable ?? true,
         cities: courier.courierProfile?.cities ?? [],
         currentCity: courier.courierProfile?.currentCity ?? '',
       });
@@ -81,6 +84,7 @@ export function CourierFormDialog({
         vehiclePlate: '',
         licenseNumber: '',
         status: UserStatus.ACTIVE,
+        isAvailable: true,
         cities: [],
         currentCity: '',
       });
@@ -233,6 +237,26 @@ export function CourierFormDialog({
             </SelectGlobal>
           </div>
 
+          <div className="flex flex-row items-center justify-between rounded-lg border border-border p-3 shadow-sm bg-card">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-medium text-foreground">Disponible</Label>
+              <p className="text-xs text-muted-foreground">
+                Habilita si el repartidor está listo para recibir pedidos.
+              </p>
+            </div>
+            <Controller
+              control={control}
+              name="isAvailable"
+              render={({ field }) => (
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={isSubmitting}
+                />
+              )}
+            />
+          </div>
+
           {/* City configuration */}
           <div className="space-y-1.5">
             <Label className="text-sm font-medium text-foreground">
@@ -311,8 +335,8 @@ export function CourierFormDialog({
                   ? 'Guardando...'
                   : 'Creando...'
                 : isEditing
-                ? 'Guardar Cambios'
-                : 'Crear Repartidor'}
+                  ? 'Guardar Cambios'
+                  : 'Crear Repartidor'}
             </ButtonGlobal>
           </div>
         </form>

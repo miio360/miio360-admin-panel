@@ -30,6 +30,7 @@ export enum PaymentStatus {
   COMPLETED = 'completed',
   FAILED = 'failed',
   REFUNDED = 'refunded',
+  CANCELLED = 'cancelled',
 }
 
 // ─── Interfaces ────────────────────────────────────────────────────────────────
@@ -191,4 +192,5 @@ export const PAYMENT_USER_STATUS_LABELS: Record<PaymentStatus, string> = {
   [PaymentStatus.COMPLETED]: 'Completado',
   [PaymentStatus.FAILED]: 'Fallido',
   [PaymentStatus.REFUNDED]: 'Reembolsado',
+  [PaymentStatus.CANCELLED]: 'Cancelado',
 };

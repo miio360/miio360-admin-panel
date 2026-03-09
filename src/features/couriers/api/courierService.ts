@@ -10,9 +10,11 @@ import {
   where,
   doc,
   updateDoc,
+  writeBatch,
   type FieldValue,
   type DocumentData,
   type QueryDocumentSnapshot,
+  type QueryConstraint,
 } from 'firebase/firestore';
 import { db, functions } from '@/shared/services/firebase';
 import { httpsCallable } from 'firebase/functions';
@@ -31,6 +33,7 @@ export interface CreateCourierInput {
   vehiclePlate?: string;
   licenseNumber?: string;
   status: UserStatus;
+  isAvailable?: boolean;
   cities?: string[];
   currentCity?: string;
 }
@@ -42,6 +45,7 @@ export interface UpdateCourierInput {
   vehiclePlate?: string;
   licenseNumber?: string;
   status?: UserStatus;
+  isAvailable?: boolean;
   cities?: string[];
   currentCity?: string;
 }
@@ -50,23 +54,42 @@ export interface UpdateCourierInput {
 export async function getCouriersPage({
   pageSize = 10,
   cursor,
+  searchQuery,
 }: {
   pageSize?: number;
   cursor?: QueryDocumentSnapshot<DocumentData> | null;
+  searchQuery?: string;
 }): Promise<{ couriers: User[]; total: number; lastDoc: QueryDocumentSnapshot<DocumentData> | null }> {
   const usersRef = collection(db, COLLECTION);
 
-  const baseConstraints = [
+  const constraints: QueryConstraint[] = [
     where('activeRole', '==', UserRole.COURIER),
-    orderBy('createdAt', 'desc'),
-    limit(pageSize),
-  ] as const;
+  ];
+
+  if (searchQuery) {
+    constraints.push(
+      where('profile.firstName', '>=', searchQuery),
+      where('profile.firstName', '<=', searchQuery + '\uf8ff'),
+      orderBy('profile.firstName', 'asc')
+    );
+  } else {
+    constraints.push(orderBy('createdAt', 'desc'));
+  }
 
   const q = cursor
-    ? query(usersRef, ...baseConstraints.slice(0, -1), startAfter(cursor), limit(pageSize))
-    : query(usersRef, ...baseConstraints);
+    ? query(usersRef, ...constraints, startAfter(cursor), limit(pageSize))
+    : query(usersRef, ...constraints, limit(pageSize));
 
-  const countQ = query(usersRef, where('activeRole', '==', UserRole.COURIER));
+  let countQ = query(usersRef, where('activeRole', '==', UserRole.COURIER));
+
+  if (searchQuery) {
+    countQ = query(
+      usersRef,
+      where('activeRole', '==', UserRole.COURIER),
+      where('profile.firstName', '>=', searchQuery),
+      where('profile.firstName', '<=', searchQuery + '\uf8ff')
+    );
+  }
 
   const [snapshot, countSnap] = await Promise.all([
     getDocs(q),
@@ -109,6 +132,7 @@ export async function createCourier(input: CreateCourierInput): Promise<string> 
     status: input.status,
     vehiclePlate: input.vehiclePlate,
     licenseNumber: input.licenseNumber,
+    isAvailable: input.isAvailable,
     cities: input.cities,
     currentCity: input.currentCity,
   });
@@ -134,8 +158,55 @@ export async function updateCourier(id: string, input: UpdateCourierInput): Prom
 
   if (input.vehiclePlate !== undefined) updateData['courierProfile.vehiclePlate'] = input.vehiclePlate;
   if (input.licenseNumber !== undefined) updateData['courierProfile.licenseNumber'] = input.licenseNumber;
+  if (input.isAvailable !== undefined) updateData['courierProfile.isAvailable'] = input.isAvailable;
   if (input.cities !== undefined) updateData['courierProfile.cities'] = input.cities;
   if (input.currentCity !== undefined) updateData['courierProfile.currentCity'] = input.currentCity;
 
   await updateDoc(userDoc, updateData);
+}
+
+/** 
+ * Enforce only one active courier at a time. 
+ * If isAvailable is true, we fetch all currently available couriers and set them to false in a batch, 
+ * plus setting the target courier to true.
+ * If isAvailable is false, just toggle the individual courier.
+ */
+export async function setCourierAvailability(courierId: string, isAvailable: boolean): Promise<void> {
+  const targetDocRef = doc(db, COLLECTION, courierId);
+
+  if (!isAvailable) {
+    await updateDoc(targetDocRef, {
+      'courierProfile.isAvailable': false,
+      updatedAt: Timestamp.fromDate(new Date()),
+    });
+    return;
+  }
+
+  // Toggling to TRUE -> Batch disable the others
+  const usersRef = collection(db, COLLECTION);
+  const activeCouriersQ = query(
+    usersRef,
+    where('activeRole', '==', UserRole.COURIER),
+    where('courierProfile.isAvailable', '==', true)
+  );
+
+  const snapshot = await getDocs(activeCouriersQ);
+  const batch = writeBatch(db);
+
+  snapshot.docs.forEach((d) => {
+    if (d.id !== courierId) {
+      batch.update(d.ref, {
+        'courierProfile.isAvailable': false,
+        updatedAt: Timestamp.fromDate(new Date()),
+      });
+    }
+  });
+
+  // Enable the target courier
+  batch.update(targetDocRef, {
+    'courierProfile.isAvailable': true,
+    updatedAt: Timestamp.fromDate(new Date()),
+  });
+
+  await batch.commit();
 }

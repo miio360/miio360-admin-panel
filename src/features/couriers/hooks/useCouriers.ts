@@ -4,7 +4,7 @@ import { UserStatus } from '@/shared/types';
 import type { User } from '@/shared/types';
 import type { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 
-export function useCouriers(page = 0, pageSize = 10) {
+export function useCouriers(page = 0, pageSize = 10, searchQuery = '') {
   const [data, setData] = useState<User[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -14,6 +14,7 @@ export function useCouriers(page = 0, pageSize = 10) {
     new Map()
   );
   const requestIdRef = useRef(0);
+  const lastSearchQueryRef = useRef(searchQuery);
 
   const ensureCursorForPage = async (
     targetPage: number
@@ -27,7 +28,7 @@ export function useCouriers(page = 0, pageSize = 10) {
     let cursor: QueryDocumentSnapshot<DocumentData> | null = null;
 
     for (let i = 0; i < targetPage; i += 1) {
-      const res = await getCouriersPage({ pageSize, cursor });
+      const res = await getCouriersPage({ pageSize, cursor, searchQuery });
       cursor = res.lastDoc;
       cursorsByPageRef.current.set(i, cursor);
       if (!cursor) break;
@@ -37,6 +38,11 @@ export function useCouriers(page = 0, pageSize = 10) {
   };
 
   const fetchCouriers = () => {
+    if (lastSearchQueryRef.current !== searchQuery) {
+      cursorsByPageRef.current.clear();
+      lastSearchQueryRef.current = searchQuery;
+    }
+
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
     setIsLoading(true);
@@ -44,7 +50,7 @@ export function useCouriers(page = 0, pageSize = 10) {
     void (async () => {
       try {
         const cursor = await ensureCursorForPage(page);
-        const res = await getCouriersPage({ pageSize, cursor });
+        const res = await getCouriersPage({ pageSize, cursor, searchQuery });
         cursorsByPageRef.current.set(page, res.lastDoc);
 
         if (requestIdRef.current !== requestId) return;
@@ -64,7 +70,7 @@ export function useCouriers(page = 0, pageSize = 10) {
 
   useEffect(() => {
     fetchCouriers();
-  }, [page, pageSize]);
+  }, [page, pageSize, searchQuery]);
 
   const stats = {
     total,
