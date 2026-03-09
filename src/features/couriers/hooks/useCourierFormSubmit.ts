@@ -24,6 +24,7 @@ export function useCourierFormSubmit(onSuccess: () => void) {
           vehiclePlate: data.vehiclePlate,
           licenseNumber: data.licenseNumber,
           status: data.status,
+          isAvailable: data.isAvailable,
           cities: data.cities,
           currentCity: data.currentCity,
         });
@@ -42,6 +43,7 @@ export function useCourierFormSubmit(onSuccess: () => void) {
           vehiclePlate: data.vehiclePlate,
           licenseNumber: data.licenseNumber,
           status: data.status,
+          isAvailable: data.isAvailable,
           cities: data.cities,
           currentCity: data.currentCity,
         });

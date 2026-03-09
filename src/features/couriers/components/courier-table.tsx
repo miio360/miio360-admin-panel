@@ -3,6 +3,7 @@ import { UserStatus } from '@/shared/types';
 import { TableGlobal, type TableGlobalColumn } from '@/shared/components/table-global';
 import { PaginationGlobal } from '@/shared/components/pagination-global';
 import { ButtonGlobal } from '@/shared/components/button-global';
+import { Switch } from '@/shared/components/ui/switch';
 import { Edit2 } from 'lucide-react';
 
 interface CourierTableProps {
@@ -13,80 +14,8 @@ interface CourierTableProps {
   total: number;
   onPageChange: (page: number) => void;
   onEdit: (courier: User) => void;
+  onToggleAvailability: (courierId: string, newValue: boolean) => void;
 }
-
-const columns: TableGlobalColumn<User>[] = [
-  {
-    key: 'profile',
-    header: 'Nombre',
-    width: 'w-[22%]',
-    className: 'font-medium text-gray-900',
-    render: (u) =>
-      [u.profile?.firstName, u.profile?.lastName].filter(Boolean).join(' ') || '—',
-  },
-  {
-    key: 'email',
-    header: 'Email',
-    width: 'w-[26%]',
-    className: 'text-gray-600 text-sm',
-    render: (u) => u.profile?.email || '—',
-  },
-  {
-    key: 'phone',
-    header: 'Teléfono',
-    width: 'w-[15%]',
-    className: 'text-gray-600 text-sm',
-    render: (u) => u.profile?.phone || '—',
-  },
-  {
-    key: 'courierProfile',
-    header: 'Placa',
-    width: 'w-[12%]',
-    render: (u) => (
-      <span className="text-sm text-gray-700 font-mono">
-        {u.courierProfile?.vehiclePlate || '—'}
-      </span>
-    ),
-  },
-  {
-    key: 'isAvailable',
-    header: 'Disponible',
-    width: 'w-[12%]',
-    align: 'center',
-    render: (u) => (
-      <div className="flex justify-center">
-        <span
-          className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded ${
-            u.courierProfile?.isAvailable
-              ? 'text-emerald-700 bg-emerald-50'
-              : 'text-gray-500 bg-gray-100'
-          }`}
-        >
-          {u.courierProfile?.isAvailable ? 'Sí' : 'No'}
-        </span>
-      </div>
-    ),
-  },
-  {
-    key: 'status',
-    header: 'Estado',
-    width: 'w-[13%]',
-    align: 'center',
-    render: (u) => (
-      <div className="flex justify-center">
-        <span
-          className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded ${
-            u.status === UserStatus.ACTIVE
-              ? 'text-green-700 bg-green-50'
-              : 'text-gray-600 bg-gray-100'
-          }`}
-        >
-          {u.status === UserStatus.ACTIVE ? '✓ Activo' : 'Inactivo'}
-        </span>
-      </div>
-    ),
-  },
-];
 
 export function CourierTable({
   data,
@@ -96,8 +25,76 @@ export function CourierTable({
   total,
   onPageChange,
   onEdit,
+  onToggleAvailability,
 }: CourierTableProps) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  const columns: TableGlobalColumn<User>[] = [
+    {
+      key: 'profile',
+      header: 'Nombre',
+      width: 'w-[22%]',
+      className: 'font-medium text-gray-900',
+      render: (u) =>
+        [u.profile?.firstName, u.profile?.lastName].filter(Boolean).join(' ') || '—',
+    },
+    {
+      key: 'email',
+      header: 'Email',
+      width: 'w-[26%]',
+      className: 'text-gray-600 text-sm',
+      render: (u) => u.profile?.email || '—',
+    },
+    {
+      key: 'phone',
+      header: 'Teléfono',
+      width: 'w-[15%]',
+      className: 'text-gray-600 text-sm',
+      render: (u) => u.profile?.phone || '—',
+    },
+    {
+      key: 'courierProfile',
+      header: 'Placa',
+      width: 'w-[12%]',
+      render: (u) => (
+        <span className="text-sm text-gray-700 font-mono">
+          {u.courierProfile?.vehiclePlate || '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'isAvailable',
+      header: 'Disponible',
+      width: 'w-[12%]',
+      align: 'center',
+      render: (u) => (
+        <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+          <Switch
+            checked={u.courierProfile?.isAvailable || false}
+            onCheckedChange={(checked) => onToggleAvailability(u.id, checked)}
+          />
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Estado',
+      width: 'w-[13%]',
+      align: 'center',
+      render: (u) => (
+        <div className="flex justify-center">
+          <span
+            className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded ${u.status === UserStatus.ACTIVE
+              ? 'text-green-700 bg-green-50'
+              : 'text-gray-600 bg-gray-100'
+              }`}
+          >
+            {u.status === UserStatus.ACTIVE ? '✓ Activo' : 'Inactivo'}
+          </span>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-1">
