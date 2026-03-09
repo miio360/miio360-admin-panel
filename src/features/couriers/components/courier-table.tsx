@@ -72,6 +72,7 @@ export function CourierTable({
           <Switch
             checked={u.courierProfile?.isAvailable || false}
             onCheckedChange={(checked) => onToggleAvailability(u.id, checked)}
+            disabled={u.courierProfile?.isAvailable === true}
           />
         </div>
       ),
