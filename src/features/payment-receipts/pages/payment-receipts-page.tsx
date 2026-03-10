@@ -7,7 +7,7 @@ import { TransactionsReceiptsTab } from '../components/transactions-receipts-tab
 
 
 export function PaymentReceiptsPage() {
-  const [activeTab, setActiveTab] = useState('plans');
+  const [activeTab, setActiveTab] = useState('orders');
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
