@@ -15,7 +15,6 @@ export function PaymentReceiptsPage() {
         title="Comprobantes de Pago"
         description="Gestiona las solicitudes de compra y pagos"
       />
-
       {/* Tabs */}
       <div className="w-full grid grid-cols-3 mb-6 bg-slate-100 p-1 rounded-xl">
         <button
