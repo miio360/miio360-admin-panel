@@ -54,6 +54,12 @@ export interface SellerProfile {
   rating: Rating;
   totalSales: number;
   categories?: string[]; // Categorías seleccionadas por el vendedor
+  
+  payInformation?: {
+    bankName: string;
+    accountNumber: string;
+    qrCode?: FileUploaded; // QR code for the seller
+  };
 }
 
 export interface CourierProfile {
@@ -64,6 +70,12 @@ export interface CourierProfile {
   totalDeliveries: number;
   cities?: string[];      // cities where the courier can receive orders
   currentCity?: string;  // city where the courier is currently operating
+
+  payInformation?: {
+    bankName: string;
+    accountNumber: string;
+    qrCode?: FileUploaded; // QR code for the courier
+  };
 }
 
 export interface User extends BaseModel {
