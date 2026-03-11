@@ -478,6 +478,29 @@ function PaymentRecipientsSection({ order, onManagePayment }: {
     );
 }
 
+function QrImagePreview({ url, alt }: { url: string; alt: string }) {
+    const [loading, setLoading] = useState(true);
+    return (
+        <div className="relative flex flex-col items-center justify-center min-h-[200px] bg-slate-50/50">
+            {loading && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-slate-400">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span className="text-xs font-medium">Cargando imagen...</span>
+                </div>
+            )}
+            <img
+                src={url}
+                alt={alt}
+                className={cn(
+                    "w-full max-h-64 object-contain p-2 transition-opacity duration-300",
+                    loading ? "opacity-0" : "opacity-100"
+                )}
+                onLoad={() => setLoading(false)}
+            />
+        </div>
+    );
+}
+
 // ─── Main page component ───────────────────────────────────────────────────────
 
 export function OrdersTrackingPage() {
@@ -500,6 +523,12 @@ export function OrdersTrackingPage() {
     const [clientUser, setClientUser] = useState<User | null>(null);
     const [isFetchingClient, setIsFetchingClient] = useState(false);
 
+    const [sellerUser, setSellerUser] = useState<User | null>(null);
+    const [isFetchingSeller, setIsFetchingSeller] = useState(false);
+
+    const [courierUser, setCourierUser] = useState<User | null>(null);
+    const [isFetchingCourier, setIsFetchingCourier] = useState(false);
+
     useEffect(() => {
         if (paymentRecipient === 'client' && paymentOrder?.userId) {
             setIsFetchingClient(true);
@@ -510,6 +539,32 @@ export function OrdersTrackingPage() {
         } else {
             setClientUser(null);
             setIsFetchingClient(false);
+        }
+    }, [paymentOrder, paymentRecipient]);
+
+    useEffect(() => {
+        if (paymentRecipient === 'seller' && paymentOrder?.sellerId) {
+            setIsFetchingSeller(true);
+            userService.getById(paymentOrder.sellerId)
+                .then(user => setSellerUser(user))
+                .catch(err => console.error('Error fetching seller user data:', err))
+                .finally(() => setIsFetchingSeller(false));
+        } else {
+            setSellerUser(null);
+            setIsFetchingSeller(false);
+        }
+    }, [paymentOrder, paymentRecipient]);
+
+    useEffect(() => {
+        if (paymentRecipient === 'courier' && paymentOrder?.courierId) {
+            setIsFetchingCourier(true);
+            userService.getById(paymentOrder.courierId)
+                .then(user => setCourierUser(user))
+                .catch(err => console.error('Error fetching courier user data:', err))
+                .finally(() => setIsFetchingCourier(false));
+        } else {
+            setCourierUser(null);
+            setIsFetchingCourier(false);
         }
     }, [paymentOrder, paymentRecipient]);
 
@@ -650,9 +705,7 @@ export function OrdersTrackingPage() {
                                 orders.map((order) => {
                                     const isExpanded = expandedOrders.has(order.id);
                                     const statusCfg = getStatusConfig(order.status);
-                                    const paymentUserCfg = order.paymentUserStatus
-                                        ? PAYMENT_USER_STATUS_CONFIG[order.paymentUserStatus.status]
-                                        : null;
+
 
                                     return (
                                         <Fragment key={order.id}>
@@ -870,7 +923,7 @@ export function OrdersTrackingPage() {
                                         <span className="font-medium">{formatAmount(status.grossAmount)}</span>
                                     </div>
                                     <div className="flex justify-between text-slate-600">
-                                        <span>Comisión ({status.commissionPct}%)</span>
+                                        <span>Comisión App</span>
                                         <span className="font-medium text-rose-600">-{formatAmount(status.commissionAmount)}</span>
                                     </div>
                                     <div className="flex justify-between text-slate-900 font-bold pt-1 border-t border-slate-200 mt-1">
@@ -890,15 +943,48 @@ export function OrdersTrackingPage() {
                             {paymentRecipient === 'seller' ? (
                                 <>
                                     <p className="text-sm font-medium text-slate-900">{paymentOrder?.sellerName}</p>
-                                    {paymentOrder?.seller?.phone && (
-                                        <p className="text-sm text-slate-500 flex items-center gap-1">
-                                            <Phone className="w-3 h-3" /> {paymentOrder.seller.phone}
-                                        </p>
+                                    {paymentOrder?.seller?.phone ? (
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-sm text-slate-500 flex items-center gap-1">
+                                                <Phone className="w-3 h-3" /> {paymentOrder.seller.phone}
+                                            </p>
+                                            <a
+                                                href={`https://wa.me/${String(paymentOrder.seller.phone).replace(/[^0-9]/g, '')}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2 py-1 rounded transition-colors"
+                                            >
+                                                Contactar por WhatsApp
+                                            </a>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-slate-400 italic">Celular no disponible</p>
                                     )}
                                 </>
                             ) : paymentRecipient === 'courier' ? (
                                 <>
-                                    <p className="text-sm font-medium text-slate-900">{paymentOrder?.shippingInfo?.courierName ?? 'Courier asignado'}</p>
+                                    <p className="text-sm font-medium text-slate-900">{paymentOrder?.shippingInfo?.courierName ?? paymentOrder?.courierName ?? 'Courier asignado'}</p>
+                                    {isFetchingCourier ? (
+                                        <p className="text-sm text-slate-500 flex items-center gap-1">
+                                            <Loader2 className="w-3 h-3 animate-spin" /> Cargando teléfono...
+                                        </p>
+                                    ) : courierUser?.profile?.phone ? (
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-sm text-slate-500 flex items-center gap-1">
+                                                <Phone className="w-3 h-3" /> {courierUser.profile.phone}
+                                            </p>
+                                            <a
+                                                href={`https://wa.me/${String(courierUser.profile.phone).replace(/[^0-9]/g, '')}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2 py-1 rounded transition-colors"
+                                            >
+                                                Contactar por WhatsApp
+                                            </a>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-slate-400 italic">Celular no disponible</p>
+                                    )}
                                 </>
                             ) : (
                                 <>
@@ -928,21 +1014,48 @@ export function OrdersTrackingPage() {
                             )}
                         </div>
 
-                        {/* QR del vendedor si aplica */}
-                        {paymentRecipient === 'seller' && paymentOrder?.payment?.qrImageUrl ? (
-                            <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-                                <p className="text-xs font-bold text-slate-500 px-4 pt-3 uppercase">QR de pago del vendedor</p>
-                                <img
-                                    src={paymentOrder.payment.qrImageUrl}
-                                    alt="QR de pago"
-                                    className="w-full max-h-64 object-contain p-2"
-                                />
-                            </div>
+                        {/* QR del vendedor o courier si aplica */}
+                        {paymentRecipient === 'seller' ? (
+                            isFetchingSeller ? (
+                                <div className="flex items-center gap-2 p-4 text-slate-500">
+                                    <Loader2 className="w-4 h-4 animate-spin" /> Cargando QR del vendedor...
+                                </div>
+                            ) : sellerUser?.sellerProfile?.payInformation?.qrCode?.url ? (
+                                <div className="rounded-lg border border-slate-200 bg-white overflow-hidden flex flex-col">
+                                    <p className="text-xs font-bold text-slate-500 px-4 pt-3 pb-2 uppercase border-b border-slate-100">QR de pago del vendedor</p>
+                                    <QrImagePreview url={sellerUser.sellerProfile.payInformation.qrCode.url} alt="QR del vendedor" />
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                                    <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+                                    <p className="text-sm text-amber-700">
+                                        Coordine el pago con el vendedor. No tiene un QR de pago registrado en su perfil.
+                                    </p>
+                                </div>
+                            )
+                        ) : paymentRecipient === 'courier' ? (
+                            isFetchingCourier ? (
+                                <div className="flex items-center gap-2 p-4 text-slate-500">
+                                    <Loader2 className="w-4 h-4 animate-spin" /> Cargando QR del courier...
+                                </div>
+                            ) : courierUser?.courierProfile?.payInformation?.qrCode?.url ? (
+                                <div className="rounded-lg border border-slate-200 bg-white overflow-hidden flex flex-col">
+                                    <p className="text-xs font-bold text-slate-500 px-4 pt-3 pb-2 uppercase border-b border-slate-100">QR de pago del courier</p>
+                                    <QrImagePreview url={courierUser.courierProfile.payInformation.qrCode.url} alt="QR del courier" />
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                                    <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
+                                    <p className="text-sm text-amber-700">
+                                        Coordine el pago con el courier. No tiene un QR de pago registrado en su perfil.
+                                    </p>
+                                </div>
+                            )
                         ) : (
                             <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
                                 <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
                                 <p className="text-sm text-amber-700">
-                                    Coordine el pago con el {paymentRecipient === 'seller' ? 'vendedor' : paymentRecipient === 'courier' ? 'courier' : 'cliente'}.
+                                    Coordine el pago con el cliente.
                                 </p>
                             </div>
                         )}
