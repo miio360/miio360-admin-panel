@@ -25,6 +25,7 @@ import { ErrorGlobal } from '@/shared/components/error-global';
 import type { PaymentReceipt, PaymentReceiptStatus, RejectionReason } from '@/shared/types/payment';
 import type { AdvertisingPlanSummary } from '@/shared/types/summaries';
 import { ADVERTISING_TYPE_LABELS, ADVERTISING_POSITION_LABELS } from '@/features/plans/types/plan';
+import { TransactionsReceiptsTab } from './transactions-receipts-tab';
 
 // ─── Status helpers ────────────────────────────────────────────────────────────
 
@@ -121,6 +122,7 @@ export function PlansReceiptsTab() {
         page, nextPage, prevPage, hasPrevPage, hasNextPage, setStatus,
     } = usePaymentReceipts();
 
+    const [subTab, setSubTab] = useState<'plans' | 'transactions'>('plans');
     const [activeTab, setActiveTab] = useState<StatusFilter>('all');
     const [previewReceipt, setPreviewReceipt] = useState<PaymentReceipt | null>(null);
     const [approveReceipt, setApproveReceipt] = useState<PaymentReceipt | null>(null);
@@ -169,9 +171,44 @@ export function PlansReceiptsTab() {
         }
     }, [rejectReceipt, user, refetch]);
 
-    if (error) return <ErrorGlobal message={error} onRetry={refetch} />;
+    const subTabSwitcher = (
+        <div className="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+            <button
+                onClick={() => setSubTab('plans')}
+                className={cn('px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150', subTab === 'plans' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
+            >
+                Planes
+            </button>
+            <button
+                onClick={() => setSubTab('transactions')}
+                className={cn('px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150', subTab === 'transactions' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
+            >
+                Saldos por Minuto
+            </button>
+        </div>
+    );
+
+    if (subTab === 'transactions') {
+        return (
+            <div className="space-y-4">
+                {subTabSwitcher}
+                <TransactionsReceiptsTab />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="space-y-4">
+                {subTabSwitcher}
+                <ErrorGlobal message={error} onRetry={refetch} />
+            </div>
+        );
+    }
 
     return (
+        <div className="space-y-4">
+            {subTabSwitcher}
         <TooltipProvider delayDuration={300}>
             <div className="space-y-4">
 
@@ -488,5 +525,6 @@ export function PlansReceiptsTab() {
                 isLoading={actionLoading}
             />
         </TooltipProvider>
+        </div>
     );
 }
