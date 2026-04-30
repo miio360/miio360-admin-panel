@@ -169,7 +169,7 @@ export function PlansReceiptsTab() {
         setPage(1);
     };
 
-    const receiptRows: UnifiedRow[] = receipts.map(r => ({
+    const receiptRows: UnifiedRow[] = receipts.filter(r => r.plan?.planType !== 'lives').map(r => ({
         id: r.id,
         source: 'receipt' as const,
         createdAt: r.createdAt,
