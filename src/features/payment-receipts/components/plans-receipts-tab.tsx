@@ -19,13 +19,16 @@ import { Skeleton } from '@/shared/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/components/ui/tooltip';
 import { usePaymentReceipts } from '../hooks/usePaymentReceipts';
 import { paymentReceiptService } from '@/shared/services/paymentReceiptService';
+import { useWalletTransactions } from '../hooks/useWalletTransactions';
+import { walletTransactionService } from '@/shared/services/wallet-transaction-service';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { RejectDialog } from './reject-dialog';
 import { ErrorGlobal } from '@/shared/components/error-global';
 import type { PaymentReceipt, PaymentReceiptStatus, RejectionReason } from '@/shared/types/payment';
+import { REJECTION_REASON_LABELS } from '@/shared/types/payment';
 import type { AdvertisingPlanSummary } from '@/shared/types/summaries';
+import type { WalletTransaction } from '@/shared/types/wallet';
 import { ADVERTISING_TYPE_LABELS, ADVERTISING_POSITION_LABELS } from '@/features/plans/types/plan';
-import { TransactionsReceiptsTab } from './transactions-receipts-tab';
 
 // ─── Status helpers ────────────────────────────────────────────────────────────
 
@@ -52,6 +55,32 @@ function formatDate(ts: { toDate: () => Date } | undefined): string {
 function formatAmount(amount: number): string {
     return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB', minimumFractionDigits: 2 }).format(amount);
 }
+
+// ─── Unified row ──────────────────────────────────────────────────────────────
+
+type NormalizedStatus = PaymentReceiptStatus;
+
+interface UnifiedRow {
+    id: string;
+    source: 'receipt' | 'wallet';
+    createdAt: { toDate: () => Date } | undefined;
+    sellerName: string;
+    sellerId: string;
+    planTitle: string;
+    planType?: string;
+    price: number;
+    normalizedStatus: NormalizedStatus;
+    receiptUrl: string | null;
+    original: PaymentReceipt | WalletTransaction;
+}
+
+function normalizeWalletStatus(s: WalletTransaction['status']): NormalizedStatus {
+    if (s === 'completed') return 'approved';
+    if (s === 'failed' || s === 'refunded') return 'rejected';
+    return 'pending';
+}
+
+const PAGE_SIZE = 15;
 
 // ─── Skeleton rows ─────────────────────────────────────────────────────────────
 
@@ -117,98 +146,118 @@ function CardSkeleton() {
 
 export function PlansReceiptsTab() {
     const { user } = useAuth();
-    const {
-        receipts, isLoading, error, refetch,
-        page, nextPage, prevPage, hasPrevPage, hasNextPage, setStatus,
-    } = usePaymentReceipts();
+    const { receipts, isLoading: receiptsLoading, error: receiptsError, refetch: refetchReceipts } = usePaymentReceipts();
+    const { transactions, isLoading: txLoading, error: txError, refetch: refetchTx } = useWalletTransactions();
 
-    const [subTab, setSubTab] = useState<'plans' | 'transactions'>('plans');
     const [activeTab, setActiveTab] = useState<StatusFilter>('all');
-    const [previewReceipt, setPreviewReceipt] = useState<PaymentReceipt | null>(null);
-    const [approveReceipt, setApproveReceipt] = useState<PaymentReceipt | null>(null);
-    const [rejectReceipt, setRejectReceipt] = useState<PaymentReceipt | null>(null);
+    const [page, setPage] = useState(1);
+    const [previewRow, setPreviewRow] = useState<UnifiedRow | null>(null);
+    const [approveRow, setApproveRow] = useState<UnifiedRow | null>(null);
+    const [rejectRow, setRejectRow] = useState<UnifiedRow | null>(null);
     const [actionLoading, setActionLoading] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
 
+    const isLoading = receiptsLoading || txLoading;
+    const error = receiptsError ?? txError;
+
+    const refetch = useCallback(async () => {
+        await Promise.all([refetchReceipts(), refetchTx()]);
+    }, [refetchReceipts, refetchTx]);
+
     const handleStatusTab = (tab: StatusFilter) => {
         setActiveTab(tab);
-        setStatus(tab === 'all' ? undefined : tab);
+        setPage(1);
     };
 
+    const receiptRows: UnifiedRow[] = receipts.filter(r => r.plan?.planType !== 'lives').map(r => ({
+        id: r.id,
+        source: 'receipt' as const,
+        createdAt: r.createdAt,
+        sellerName: r.seller?.name || '—',
+        sellerId: r.seller?.id || '—',
+        planTitle: r.plan?.title || '—',
+        planType: r.plan?.planType,
+        price: r.plan?.price || 0,
+        normalizedStatus: r.status,
+        receiptUrl: r.receiptImage?.url || null,
+        original: r,
+    }));
+
+    const walletRows: UnifiedRow[] = transactions.map(tx => ({
+        id: tx.id,
+        source: 'wallet' as const,
+        createdAt: tx.createdAt,
+        sellerName: tx.seller?.name || '—',
+        sellerId: tx.seller?.id || '—',
+        planTitle: tx.plan?.title || tx.description || '—',
+        planType: 'lives',
+        price: tx.price || 0,
+        normalizedStatus: normalizeWalletStatus(tx.status),
+        receiptUrl: tx.receipt?.url || null,
+        original: tx,
+    }));
+
+    const allRows = [...receiptRows, ...walletRows].sort((a, b) => {
+        const aTime = a.createdAt?.toDate?.()?.getTime() || 0;
+        const bTime = b.createdAt?.toDate?.()?.getTime() || 0;
+        return bTime - aTime;
+    });
+
+    const filteredRows = activeTab === 'all' ? allRows : allRows.filter(r => r.normalizedStatus === activeTab);
+    const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+    const pagedRows = filteredRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
     const handleApproveConfirm = useCallback(async () => {
-        if (!user?.id || !approveReceipt) return;
+        if (!user?.id || !approveRow) return;
         try {
             setActionLoading(true);
             setActionError(null);
-            const sellerData = {
-                id: approveReceipt.seller.id,
-                name: approveReceipt.seller.name,
-                profileImage: approveReceipt.seller.avatar || '',
-                storeName: approveReceipt.seller.name,
-            };
-            await paymentReceiptService.approve(approveReceipt.id, user.id, sellerData);
-            setApproveReceipt(null);
+            if (approveRow.source === 'receipt') {
+                const receipt = approveRow.original as PaymentReceipt;
+                const sellerData = {
+                    id: receipt.seller.id,
+                    name: receipt.seller.name,
+                    profileImage: receipt.seller.avatar || '',
+                    storeName: receipt.seller.name,
+                };
+                await paymentReceiptService.approve(approveRow.id, user.id, sellerData);
+            } else {
+                const tx = approveRow.original as WalletTransaction;
+                await walletTransactionService.approve(tx.seller.id, approveRow.id, user.id);
+            }
+            setApproveRow(null);
             await refetch();
         } catch (err) {
             setActionError(err instanceof Error ? err.message : 'Error al aprobar');
         } finally {
             setActionLoading(false);
         }
-    }, [approveReceipt, user, refetch]);
+    }, [approveRow, user, refetch]);
 
     const handleRejectConfirm = useCallback(async (reason: RejectionReason, comment?: string) => {
-        if (!user?.id || !rejectReceipt) return;
+        if (!user?.id || !rejectRow) return;
         try {
             setActionLoading(true);
             setActionError(null);
-            await paymentReceiptService.reject(rejectReceipt.id, user.id, reason, comment);
-            setRejectReceipt(null);
+            if (rejectRow.source === 'receipt') {
+                await paymentReceiptService.reject(rejectRow.id, user.id, reason, comment);
+            } else {
+                const tx = rejectRow.original as WalletTransaction;
+                const reasonText = reason === 'other' ? (comment || 'Sin motivo especificado') : REJECTION_REASON_LABELS[reason];
+                await walletTransactionService.reject(tx.seller.id, rejectRow.id, user.id, reasonText);
+            }
+            setRejectRow(null);
             await refetch();
         } catch (err) {
             setActionError(err instanceof Error ? err.message : 'Error al rechazar');
         } finally {
             setActionLoading(false);
         }
-    }, [rejectReceipt, user, refetch]);
+    }, [rejectRow, user, refetch]);
 
-    const subTabSwitcher = (
-        <div className="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
-            <button
-                onClick={() => setSubTab('plans')}
-                className={cn('px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150', subTab === 'plans' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
-            >
-                Planes
-            </button>
-            <button
-                onClick={() => setSubTab('transactions')}
-                className={cn('px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150', subTab === 'transactions' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
-            >
-                Saldos por Minuto
-            </button>
-        </div>
-    );
-
-    if (subTab === 'transactions') {
-        return (
-            <div className="space-y-4">
-                {subTabSwitcher}
-                <TransactionsReceiptsTab />
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="space-y-4">
-                {subTabSwitcher}
-                <ErrorGlobal message={error} onRetry={refetch} />
-            </div>
-        );
-    }
+    if (error) return <ErrorGlobal message={error} onRetry={refetch} />;
 
     return (
-        <div className="space-y-4">
-            {subTabSwitcher}
         <TooltipProvider delayDuration={300}>
             <div className="space-y-4">
 
@@ -232,11 +281,11 @@ export function PlansReceiptsTab() {
                     </div>
 
                     <div className="flex items-center gap-2 self-end sm:self-auto">
-                        <Button variant="outline" size="sm" onClick={prevPage} disabled={!hasPrevPage || isLoading} className="h-8 w-8 p-0">
+                        <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1 || isLoading} className="h-8 w-8 p-0">
                             <ChevronLeft className="w-4 h-4" />
                         </Button>
-                        <span className="text-sm text-slate-600 tabular-nums min-w-16 text-center">Página {page}</span>
-                        <Button variant="outline" size="sm" onClick={nextPage} disabled={!hasNextPage || isLoading} className="h-8 w-8 p-0">
+                        <span className="text-sm text-slate-600 tabular-nums min-w-24 text-center">Página {page} de {totalPages}</span>
+                        <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages || isLoading} className="h-8 w-8 p-0">
                             <ChevronRight className="w-4 h-4" />
                         </Button>
                     </div>
@@ -270,38 +319,41 @@ export function PlansReceiptsTab() {
                         <TableBody>
                             {isLoading ? (
                                 <TableSkeleton />
-                            ) : receipts.length === 0 ? (
+                            ) : pagedRows.length === 0 ? (
                                 <TableRow className="hover:bg-transparent">
                                     <TableCell colSpan={7} className="py-16 text-center">
                                         <div className="flex flex-col items-center gap-3 text-slate-400">
                                             <FileText className="w-10 h-10 opacity-40" />
-                                            <p className="text-sm font-medium">No se encontraron comprobantes de planes</p>
+                                            <p className="text-sm font-medium">No se encontraron comprobantes</p>
                                             <p className="text-xs text-slate-400">
-                                                {activeTab !== 'all' ? 'No hay comprobantes con este estado' : 'Los comprobantes aparecerán aquí cuando los vendedores adquieran un plan'}
+                                                {activeTab !== 'all' ? 'No hay comprobantes con este estado' : 'Los comprobantes aparecerán aquí cuando los vendedores realicen pagos'}
                                             </p>
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                receipts.map((receipt) => {
-                                    const statusCfg = STATUS_CONFIG[receipt.status];
-                                    const isPending = receipt.status === 'pending';
+                                pagedRows.map((row) => {
+                                    const statusCfg = STATUS_CONFIG[row.normalizedStatus];
+                                    const isPending = row.normalizedStatus === 'pending';
+                                    const receipt = row.source === 'receipt' ? row.original as PaymentReceipt : null;
                                     return (
-                                        <TableRow key={receipt.id} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
+                                        <TableRow key={`${row.source}-${row.id}`} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
                                             <TableCell className="pl-5 text-sm text-slate-600 whitespace-nowrap">
-                                                {formatDate(receipt.createdAt)}
+                                                {formatDate(row.createdAt)}
                                             </TableCell>
                                             <TableCell>
-                                                <p className="text-sm font-medium text-slate-900 leading-tight">{receipt.seller?.name || '—'}</p>
-                                                <p className="text-xs text-slate-400 mt-0.5">{receipt.seller?.id || '—'}</p>
+                                                <p className="text-sm font-medium text-slate-900 leading-tight">{row.sellerName}</p>
+                                                <p className="text-xs text-slate-400 mt-0.5">{row.sellerId}</p>
                                             </TableCell>
                                             <TableCell>
-                                                <p className="text-sm text-slate-800">{receipt.plan?.title || '—'}</p>
+                                                <p className="text-sm text-slate-800">{row.planTitle}</p>
                                                 <div className="flex flex-wrap gap-1 mt-1">
-                                                    <span className="inline-block px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded">
-                                                        {receipt.plan?.planType || '—'}
-                                                    </span>
-                                                    {receipt.plan?.planType === 'advertising' && (() => {
+                                                    {row.planType && (
+                                                        <span className="inline-block px-1.5 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-600 rounded">
+                                                            {row.planType}
+                                                        </span>
+                                                    )}
+                                                    {receipt?.plan?.planType === 'advertising' && (() => {
                                                         const adPlan = receipt.plan as AdvertisingPlanSummary;
                                                         return (
                                                             <>
@@ -317,7 +369,7 @@ export function PlansReceiptsTab() {
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-sm font-semibold text-slate-800 tabular-nums">
-                                                {formatAmount(receipt.plan?.price || 0)}
+                                                {formatAmount(row.price)}
                                             </TableCell>
                                             <TableCell>
                                                 <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium', statusCfg.className)}>
@@ -326,13 +378,13 @@ export function PlansReceiptsTab() {
                                                 </span>
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                {receipt.receiptImage?.url ? (
+                                                {row.receiptUrl ? (
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <Button
                                                                 variant="ghost" size="sm"
                                                                 className="h-7 gap-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs"
-                                                                onClick={() => setPreviewReceipt(receipt)}
+                                                                onClick={() => setPreviewRow(row)}
                                                             >
                                                                 <Eye className="w-3.5 h-3.5" />Ver
                                                             </Button>
@@ -353,26 +405,26 @@ export function PlansReceiptsTab() {
                                                                 <Button
                                                                     variant="ghost" size="icon"
                                                                     className="h-7 w-7 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 transition-colors"
-                                                                    onClick={() => setApproveReceipt(receipt)}
+                                                                    onClick={() => setApproveRow(row)}
                                                                     disabled={actionLoading}
                                                                 >
                                                                     <Check className="w-4 h-4" />
                                                                 </Button>
                                                             </TooltipTrigger>
-                                                            <TooltipContent>Aprobar plan</TooltipContent>
+                                                            <TooltipContent>Aprobar</TooltipContent>
                                                         </Tooltip>
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
                                                                 <Button
                                                                     variant="ghost" size="icon"
                                                                     className="h-7 w-7 text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition-colors"
-                                                                    onClick={() => setRejectReceipt(receipt)}
+                                                                    onClick={() => setRejectRow(row)}
                                                                     disabled={actionLoading}
                                                                 >
                                                                     <X className="w-4 h-4" />
                                                                 </Button>
                                                             </TooltipTrigger>
-                                                            <TooltipContent>Rechazar comprobante</TooltipContent>
+                                                            <TooltipContent>Rechazar</TooltipContent>
                                                         </Tooltip>
                                                     </div>
                                                 ) : (
@@ -391,21 +443,21 @@ export function PlansReceiptsTab() {
                 <div className="sm:hidden space-y-3">
                     {isLoading ? (
                         <CardSkeleton />
-                    ) : receipts.length === 0 ? (
+                    ) : pagedRows.length === 0 ? (
                         <div className="flex flex-col items-center gap-3 py-12 text-slate-400">
                             <FileText className="w-10 h-10 opacity-40" />
                             <p className="text-sm font-medium">No se encontraron comprobantes</p>
                         </div>
                     ) : (
-                        receipts.map((receipt) => {
-                            const statusCfg = STATUS_CONFIG[receipt.status];
-                            const isPending = receipt.status === 'pending';
+                        pagedRows.map((row) => {
+                            const statusCfg = STATUS_CONFIG[row.normalizedStatus];
+                            const isPending = row.normalizedStatus === 'pending';
                             return (
-                                <div key={receipt.id} className="rounded-xl border border-slate-200 bg-white shadow-sm p-4 space-y-3">
+                                <div key={`${row.source}-${row.id}`} className="rounded-xl border border-slate-200 bg-white shadow-sm p-4 space-y-3">
                                     <div className="flex items-start justify-between gap-2">
                                         <div>
-                                            <p className="text-sm font-semibold text-slate-900">{receipt.seller?.name || '—'}</p>
-                                            <p className="text-xs text-slate-500 mt-0.5">{receipt.plan?.title || '—'}</p>
+                                            <p className="text-sm font-semibold text-slate-900">{row.sellerName}</p>
+                                            <p className="text-xs text-slate-500 mt-0.5">{row.planTitle}</p>
                                         </div>
                                         <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shrink-0', statusCfg.className)}>
                                             <span className={cn('w-1.5 h-1.5 rounded-full', statusCfg.dot)} />
@@ -413,12 +465,12 @@ export function PlansReceiptsTab() {
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-3 text-xs text-slate-500">
-                                        <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{formatDate(receipt.createdAt)}</span>
-                                        <span className="font-semibold text-slate-800">{formatAmount(receipt.plan?.price || 0)}</span>
+                                        <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{formatDate(row.createdAt)}</span>
+                                        <span className="font-semibold text-slate-800">{formatAmount(row.price)}</span>
                                     </div>
                                     <div className="flex items-center justify-between pt-1 border-t border-slate-100">
-                                        {receipt.receiptImage?.url ? (
-                                            <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-blue-600 hover:bg-blue-50 text-xs px-2" onClick={() => setPreviewReceipt(receipt)}>
+                                        {row.receiptUrl ? (
+                                            <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-blue-600 hover:bg-blue-50 text-xs px-2" onClick={() => setPreviewRow(row)}>
                                                 <Eye className="w-3.5 h-3.5" />Ver comprobante
                                             </Button>
                                         ) : (
@@ -426,10 +478,10 @@ export function PlansReceiptsTab() {
                                         )}
                                         {isPending && (
                                             <div className="flex gap-1">
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-emerald-600 hover:bg-emerald-50" onClick={() => setApproveReceipt(receipt)} disabled={actionLoading}>
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-emerald-600 hover:bg-emerald-50" onClick={() => setApproveRow(row)} disabled={actionLoading}>
                                                     <Check className="w-4 h-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-rose-600 hover:bg-rose-50" onClick={() => setRejectReceipt(receipt)} disabled={actionLoading}>
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-rose-600 hover:bg-rose-50" onClick={() => setRejectRow(row)} disabled={actionLoading}>
                                                     <X className="w-4 h-4" />
                                                 </Button>
                                             </div>
@@ -442,13 +494,13 @@ export function PlansReceiptsTab() {
                 </div>
 
                 {/* ── Bottom pagination ────────────────────────────────────── */}
-                {(hasPrevPage || hasNextPage) && !isLoading && (
+                {totalPages > 1 && !isLoading && (
                     <div className="flex justify-end items-center gap-2 pt-1">
-                        <Button variant="outline" size="sm" onClick={prevPage} disabled={!hasPrevPage || isLoading} className="gap-1">
+                        <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="gap-1">
                             <ChevronLeft className="w-3.5 h-3.5" />Anterior
                         </Button>
-                        <span className="text-sm text-slate-500 tabular-nums">Página {page}</span>
-                        <Button variant="outline" size="sm" onClick={nextPage} disabled={!hasNextPage || isLoading} className="gap-1">
+                        <span className="text-sm text-slate-500 tabular-nums">Página {page} de {totalPages}</span>
+                        <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="gap-1">
                             Siguiente<ChevronRight className="w-3.5 h-3.5" />
                         </Button>
                     </div>
@@ -456,48 +508,49 @@ export function PlansReceiptsTab() {
             </div>
 
             {/* ── Receipt preview Dialog ────────────────────────────────── */}
-            <Dialog open={!!previewReceipt} onOpenChange={(open) => !open && setPreviewReceipt(null)}>
+            <Dialog open={!!previewRow} onOpenChange={(open) => !open && setPreviewRow(null)}>
                 <DialogContent className="max-w-xl">
                     <DialogHeader>
                         <DialogTitle className="text-base">
-                            Comprobante — {previewReceipt?.seller?.name} · {previewReceipt?.plan?.title}
+                            Comprobante — {previewRow?.sellerName} · {previewRow?.planTitle}
                         </DialogTitle>
                     </DialogHeader>
-                    {previewReceipt?.receiptImage?.url ? (
+                    {previewRow?.receiptUrl ? (
                         <div className="mt-2 rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
-                            <img src={previewReceipt.receiptImage.url} alt="Comprobante" className="w-full h-auto max-h-[65vh] object-contain" />
+                            <img src={previewRow.receiptUrl} alt="Comprobante" className="w-full h-auto max-h-[65vh] object-contain" />
                         </div>
                     ) : (
                         <div className="flex items-center justify-center h-40 text-slate-400">
                             <ImageOff className="w-8 h-8" />
                         </div>
                     )}
-                    {previewReceipt && (
+                    {previewRow && (
                         <div className="flex items-center justify-between pt-1 text-sm text-slate-600 border-t border-slate-100">
-                            <span>{previewReceipt.seller?.name}</span>
-                            <span className="font-semibold">{formatAmount(previewReceipt.plan?.price || 0)}</span>
+                            <span>{previewRow.sellerName}</span>
+                            <span className="font-semibold">{formatAmount(previewRow.price)}</span>
                         </div>
                     )}
                 </DialogContent>
             </Dialog>
 
             {/* ── Approve confirmation AlertDialog ──────────────────────── */}
-            <AlertDialog open={!!approveReceipt} onOpenChange={(open) => !open && setApproveReceipt(null)}>
+            <AlertDialog open={!!approveRow} onOpenChange={(open) => !open && setApproveRow(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Confirmar aprobación de plan</AlertDialogTitle>
+                        <AlertDialogTitle>Confirmar aprobacion</AlertDialogTitle>
                         <AlertDialogDescription asChild>
                             <div className="space-y-3 text-sm text-slate-600">
                                 <p>
-                                    ¿Aprobar el comprobante de{' '}
-                                    <span className="font-semibold text-slate-800">{approveReceipt?.seller?.name}</span>{' '}
-                                    para el plan{' '}
-                                    <span className="font-semibold text-slate-800">{approveReceipt?.plan?.title}</span>{' '}
+                                    Aprobar el comprobante de{' '}
+                                    <span className="font-semibold text-slate-800">{approveRow?.sellerName}</span>{' '}
                                     por{' '}
-                                    <span className="font-semibold text-slate-800">{approveReceipt ? formatAmount(approveReceipt.plan?.price || 0) : ''}</span>?
+                                    <span className="font-semibold text-slate-800">{approveRow ? formatAmount(approveRow.price) : ''}</span>?
                                 </p>
+                                <div className="bg-slate-50 rounded-lg p-3 text-xs border border-slate-200">
+                                    <p><span className="text-slate-500">Plan:</span> <span className="font-medium text-slate-800">{approveRow?.planTitle}</span></p>
+                                </div>
                                 <p className="text-xs text-slate-500">
-                                    Al aprobar se creará el plan activo y el vendedor recibirá notificación de activación.
+                                    Al aprobar, el vendedor recibira acceso de inmediato.
                                 </p>
                             </div>
                         </AlertDialogDescription>
@@ -511,7 +564,7 @@ export function PlansReceiptsTab() {
                         >
                             {actionLoading ? (
                                 <><Loader2 className="w-4 h-4 animate-spin mr-1.5" />Aprobando...</>
-                            ) : 'Aprobar plan'}
+                            ) : 'Aprobar'}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -519,12 +572,11 @@ export function PlansReceiptsTab() {
 
             {/* ── Reject Dialog ─────────────────────────────────────────── */}
             <RejectDialog
-                open={!!rejectReceipt}
-                onOpenChange={(open) => !open && setRejectReceipt(null)}
+                open={!!rejectRow}
+                onOpenChange={(open) => !open && setRejectRow(null)}
                 onConfirm={handleRejectConfirm}
                 isLoading={actionLoading}
             />
         </TooltipProvider>
-        </div>
     );
 }
