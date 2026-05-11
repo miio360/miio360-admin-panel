@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HeadphonesIcon } from 'lucide-react';
+import { HeadphonesIcon, Percent } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { PageHeaderGlobal } from '@/shared/components/page-header-global';
 import { LoadingGlobal } from '@/shared/components/loading-global';
@@ -7,11 +7,13 @@ import { ErrorGlobal } from '@/shared/components/error-global';
 import { useSettings } from '../hooks/useSettings';
 import { SettingsListItem } from '../components/settings-list-item';
 import { TechSupportModal } from '../components/tech-support-modal';
+import { CommissionSettingsPanel } from '../components/commission-settings-panel';
 
-type Tab = 'soporte';
+type Tab = 'soporte' | 'comisiones';
 
 const tabs: { id: Tab; label: string; icon: typeof HeadphonesIcon }[] = [
     { id: 'soporte', label: 'Soporte Tecnico', icon: HeadphonesIcon },
+    { id: 'comisiones', label: 'Comisiones', icon: Percent },
 ];
 
 export function SettingsPage() {
@@ -79,6 +81,12 @@ export function SettingsPage() {
                         }
                         onClick={() => setTechSupportOpen(true)}
                     />
+                </div>
+            )}
+
+            {activeTab === 'comisiones' && (
+                <div className="space-y-2">
+                    <CommissionSettingsPanel />
                 </div>
             )}
 

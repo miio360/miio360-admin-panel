@@ -28,3 +28,30 @@ export interface TechSupportSettings {
 export interface AppSettings extends BaseModel {
     techSupport: TechSupportSettings;
 }
+
+// ========== COMMISSION SETTINGS ==========
+// Firestore path: app_settings/commission_price
+// IMPORTANT: Firestore field names differ from TypeScript names due to legacy naming.
+//   "app-service"     → appService   (flat Bs amount per order)
+//   "seller_service"  → sellerService (% commission deducted from seller payout)
+//   "courier_service" → courierService (% commission deducted from courier payout)
+
+export interface CommissionPriceSettings {
+    appService: number;
+    sellerService: number;
+    courierService: number;
+    updatedAt?: Timestamp;
+    updatedBy?: string;
+}
+
+/** Entry written to app_settings/commission_price/history/{auto-id} on every save. */
+export interface CommissionHistoryEntry {
+    id: string;
+    appService: number;
+    sellerService: number;
+    courierService: number;
+    changedAt: Timestamp;
+    changedBy: string;
+    changedByName: string;
+    notes?: string;
+}
