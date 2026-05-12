@@ -76,13 +76,6 @@ export interface OrderPayment {
   completedAt?: { seconds: number; nanoseconds: number };
 }
 
-/** @deprecated Use PaymentRecipientStatus fields instead */
-export interface PaymentUserStatus {
-  toUser: 'client' | 'seller';
-  status: PaymentStatus;
-  amount?: number;
-}
-
 export interface PaymentRecipientStatus {
   toUser: 'client' | 'seller' | 'courier';
   status: PaymentStatus;
@@ -132,8 +125,6 @@ export interface Order {
   total: number;
 
   payment: OrderPayment;
-  /** @deprecated Use paymentSellerStatus / paymentCourierStatus / paymentClientRefundStatus */
-  paymentUserStatus?: PaymentUserStatus;
   paymentSellerStatus?: PaymentRecipientStatus;
   paymentCourierStatus?: PaymentRecipientStatus;
   paymentClientRefundStatus?: PaymentRecipientStatus;
