@@ -23,8 +23,13 @@ export type TechSupportFormValues = z.infer<typeof techSupportSchema>;
 
 export const salesSettingsSchema = z.object({
     sales_enabled: z.boolean(),
-    /** ISO string from datetime-local input; empty string means not set */
-    date_to_enable_sales: z.string().optional(),
+    /** ISO string from datetime-local input; empty string or undefined means not set */
+    date_to_enable_sales: z
+        .string()
+        .optional()
+        .refine((val) => !val || !Number.isNaN(new Date(val).getTime()), {
+            message: 'La fecha ingresada no es válida',
+        }),
 });
 
 export type SalesSettingsFormValues = z.infer<typeof salesSettingsSchema>;
