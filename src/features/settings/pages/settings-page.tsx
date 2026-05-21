@@ -1,28 +1,46 @@
 import { useState } from 'react';
-import { HeadphonesIcon } from 'lucide-react';
+import { HeadphonesIcon, ShoppingBag } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { PageHeaderGlobal } from '@/shared/components/page-header-global';
 import { LoadingGlobal } from '@/shared/components/loading-global';
 import { ErrorGlobal } from '@/shared/components/error-global';
 import { useSettings } from '../hooks/useSettings';
+
 import { SettingsListItem } from '../components/settings-list-item';
 import { TechSupportModal } from '../components/tech-support-modal';
+import { SalesSettingsModal } from '../components/sales-settings-modal';
+import { useSalesSettings } from '../hooks/useSalesSettings';
 
-type Tab = 'soporte';
+type Tab = 'soporte' | 'ventas';
 
 const tabs: { id: Tab; label: string; icon: typeof HeadphonesIcon }[] = [
     { id: 'soporte', label: 'Soporte Tecnico', icon: HeadphonesIcon },
+    { id: 'ventas', label: 'Opciones de Venta', icon: ShoppingBag },
 ];
 
 export function SettingsPage() {
     const { settings, isLoading, error, refetch } = useSettings();
+    const { salesSettings, isLoading: isSalesLoading, error: salesError, refetch: refetchSales } = useSalesSettings();
     const [activeTab, setActiveTab] = useState<Tab>('soporte');
     const [techSupportOpen, setTechSupportOpen] = useState(false);
+    const [salesSettingsOpen, setSalesSettingsOpen] = useState(false);
 
-    if (isLoading) return <LoadingGlobal message="Cargando configuracion..." />;
+    if (isLoading || isSalesLoading) return <LoadingGlobal message="Cargando configuracion..." />;
     if (error) return <ErrorGlobal message={error} onRetry={refetch} />;
+    if (salesError) return <ErrorGlobal message={salesError} onRetry={refetchSales} />;
 
     const whatsappConfigured = !!settings?.techSupport?.whatsapp?.phoneNumber;
+
+    const salesEnabled = salesSettings?.sales_enabled ?? false;
+    const dateToEnable = salesSettings?.date_to_enable_sales
+        ? salesSettings.date_to_enable_sales.toDate().toLocaleString('es-BO', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+          })
+        : null;
 
     return (
         <div className="space-y-6 p-4 sm:p-6 max-w-2xl">
@@ -82,11 +100,37 @@ export function SettingsPage() {
                 </div>
             )}
 
+            {activeTab === 'ventas' && (
+                <div className="space-y-2">
+                    <SettingsListItem
+                        icon={ShoppingBag}
+                        label="Estado de Ventas"
+                        description={
+                            salesEnabled
+                                ? 'Las ventas están activas en la plataforma'
+                                : dateToEnable
+                                  ? `Programadas para: ${dateToEnable}`
+                                  : 'Las ventas están desactivadas'
+                        }
+                        badge={salesEnabled ? 'Habilitadas' : 'Deshabilitadas'}
+                        badgeVariant={salesEnabled ? 'success' : 'warning'}
+                        onClick={() => setSalesSettingsOpen(true)}
+                    />
+                </div>
+            )}
+
             <TechSupportModal
                 open={techSupportOpen}
                 onOpenChange={setTechSupportOpen}
                 settings={settings}
                 onSuccess={refetch}
+            />
+
+            <SalesSettingsModal
+                open={salesSettingsOpen}
+                onOpenChange={setSalesSettingsOpen}
+                salesSettings={salesSettings}
+                onSuccess={refetchSales}
             />
         </div>
     );

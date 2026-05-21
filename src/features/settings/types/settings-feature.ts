@@ -18,3 +18,13 @@ export const techSupportSchema = z.object({
 });
 
 export type TechSupportFormValues = z.infer<typeof techSupportSchema>;
+
+// ========== SALES SETTINGS SCHEMA ==========
+
+export const salesSettingsSchema = z.object({
+    sales_enabled: z.boolean(),
+    /** ISO string from datetime-local input; empty string means not set */
+    date_to_enable_sales: z.string().optional(),
+});
+
+export type SalesSettingsFormValues = z.infer<typeof salesSettingsSchema>;
