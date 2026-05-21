@@ -13,6 +13,9 @@ export const courierFormSchema = z.object({
   isAvailable: z.boolean().optional(),
   cities: z.array(z.string()).min(1, 'Selecciona al menos una ciudad'),
   currentCity: z.string().min(1, 'Ciudad actual requerida'),
+  bankName: z.string().optional(),
+  accountNumber: z.string().optional(),
+  qrCodeFile: z.any().optional(),
 });
 
 export type CourierFormData = z.infer<typeof courierFormSchema>;

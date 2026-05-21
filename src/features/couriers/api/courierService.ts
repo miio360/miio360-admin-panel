@@ -21,6 +21,8 @@ import { httpsCallable } from 'firebase/functions';
 import { UserRole, UserStatus } from '@/shared/types';
 import type { User } from '@/shared/types';
 import type { CreateUserResponse } from '@/shared/types/user';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/shared/services/firebase';
 
 const COLLECTION = 'users';
 
@@ -36,6 +38,9 @@ export interface CreateCourierInput {
   isAvailable?: boolean;
   cities?: string[];
   currentCity?: string;
+  bankName?: string;
+  accountNumber?: string;
+  qrCodeFile?: File | null;
 }
 
 export interface UpdateCourierInput {
@@ -48,6 +53,9 @@ export interface UpdateCourierInput {
   isAvailable?: boolean;
   cities?: string[];
   currentCity?: string;
+  bankName?: string;
+  accountNumber?: string;
+  qrCodeFile?: File | null;
 }
 
 /** Query and paginate users with activeRole === 'courier'. */
@@ -115,6 +123,23 @@ export async function getCouriersPage({
   return { couriers, total: countSnap.data().count, lastDoc };
 }
 
+async function uploadCourierQR(courierId: string, file: File) {
+  const timestamp = Date.now();
+  const storagePath = `couriers/qr_codes/${courierId}_${timestamp}_${file.name}`;
+  const storageRef = ref(storage, storagePath);
+
+  await uploadBytes(storageRef, file);
+  const downloadURL = await getDownloadURL(storageRef);
+
+  return {
+    url: downloadURL,
+    name: file.name,
+    path: storagePath,
+    size: file.size,
+    type: file.type,
+  };
+}
+
 /** Create a courier via the existing createUser cloud function. */
 export async function createCourier(input: CreateCourierInput): Promise<string> {
   const createUserFn = httpsCallable<Record<string, unknown>, CreateUserResponse>(
@@ -138,8 +163,29 @@ export async function createCourier(input: CreateCourierInput): Promise<string> 
   });
 
   const response = result.data;
-  if (response.success && response.userId) return response.userId;
-  throw new Error(response.message);
+  if (!response.success || !response.userId) {
+    throw new Error(response.message);
+  }
+
+  const newUserId = response.userId;
+
+  // Si hay información de pago o archivo, actualizamos el documento del nuevo usuario
+  if (input.bankName || input.accountNumber || input.qrCodeFile) {
+    const userDoc = doc(db, COLLECTION, newUserId);
+    const updateData: Record<string, any> = {};
+
+    if (input.bankName) updateData['courierProfile.payInformation.bankName'] = input.bankName;
+    if (input.accountNumber) updateData['courierProfile.payInformation.accountNumber'] = input.accountNumber;
+
+    if (input.qrCodeFile) {
+      const qrData = await uploadCourierQR(newUserId, input.qrCodeFile);
+      updateData['courierProfile.payInformation.qrCode'] = qrData;
+    }
+
+    await updateDoc(userDoc, updateData);
+  }
+
+  return newUserId;
 }
 
 /** Update basic courier data and courierProfile fields in Firestore using dot notation to avoid overwriting nested objects. */
@@ -161,6 +207,14 @@ export async function updateCourier(id: string, input: UpdateCourierInput): Prom
   if (input.isAvailable !== undefined) updateData['courierProfile.isAvailable'] = input.isAvailable;
   if (input.cities !== undefined) updateData['courierProfile.cities'] = input.cities;
   if (input.currentCity !== undefined) updateData['courierProfile.currentCity'] = input.currentCity;
+
+  if (input.bankName !== undefined) updateData['courierProfile.payInformation.bankName'] = input.bankName;
+  if (input.accountNumber !== undefined) updateData['courierProfile.payInformation.accountNumber'] = input.accountNumber;
+
+  if (input.qrCodeFile) {
+    const qrData = await uploadCourierQR(id, input.qrCodeFile);
+    updateData['courierProfile.payInformation.qrCode'] = qrData;
+  }
 
   await updateDoc(userDoc, updateData);
 }

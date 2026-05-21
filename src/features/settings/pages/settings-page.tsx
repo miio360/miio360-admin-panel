@@ -1,21 +1,22 @@
 import { useState } from 'react';
-import { HeadphonesIcon, ShoppingBag } from 'lucide-react';
+import { HeadphonesIcon, ShoppingBag, Percent } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { PageHeaderGlobal } from '@/shared/components/page-header-global';
 import { LoadingGlobal } from '@/shared/components/loading-global';
 import { ErrorGlobal } from '@/shared/components/error-global';
 import { useSettings } from '../hooks/useSettings';
-
+import { useSalesSettings } from '../hooks/useSalesSettings';
 import { SettingsListItem } from '../components/settings-list-item';
 import { TechSupportModal } from '../components/tech-support-modal';
 import { SalesSettingsModal } from '../components/sales-settings-modal';
-import { useSalesSettings } from '../hooks/useSalesSettings';
+import { CommissionSettingsPanel } from '../components/commission-settings-panel';
 
-type Tab = 'soporte' | 'ventas';
+type Tab = 'soporte' | 'ventas' | 'comisiones';
 
 const tabs: { id: Tab; label: string; icon: typeof HeadphonesIcon }[] = [
     { id: 'soporte', label: 'Soporte Tecnico', icon: HeadphonesIcon },
     { id: 'ventas', label: 'Opciones de Venta', icon: ShoppingBag },
+    { id: 'comisiones', label: 'Comisiones', icon: Percent },
 ];
 
 export function SettingsPage() {
@@ -116,6 +117,12 @@ export function SettingsPage() {
                         badgeVariant={salesEnabled ? 'success' : 'warning'}
                         onClick={() => setSalesSettingsOpen(true)}
                     />
+                </div>
+            )}
+
+            {activeTab === 'comisiones' && (
+                <div className="space-y-2">
+                    <CommissionSettingsPanel />
                 </div>
             )}
 

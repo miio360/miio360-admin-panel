@@ -27,6 +27,9 @@ export function useCourierFormSubmit(onSuccess: () => void) {
           isAvailable: data.isAvailable,
           cities: data.cities,
           currentCity: data.currentCity,
+          bankName: data.bankName,
+          accountNumber: data.accountNumber,
+          qrCodeFile: data.qrCodeFile,
         });
         modal.showSuccess('Repartidor actualizado correctamente');
       } else {
@@ -46,6 +49,9 @@ export function useCourierFormSubmit(onSuccess: () => void) {
           isAvailable: data.isAvailable,
           cities: data.cities,
           currentCity: data.currentCity,
+          bankName: data.bankName,
+          accountNumber: data.accountNumber,
+          qrCodeFile: data.qrCodeFile,
         });
         modal.showSuccess('Repartidor creado correctamente');
       }

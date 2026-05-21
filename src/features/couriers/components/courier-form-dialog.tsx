@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useForm, useController, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Upload } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ export function CourierFormDialog({
 }: CourierFormDialogProps) {
   const isEditing = !!courier;
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { cities: availableCities, isLoading: citiesLoading } = useCitiesFromShipmentPrices();
 
   const {
@@ -54,11 +56,26 @@ export function CourierFormDialog({
       isAvailable: true,
       cities: [],
       currentCity: '',
+      bankName: '',
+      accountNumber: '',
     },
   });
 
   const { field: citiesField } = useController({ name: 'cities', control });
   const selectedCities = citiesField.value ?? [];
+  const { field: qrCodeField } = useController({ name: 'qrCodeFile', control });
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      qrCodeField.onChange(selectedFile);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
 
   useEffect(() => {
     if (courier) {
@@ -73,7 +90,11 @@ export function CourierFormDialog({
         isAvailable: courier.courierProfile?.isAvailable ?? true,
         cities: courier.courierProfile?.cities ?? [],
         currentCity: courier.courierProfile?.currentCity ?? '',
+        bankName: courier.courierProfile?.payInformation?.bankName ?? '',
+        accountNumber: courier.courierProfile?.payInformation?.accountNumber ?? '',
+        qrCodeFile: undefined,
       });
+      setPreviewUrl(courier.courierProfile?.payInformation?.qrCode?.url ?? null);
     } else {
       reset({
         firstName: '',
@@ -87,7 +108,11 @@ export function CourierFormDialog({
         isAvailable: true,
         cities: [],
         currentCity: '',
+        bankName: '',
+        accountNumber: '',
+        qrCodeFile: undefined,
       });
+      setPreviewUrl(null);
     }
   }, [courier, open, reset]);
 
@@ -225,7 +250,69 @@ export function CourierFormDialog({
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="pt-4 border-t border-border space-y-4">
+            <h4 className="text-sm font-semibold text-foreground">Información de Pago</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="bankName" className="text-sm font-medium text-foreground">
+                  Nombre del Banco
+                </Label>
+                <InputGlobal
+                  id="bankName"
+                  placeholder="Ej: Banco Unión"
+                  {...register('bankName')}
+                  disabled={isSubmitting}
+                />
+                <p className="text-xs text-muted-foreground">Opcional</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="accountNumber" className="text-sm font-medium text-foreground">
+                  Número de Cuenta o Celular
+                </Label>
+                <InputGlobal
+                  id="accountNumber"
+                  placeholder="123456789"
+                  {...register('accountNumber')}
+                  disabled={isSubmitting}
+                />
+                <p className="text-xs text-muted-foreground">Opcional</p>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-foreground block mb-1">
+                Código QR de Pago
+              </Label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                id="courier-qr-upload"
+                disabled={isSubmitting}
+              />
+              <label htmlFor="courier-qr-upload" className="inline-block w-full">
+                <div className={`border-2 border-dashed border-gray-300 rounded-lg p-6 text-center transition-colors ${!isSubmitting ? 'cursor-pointer hover:border-primary' : 'opacity-50 cursor-not-allowed'}`}>
+                  {previewUrl ? (
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className="w-32 h-32 object-contain mx-auto mb-2"
+                    />
+                  ) : (
+                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  )}
+                  <p className="text-sm text-gray-600">
+                    {qrCodeField.value?.name ?? 'Click para seleccionar imagen'}
+                  </p>
+                </div>
+              </label>
+              <p className="text-xs text-muted-foreground text-center">Opcional. Sube la imagen del QR para recibir pagos.</p>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-border space-y-1.5">
             <Label htmlFor="status" className="text-sm font-medium text-foreground">
               Estado
             </Label>
