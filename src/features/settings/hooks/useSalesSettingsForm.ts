@@ -40,7 +40,13 @@ export function useSalesSettingsForm({ salesSettings, onSuccess }: UseSalesSetti
 
             let dateTimestamp: Timestamp | null = null;
             if (!values.sales_enabled && values.date_to_enable_sales) {
-                dateTimestamp = Timestamp.fromDate(new Date(values.date_to_enable_sales));
+                const parsedDate = new Date(values.date_to_enable_sales);
+
+                if (Number.isNaN(parsedDate.getTime())) {
+                    throw new Error('La fecha de habilitación de ventas no es válida');
+                }
+
+                dateTimestamp = Timestamp.fromDate(parsedDate);
             }
 
             await settingsService.upsertSalesSettings({
