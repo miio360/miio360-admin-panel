@@ -380,10 +380,11 @@ interface RecipientCardProps {
     icon: React.ReactNode;
     status: PaymentRecipientStatus | undefined;
     recipient: PaymentRecipient;
+    order: Order;
     onManage: (recipient: PaymentRecipient) => void;
 }
 
-function RecipientPaymentCard({ label, icon, status, recipient, onManage }: RecipientCardProps) {
+function RecipientPaymentCard({ label, icon, status, recipient, order, onManage }: RecipientCardProps) {
     if (!status) {
         return (
             <div className="flex items-center gap-3 rounded-lg border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-400">
@@ -394,6 +395,18 @@ function RecipientPaymentCard({ label, icon, status, recipient, onManage }: Reci
     }
 
     const cfg = PAYMENT_USER_STATUS_CONFIG[status.status] ?? PAYMENT_USER_STATUS_CONFIG[PaymentStatus.PENDING];
+
+    // For seller, show real product amount (subtotal - discount) without subtracting serviceFee
+    const isSeller = recipient === 'seller';
+    const realGross = isSeller
+        ? order.subtotal - (order.discount || 0)
+        : status.grossAmount;
+    const realCommission = isSeller
+        ? parseFloat((realGross * status.commissionPct / 100).toFixed(2))
+        : status.commissionAmount;
+    const realNet = isSeller
+        ? parseFloat((realGross - realCommission).toFixed(2))
+        : status.netAmount;
 
     return (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-lg border border-slate-100 bg-white px-4 py-3">
@@ -410,11 +423,11 @@ function RecipientPaymentCard({ label, icon, status, recipient, onManage }: Reci
                     </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
-                    <span className="whitespace-nowrap">Bruto: <span className="font-medium text-slate-700">{formatAmount(status.grossAmount)}</span></span>
+                    <span className="whitespace-nowrap">Bruto: <span className="font-medium text-slate-700">{formatAmount(realGross)}</span></span>
                     <span className="text-slate-300 hidden sm:inline">|</span>
-                    <span className="whitespace-nowrap">Comisión ({status.commissionPct}%): <span className="font-medium text-rose-600">-{formatAmount(status.commissionAmount)}</span></span>
+                    <span className="whitespace-nowrap">Comisión App ({status.commissionPct}%): <span className="font-medium text-rose-600">-{formatAmount(realCommission)}</span></span>
                     <span className="text-slate-300 hidden sm:inline">|</span>
-                    <span className="whitespace-nowrap">Neto: <span className="font-bold text-emerald-700">{formatAmount(status.netAmount)}</span></span>
+                    <span className="whitespace-nowrap">Neto: <span className="font-bold text-emerald-700">{formatAmount(realNet)}</span></span>
                 </div>
             </div>
             {status.status === PaymentStatus.PENDING && (
@@ -458,6 +471,7 @@ function PaymentRecipientsSection({ order, onManagePayment }: {
                 icon={<Store className="w-3.5 h-3.5 text-slate-500" />}
                 status={order.paymentSellerStatus}
                 recipient="seller"
+                order={order}
                 onManage={(r) => onManagePayment(order, r)}
             />
             <RecipientPaymentCard
@@ -465,6 +479,7 @@ function PaymentRecipientsSection({ order, onManagePayment }: {
                 icon={<Truck className="w-3.5 h-3.5 text-slate-500" />}
                 status={order.paymentCourierStatus}
                 recipient="courier"
+                order={order}
                 onManage={(r) => onManagePayment(order, r)}
             />
             <RecipientPaymentCard
@@ -472,6 +487,7 @@ function PaymentRecipientsSection({ order, onManagePayment }: {
                 icon={<User2 className="w-3.5 h-3.5 text-slate-500" />}
                 status={order.paymentClientRefundStatus}
                 recipient="client"
+                order={order}
                 onManage={(r) => onManagePayment(order, r)}
             />
         </div>
@@ -909,20 +925,32 @@ export function OrdersTrackingPage() {
                                 paymentRecipient === 'seller' ? paymentOrder?.paymentSellerStatus :
                                     paymentRecipient === 'courier' ? paymentOrder?.paymentCourierStatus :
                                         paymentOrder?.paymentClientRefundStatus;
-                            if (!status) return null;
+                            if (!status || !paymentOrder) return null;
+
+                            const isSeller = paymentRecipient === 'seller';
+                            const realGross = isSeller
+                                ? paymentOrder.subtotal - (paymentOrder.discount || 0)
+                                : status.grossAmount;
+                            const realCommission = isSeller
+                                ? parseFloat((realGross * status.commissionPct / 100).toFixed(2))
+                                : status.commissionAmount;
+                            const realNet = isSeller
+                                ? parseFloat((realGross - realCommission).toFixed(2))
+                                : status.netAmount;
+
                             return (
                                 <div className="rounded-lg bg-slate-50 border border-slate-100 p-4 space-y-1 text-sm">
                                     <div className="flex justify-between text-slate-600">
                                         <span>Monto bruto</span>
-                                        <span className="font-medium">{formatAmount(status.grossAmount)}</span>
+                                        <span className="font-medium">{formatAmount(realGross)}</span>
                                     </div>
                                     <div className="flex justify-between text-slate-600">
-                                        <span>Comisión App</span>
-                                        <span className="font-medium text-rose-600">-{formatAmount(status.commissionAmount)}</span>
+                                        <span>Comisión App ({status.commissionPct}%)</span>
+                                        <span className="font-medium text-rose-600">-{formatAmount(realCommission)}</span>
                                     </div>
                                     <div className="flex justify-between text-slate-900 font-bold pt-1 border-t border-slate-200 mt-1">
                                         <span>Monto neto a pagar</span>
-                                        <span className="text-emerald-700">{formatAmount(status.netAmount)}</span>
+                                        <span className="text-emerald-700">{formatAmount(realNet)}</span>
                                     </div>
                                 </div>
                             );
