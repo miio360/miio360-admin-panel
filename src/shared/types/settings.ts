@@ -21,12 +21,23 @@ export interface TechSupportSettings {
     updatedBy: string;
 }
 
+// ========== SALES SETTINGS ==========
+// Firestore path: app_settings/sales_settings
+
+export interface SalesSettings {
+    /** Whether sales are globally enabled in the app */
+    sales_enabled: boolean;
+    /** Scheduled date/time to automatically enable sales (only relevant when sales_enabled is false) */
+    date_to_enable_sales: Timestamp | null;
+}
+
 /**
  * Singleton document stored in Firestore: app_settings/general
  * The MIIO app reads `techSupport.whatsapp` to build the WhatsApp deep-link.
  */
 export interface AppSettings extends BaseModel {
     techSupport: TechSupportSettings;
+    salesSettings?: SalesSettings;
 }
 
 // ========== COMMISSION SETTINGS ==========
