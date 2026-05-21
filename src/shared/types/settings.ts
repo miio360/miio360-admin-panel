@@ -21,10 +21,48 @@ export interface TechSupportSettings {
     updatedBy: string;
 }
 
+// ========== SALES SETTINGS ==========
+// Firestore path: app_settings/sales_settings
+
+export interface SalesSettings {
+    /** Whether sales are globally enabled in the app */
+    sales_enabled: boolean;
+    /** Scheduled date/time to automatically enable sales (only relevant when sales_enabled is false) */
+    date_to_enable_sales: Timestamp | null;
+}
+
 /**
  * Singleton document stored in Firestore: app_settings/general
  * The MIIO app reads `techSupport.whatsapp` to build the WhatsApp deep-link.
  */
 export interface AppSettings extends BaseModel {
     techSupport: TechSupportSettings;
+    salesSettings?: SalesSettings;
+}
+
+// ========== COMMISSION SETTINGS ==========
+// Firestore path: app_settings/commission_price
+// IMPORTANT: Firestore field names differ from TypeScript names due to legacy naming.
+//   "app-service"     → appService   (flat Bs amount per order)
+//   "seller_service"  → sellerService (% commission deducted from seller payout)
+//   "courier_service" → courierService (% commission deducted from courier payout)
+
+export interface CommissionPriceSettings {
+    appService: number;
+    sellerService: number;
+    courierService: number;
+    updatedAt?: Timestamp;
+    updatedBy?: string;
+}
+
+/** Entry written to app_settings/commission_price/history/{auto-id} on every save. */
+export interface CommissionHistoryEntry {
+    id: string;
+    appService: number;
+    sellerService: number;
+    courierService: number;
+    changedAt: Timestamp;
+    changedBy: string;
+    changedByName: string;
+    notes?: string;
 }

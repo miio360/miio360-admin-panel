@@ -5,10 +5,11 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { createBaseModel, updateModelTimestamp } from '../types/base';
-import type { AppSettings, TechSupportSettings } from '../types/settings';
+import type { AppSettings, TechSupportSettings, SalesSettings } from '../types/settings';
 
 const COLLECTION = 'app_settings';
 const DOC_ID = 'technical_support';
+const SALES_DOC_ID = 'sales_settings';
 
 /**
  * Settings service — singleton document pattern.
@@ -59,6 +60,28 @@ export const settingsService = {
         } catch (error) {
             console.error('Error saving tech support settings:', error);
             throw new Error('No se pudo guardar la configuración de soporte');
+        }
+    },
+
+    async getSalesSettings(): Promise<SalesSettings | null> {
+        try {
+            const ref = doc(db, COLLECTION, SALES_DOC_ID);
+            const snap = await getDoc(ref);
+            if (!snap.exists()) return null;
+            return snap.data() as SalesSettings;
+        } catch (error) {
+            console.error('Error fetching sales settings:', error);
+            throw new Error('No se pudo cargar la configuración de ventas');
+        }
+    },
+
+    async upsertSalesSettings(salesSettings: SalesSettings): Promise<void> {
+        try {
+            const ref = doc(db, COLLECTION, SALES_DOC_ID);
+            await setDoc(ref, salesSettings, { merge: true });
+        } catch (error) {
+            console.error('Error saving sales settings:', error);
+            throw new Error('No se pudo guardar la configuración de ventas');
         }
     },
 };

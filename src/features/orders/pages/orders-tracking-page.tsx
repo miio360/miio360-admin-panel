@@ -779,14 +779,8 @@ export function OrdersTrackingPage() {
                                                                 <User2 className="w-3 h-3" /> P. Cliente
                                                             </span>
                                                         )}
-                                                        {!order.paymentSellerStatus && !order.paymentCourierStatus && !order.paymentClientRefundStatus && !order.paymentUserStatus && (
+                                                        {!order.paymentSellerStatus && !order.paymentCourierStatus && !order.paymentClientRefundStatus && (
                                                             <span className="text-xs text-slate-400">—</span>
-                                                        )}
-                                                        {/* Legacy format fallback */}
-                                                        {!order.paymentSellerStatus && !order.paymentCourierStatus && !order.paymentClientRefundStatus && order.paymentUserStatus?.status === PaymentStatus.PENDING && (
-                                                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit">
-                                                                <DollarSign className="w-3 h-3" /> P. {order.paymentUserStatus.toUser === 'seller' ? 'Vendedor' : 'Cliente'}
-                                                            </span>
                                                         )}
                                                         {/* Completed or no pending */}
                                                         {(order.paymentSellerStatus || order.paymentCourierStatus || order.paymentClientRefundStatus) &&
