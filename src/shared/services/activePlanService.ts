@@ -130,7 +130,11 @@ export const activePlanService = {
         planType: input.planType,
         planTitle: input.planTitle,
         planPrice: input.planPrice,
-        status: 'pending_assignment' as const,
+        status: (
+          input.planType === 'advertising' ? 'pending_assignment' :
+          input.planType === 'lives' ? 'expired' :
+          'active'
+        ) as ActivePlanStatus,
         approvedAt: now,
         ...createBaseModel(input.approvedBy),
       };
