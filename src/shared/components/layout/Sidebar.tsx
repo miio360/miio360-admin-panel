@@ -259,7 +259,7 @@ export const Sidebar = () => {
               className="w-8 h-8 rounded-md object-cover"
             />
           </div>
-          <span className="text-lg font-bold text-white tracking-tight">M!!o Market</span>
+          <span className="text-lg font-bold text-white tracking-tight">Miio Market</span>
         </div>
         {renderNavContent()}
       </aside>
@@ -268,7 +268,7 @@ export const Sidebar = () => {
       <header className="lg:hidden flex items-center justify-between h-14 px-4 border-b border-white/10 bg-gradient-to-b from-slate-900 to-slate-800 z-30 shrink-0 w-full relative">
         <div className="flex items-center gap-2">
           <img src="/miio.jpeg" alt="Miio Logo" className="w-8 h-8 rounded-md object-cover cursor-pointer" onClick={() => navigate(`/`)} />
-          <span className="text-lg font-bold text-white tracking-tight">M!!o Market</span>
+          <span className="text-lg font-bold text-white tracking-tight">Miio Market</span>
         </div>
         <ButtonGlobal
           aria-label="Abrir menú"

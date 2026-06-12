@@ -11,11 +11,11 @@ import {
   limit,
   startAfter,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from './firebase';
 import type { PaymentReceipt, PaymentReceiptStatus, RejectionReason } from '../types/payment';
-import type { AdvertisingPlanSummary, VideoPlanSummary, LivesPlanSummary, SellerSummary } from '../types/summaries';
+import type { SellerSummary } from '../types/summaries';
 import { updateModelTimestamp } from '../types/base';
-import { activePlanService } from './activePlanService';
 
 const COLLECTION_NAME = 'payment_receipts';
 
@@ -117,7 +117,8 @@ export const paymentReceiptService = {
   },
 
   /**
-   * Aprueba un comprobante de pago y crea el plan activo correspondiente
+   * Aprueba un comprobante de pago via Cloud Function.
+   * La CF crea el active_plan, actualiza el receipt y envia notificacion al seller.
    * @param id - ID del comprobante
    * @param userId - ID del admin que aprueba
    * @param sellerData - Datos del vendedor para crear el plan activo
@@ -128,95 +129,38 @@ export const paymentReceiptService = {
     sellerData: SellerSummary
   ): Promise<{ activePlanId: string }> {
     try {
-      // 1. Obtener el receipt para acceder a los datos del plan
-      const receipt = await this.getById(id);
-      if (!receipt) {
-        throw new Error('Comprobante no encontrado');
-      }
+      const processPaymentReceiptFn = httpsCallable<{
+        receiptId: string;
+        adminId: string;
+        sellerData: {
+          id: string;
+          name: string;
+          profileImage?: string;
+          storeName?: string;
+        };
+      }, { success: boolean; activePlanId?: string; message?: string }>(
+        functions,
+        'processPaymentReceipt',
+      );
 
-      if (receipt.status !== 'pending') {
-        throw new Error('El comprobante ya fue procesado');
-      }
-
-      // 2. Crear el active_plan segun el tipo de plan
-      const plan = receipt.plan;
-      let activePlanId: string;
-
-      if (plan.planType === 'advertising') {
-        const advertisingPlan = plan as AdvertisingPlanSummary;
-
-        // Banner required for:
-        // - store_banner plans (Plans 1 & 2): promotional store banner
-        // - product + mini_banner (Plan 5): static product banner between product rows
-        const requiresBanner =
-          advertisingPlan.advertisingType === 'store_banner' ||
-          (advertisingPlan.advertisingType === 'product' &&
-            advertisingPlan.advertisingPosition === 'mini_banner');
-
-        if (requiresBanner && !receipt.bannerImage) {
-          const label =
-            advertisingPlan.advertisingType === 'store_banner'
-              ? 'Banner de Tienda'
-              : 'Banner de Producto';
-          throw new Error(`El ${label} es requerido para este plan de publicidad`);
-        }
-
-        // Resolve the creative image: banner if present, productImage as fallback
-        const creativeImage = receipt.bannerImage ?? receipt.productImage;
-
-        activePlanId = await activePlanService.create({
-          receiptId: id,
-          seller: sellerData,
-          planType: 'advertising',
-          planTitle: plan.title,
-          planPrice: plan.price,
-          approvedBy: userId,
-          advertisingType: advertisingPlan.advertisingType,
-          advertisingPosition: advertisingPlan.advertisingPosition,
-          daysEnabled: advertisingPlan.daysEnabled,
-          ...(creativeImage ? { bannerImage: creativeImage } : {}),
-        });
-      } else if (plan.planType === 'video') {
-        const videoPlan = plan as VideoPlanSummary;
-        activePlanId = await activePlanService.create({
-          receiptId: id,
-          seller: sellerData,
-          planType: 'video',
-          planTitle: plan.title,
-          planPrice: plan.price,
-          approvedBy: userId,
-          videoMode: videoPlan.videoMode,
-          videoCount: videoPlan.videoCount,
-          maxDurationPerVideoSeconds: videoPlan.maxDurationPerVideoSeconds,
-          totalDurationSeconds: videoPlan.totalDurationSeconds,
-        });
-      } else {
-        const livesPlan = plan as LivesPlanSummary;
-        activePlanId = await activePlanService.create({
-          receiptId: id,
-          seller: sellerData,
-          planType: 'lives',
-          planTitle: plan.title,
-          planPrice: plan.price,
-          approvedBy: userId,
-          livesDurationMinutes: livesPlan.livesDurationMinutes,
-        });
-      }
-
-      // 3. Actualizar el receipt con estado aprobado y referencia al plan
-      const docRef = doc(db, COLLECTION_NAME, id);
-      await updateDoc(docRef, {
-        status: 'approved',
-        approvedBy: userId,
-        approvedAt: Timestamp.now(),
-        activePlanId: activePlanId,
-        rejectionReason: null,
-        rejectedBy: null,
-        rejectedAt: null,
-        ...updateModelTimestamp(userId),
+      const result = await processPaymentReceiptFn({
+        receiptId: id,
+        adminId: userId,
+        sellerData: {
+          id: sellerData.id,
+          name: sellerData.name,
+          profileImage: sellerData.profileImage || '',
+          storeName: sellerData.storeName || sellerData.name,
+        },
       });
 
-      return { activePlanId };
+      const response = result.data;
+
+      if (!response.success || !response.activePlanId) {
+        throw new Error(response.message || 'Error al aprobar');
+      }
+
+      return { activePlanId: response.activePlanId };
     } catch (error) {
       console.error('Error approving payment receipt:', error);
       if (error instanceof Error) {
