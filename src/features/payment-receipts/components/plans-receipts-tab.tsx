@@ -183,7 +183,7 @@ export function PlansReceiptsTab() {
         original: r,
     }));
 
-    const walletRows: UnifiedRow[] = transactions.filter(tx => tx.category !== 'live').map(tx => ({
+    const walletRows: UnifiedRow[] = transactions.filter(tx => tx.category !== 'live' && tx.category !== 'video').map(tx => ({
         id: tx.id,
         source: 'wallet' as const,
         createdAt: tx.createdAt,
@@ -221,21 +221,6 @@ export function PlansReceiptsTab() {
                     storeName: receipt.seller.name,
                 };
                 await paymentReceiptService.approve(approveRow.id, user.id, sellerData);
-
-                // For lives plans: also approve the linked wallet transaction to
-                // trigger processWalletTransaction CF and update wallets.live.balance
-                if (approveRow.planType === 'lives') {
-                    const matchingTx = transactions.find(
-                        tx =>
-                            tx.seller.id === receipt.seller.id &&
-                            tx.plan.id === receipt.plan.id &&
-                            tx.status === 'pending' &&
-                            tx.category === 'live',
-                    );
-                    if (matchingTx) {
-                        await walletTransactionService.approve(receipt.seller.id, matchingTx.id, user.id);
-                    }
-                }
             } else {
                 const tx = approveRow.original as WalletTransaction;
                 await walletTransactionService.approve(tx.seller.id, approveRow.id, user.id);

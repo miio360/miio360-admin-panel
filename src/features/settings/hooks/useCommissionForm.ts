@@ -30,7 +30,7 @@ export function useCommissionForm({ commission, onSuccess }: UseCommissionFormPr
         if (!user?.id) return;
         const userName = [user.profile?.firstName, user.profile?.lastName]
             .filter(Boolean)
-            .join(' ') || user.email || 'Admin';
+            .join(' ') || user.profile.email || 'Admin';
         try {
             setIsSubmitting(true);
             await commissionService.update(
