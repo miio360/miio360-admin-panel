@@ -62,6 +62,8 @@ export interface LivesActivePlan extends BaseActivePlan {
   planType: 'lives';
   livesDurationMinutes: number;
   livesUsed: number;
+  startDate?: Timestamp;
+  endDate?: Timestamp;
 }
 
 // ========== UNION TYPE ==========

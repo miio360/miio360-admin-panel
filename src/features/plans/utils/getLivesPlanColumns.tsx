@@ -5,15 +5,15 @@ import type { LivesPlan } from '../types/plan';
 export function getLivesPlanColumns(formatPrice: (price: number) => string): TableGlobalColumn<LivesPlan>[] {
   return [
     {
-      key: 'title',
-      header: 'Titulo',
+      key: 'name',
+      header: 'Nombre',
       render: (row) => (
-        <span className="font-medium text-foreground">{row.title}</span>
+        <span className="font-medium text-foreground">{row.name || row.title}</span>
       ),
     },
     {
       key: 'description',
-      header: 'Descripcion',
+      header: 'Descripción',
       render: (row) => (
         <span className="text-foreground/70 text-sm line-clamp-2">
           {row.description}
@@ -21,21 +21,77 @@ export function getLivesPlanColumns(formatPrice: (price: number) => string): Tab
       ),
     },
     {
-      key: 'livesDurationMinutes',
-      header: 'Tiempo Total de Lives',
+      key: 'maxMinutesPerMonth',
+      header: 'Tiempo Mensual',
       align: 'center',
       render: (row) => (
-        <span className="font-medium text-foreground">{row.livesDurationMinutes} min</span>
+        <span className="font-medium text-foreground">{(row.maxMinutesPerMonth ?? row.livesDurationMinutes) || 0} min</span>
       ),
     },
     {
-      key: 'price',
-      header: 'Precio',
+      key: 'maxConcurrentViewers',
+      header: 'Espectadores Máx.',
+      align: 'center',
+      render: (row) => (
+        <span className="text-foreground">{row.maxConcurrentViewers || 0}</span>
+      ),
+    },
+    {
+      key: 'pricePublic',
+      header: 'Precio (Púb / Net)',
       align: 'right',
       render: (row) => (
-        <span className="font-semibold text-foreground">
-          {formatPrice(row.price)}
-        </span>
+        <div className="flex flex-col items-end">
+          <span className="font-semibold text-foreground">
+            {formatPrice(row.pricePublic ?? row.price)}
+          </span>
+          <span className="text-[10px] text-muted-foreground">
+            Neto: {formatPrice(row.priceNet ?? 0)}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'features',
+      header: 'Características',
+      render: (row) => {
+        const FEATURE_TRANSLATIONS: Record<string, string> = {
+          clean_signal: 'Señal Limpia',
+          assisted_distribution: 'Distribución Asistida',
+          signal_boost: 'Impulso de Señal',
+          vip_boost: 'Impulso VIP',
+          click_to_buy: 'Clic para Comprar',
+          flash_offers: 'Ofertas Relámpago',
+        };
+        return (
+          <div className="flex flex-wrap gap-1 max-w-[150px]">
+            {(row.features || []).map((feat) => (
+              <Badge 
+                key={feat} 
+                variant="outline" 
+                className="text-[10px] py-0 px-1.5 font-medium border-indigo-100 bg-indigo-50/50 text-indigo-700 hover:bg-indigo-50/50"
+              >
+                {FEATURE_TRANSLATIONS[feat] || feat}
+              </Badge>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
+      key: 'triggerPushOnStart',
+      header: 'Push al Iniciar',
+      align: 'center',
+      render: (row) => (
+        <Badge 
+          variant="outline"
+          className={row.triggerPushOnStart 
+            ? 'border-violet-200 bg-violet-50 text-violet-700 cursor-default' 
+            : 'border-gray-200 text-gray-500 cursor-default'
+          }
+        >
+          {row.triggerPushOnStart ? 'Sí' : 'No'}
+        </Badge>
       ),
     },
     {

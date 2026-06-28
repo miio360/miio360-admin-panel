@@ -72,7 +72,15 @@ export interface AdvertisingPlan extends BasePlan {
 
 export interface LivesPlan extends BasePlan {
   planType: 'lives';
-  livesDurationMinutes: number;
+  name: string;
+  pricePublic: number;
+  priceNet: number;
+  maxMinutesPerMonth: number;
+  livesDurationMinutes: number; // Para compatibilidad
+  maxConcurrentViewers: number;
+  features: string[];
+  triggerPushOnStart: boolean;
+  isInitial?: boolean;
 }
 
 // ========== UNION TYPE ==========
@@ -105,11 +113,19 @@ export interface AdvertisingPlanFormData {
 }
 
 export interface LivesPlanFormData {
-  title: string;
+  name: string;
+  title: string; // Para compatibilidad
   description: string;
-  price: number;
+  pricePublic: number;
+  priceNet: number;
+  price: number; // Para compatibilidad
+  maxMinutesPerMonth: number;
+  livesDurationMinutes: number; // Para compatibilidad
+  maxConcurrentViewers: number;
+  features: string[];
+  triggerPushOnStart: boolean;
   isActive: boolean;
-  livesDurationMinutes: number;
+  isInitial?: boolean;
 }
 
 // ========== LABELS ==========

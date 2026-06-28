@@ -63,12 +63,19 @@ export const planService = {
 
   async getByType(planType: PlanType): Promise<Plan[]> {
     try {
-      const q = query(
-        collection(db, COLLECTION_NAME),
-        where('planType', '==', planType),
-        where('isDeleted', '==', false),
-        orderBy('createdAt', 'desc')
-      );
+      const collectionName = planType === 'lives' ? 'plans_lives' : COLLECTION_NAME;
+      const q = planType === 'lives'
+        ? query(
+            collection(db, collectionName),
+            where('isDeleted', '==', false),
+            orderBy('createdAt', 'desc')
+          )
+        : query(
+            collection(db, collectionName),
+            where('planType', '==', planType),
+            where('isDeleted', '==', false),
+            orderBy('createdAt', 'desc')
+          );
       const snapshot = await getDocs(q);
       return snapshot.docs.map((docSnap) => ({
         id: docSnap.id,
@@ -86,12 +93,19 @@ export const planService = {
     lastDocument?: QueryDocumentSnapshot<DocumentData> | null
   ): Promise<PaginatedResult<Plan>> {
     try {
+      const collectionName = planType === 'lives' ? 'plans_lives' : COLLECTION_NAME;
+      
       // Obtener conteo total
-      const countQuery = query(
-        collection(db, COLLECTION_NAME),
-        where('planType', '==', planType),
-        where('isDeleted', '==', false)
-      );
+      const countQuery = planType === 'lives'
+        ? query(
+            collection(db, collectionName),
+            where('isDeleted', '==', false)
+          )
+        : query(
+            collection(db, collectionName),
+            where('planType', '==', planType),
+            where('isDeleted', '==', false)
+          );
       const countSnapshot = await getCountFromServer(countQuery);
       const totalCount = countSnapshot.data().count;
       const totalPages = Math.ceil(totalCount / PAGE_SIZE);
@@ -99,22 +113,37 @@ export const planService = {
       // Query paginado
       let paginatedQuery;
       if (page === 1 || !lastDocument) {
-        paginatedQuery = query(
-          collection(db, COLLECTION_NAME),
-          where('planType', '==', planType),
-          where('isDeleted', '==', false),
-          orderBy('createdAt', 'desc'),
-          limit(PAGE_SIZE)
-        );
+        paginatedQuery = planType === 'lives'
+          ? query(
+              collection(db, collectionName),
+              where('isDeleted', '==', false),
+              orderBy('createdAt', 'desc'),
+              limit(PAGE_SIZE)
+            )
+          : query(
+              collection(db, collectionName),
+              where('planType', '==', planType),
+              where('isDeleted', '==', false),
+              orderBy('createdAt', 'desc'),
+              limit(PAGE_SIZE)
+            );
       } else {
-        paginatedQuery = query(
-          collection(db, COLLECTION_NAME),
-          where('planType', '==', planType),
-          where('isDeleted', '==', false),
-          orderBy('createdAt', 'desc'),
-          startAfter(lastDocument),
-          limit(PAGE_SIZE)
-        );
+        paginatedQuery = planType === 'lives'
+          ? query(
+              collection(db, collectionName),
+              where('isDeleted', '==', false),
+              orderBy('createdAt', 'desc'),
+              startAfter(lastDocument),
+              limit(PAGE_SIZE)
+            )
+          : query(
+              collection(db, collectionName),
+              where('planType', '==', planType),
+              where('isDeleted', '==', false),
+              orderBy('createdAt', 'desc'),
+              startAfter(lastDocument),
+              limit(PAGE_SIZE)
+            );
       }
 
       const snapshot = await getDocs(paginatedQuery);
@@ -141,10 +170,21 @@ export const planService = {
 
   async getById(id: string): Promise<Plan | null> {
     try {
-      const docRef = doc(db, COLLECTION_NAME, id);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) return null;
-      return { id: docSnap.id, ...docSnap.data() } as Plan;
+      // Intentar primero en plans
+      const docRefPlans = doc(db, 'plans', id);
+      const docSnapPlans = await getDoc(docRefPlans);
+      if (docSnapPlans.exists()) {
+        return { id: docSnapPlans.id, ...docSnapPlans.data() } as Plan;
+      }
+
+      // Si no existe, intentar en plans_lives
+      const docRefLives = doc(db, 'plans_lives', id);
+      const docSnapLives = await getDoc(docRefLives);
+      if (docSnapLives.exists()) {
+        return { id: docSnapLives.id, ...docSnapLives.data() } as Plan;
+      }
+
+      return null;
     } catch (error) {
       console.error('Error fetching plan:', error);
       throw new Error('No se pudo cargar el plan');
@@ -218,19 +258,43 @@ export const planService = {
     }
   },
 
+  async uncheckPreviousInitialPlans(excludeId?: string): Promise<void> {
+    try {
+      const q = query(
+        collection(db, 'plans_lives'),
+        where('isInitial', '==', true),
+        where('isDeleted', '==', false)
+      );
+      const snapshot = await getDocs(q);
+      for (const docSnap of snapshot.docs) {
+        if (docSnap.id !== excludeId) {
+          await updateDoc(docSnap.ref, { isInitial: false });
+        }
+      }
+    } catch (error) {
+      console.error('Error unchecking previous initial plans:', error);
+    }
+  },
+
   async createLivesPlan(
     data: LivesPlanFormData,
     userId: string
   ): Promise<LivesPlan> {
     try {
+      if (data.isInitial) {
+        await planService.uncheckPreviousInitialPlans();
+      }
       const planData = {
         ...data,
+        title: data.name, // Para compatibilidad
+        price: data.pricePublic, // Para compatibilidad
+        livesDurationMinutes: data.maxMinutesPerMonth, // Para compatibilidad
         planType: 'lives' as const,
         deletedAt: null,
         deletedBy: null,
         ...createBaseModel(userId),
       };
-      const docRef = await addDoc(collection(db, COLLECTION_NAME), planData);
+      const docRef = await addDoc(collection(db, 'plans_lives'), planData);
       return { id: docRef.id, ...planData } as unknown as LivesPlan;
     } catch (error) {
       console.error('Error creating lives plan:', error);
@@ -238,13 +302,44 @@ export const planService = {
     }
   },
 
-  async update(id: string, data: Partial<Plan>, userId?: string): Promise<void> {
+  async update(id: string, data: Partial<Plan>, userId?: string, planType?: PlanType): Promise<void> {
     try {
-      const docRef = doc(db, COLLECTION_NAME, id);
+      let collectionName = 'plans';
+      if (planType === 'lives' || ('pricePublic' in data) || ('maxMinutesPerMonth' in data)) {
+        collectionName = 'plans_lives';
+      } else if (!planType) {
+        // Fallback: verificar si existe en plans_lives
+        const docRefLives = doc(db, 'plans_lives', id);
+        const docSnapLives = await getDoc(docRefLives);
+        if (docSnapLives.exists()) {
+          collectionName = 'plans_lives';
+        }
+      }
+
+      const docRef = doc(db, collectionName, id);
       // Filtrar propiedades undefined para evitar error de Firestore
       const cleanData = Object.fromEntries(
         Object.entries(data).filter(([, value]) => value !== undefined)
       );
+
+      // Si es de la colección plans_lives, rellenar campos redundantes de compatibilidad
+      if (collectionName === 'plans_lives') {
+        if ('name' in cleanData) {
+          cleanData.title = cleanData.name;
+        }
+        if ('pricePublic' in cleanData) {
+          cleanData.price = cleanData.pricePublic;
+        }
+        if ('maxMinutesPerMonth' in cleanData) {
+          cleanData.livesDurationMinutes = cleanData.maxMinutesPerMonth;
+        }
+        cleanData.planType = 'lives';
+
+        if (cleanData.isInitial === true) {
+          await planService.uncheckPreviousInitialPlans(id);
+        }
+      }
+
       await updateDoc(docRef, {
         ...cleanData,
         ...(userId ? updateModelTimestamp(userId) : {}),
@@ -300,9 +395,21 @@ export const planService = {
     }
   },
 
-  async toggleActive(id: string, isActive: boolean, userId?: string): Promise<void> {
+  async toggleActive(id: string, isActive: boolean, userId?: string, planType?: PlanType): Promise<void> {
     try {
-      const docRef = doc(db, COLLECTION_NAME, id);
+      let collectionName = 'plans';
+      if (planType === 'lives') {
+        collectionName = 'plans_lives';
+      } else if (!planType) {
+        // Fallback: verificar si existe en plans_lives
+        const docRefLives = doc(db, 'plans_lives', id);
+        const docSnapLives = await getDoc(docRefLives);
+        if (docSnapLives.exists()) {
+          collectionName = 'plans_lives';
+        }
+      }
+
+      const docRef = doc(db, collectionName, id);
       await updateDoc(docRef, {
         isActive,
         ...(userId ? updateModelTimestamp(userId) : {}),
@@ -313,9 +420,21 @@ export const planService = {
     }
   },
 
-  async softDelete(id: string, userId: string): Promise<void> {
+  async softDelete(id: string, userId: string, planType?: PlanType): Promise<void> {
     try {
-      const docRef = doc(db, COLLECTION_NAME, id);
+      let collectionName = 'plans';
+      if (planType === 'lives') {
+        collectionName = 'plans_lives';
+      } else if (!planType) {
+        // Fallback: verificar si existe en plans_lives
+        const docRefLives = doc(db, 'plans_lives', id);
+        const docSnapLives = await getDoc(docRefLives);
+        if (docSnapLives.exists()) {
+          collectionName = 'plans_lives';
+        }
+      }
+
+      const docRef = doc(db, collectionName, id);
       await updateDoc(docRef, {
         ...softDeleteModel(userId),
         ...updateModelTimestamp(userId),
