@@ -54,6 +54,9 @@ export interface VideoActivePlan extends BaseActivePlan {
   // Modalidad time_pool: pool total de segundos
   totalDurationSeconds?: number;
   totalSecondsUsed?: number;
+
+  // Minutos de reproducción acumulados por la audiencia (para límites de plan)
+  viewsDurationSum?: number;
 }
 
 // ========== LIVES ACTIVE PLAN ==========
