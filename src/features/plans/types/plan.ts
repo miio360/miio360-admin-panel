@@ -57,6 +57,8 @@ export interface VideoPlan extends BasePlan {
   maxDurationPerVideoSeconds?: number;
   // Modalidad time_pool: pool total de segundos
   totalDurationSeconds?: number;
+  // Límite total de minutos de reproducción acumulados por la audiencia
+  playbackLimitMinutes?: number;
 }
 
 // ========== PLAN PUBLICIDAD ==========
@@ -92,6 +94,8 @@ export interface VideoPlanFormData {
   maxDurationPerVideoSeconds?: number;
   // Modalidad time_pool
   totalDurationSeconds?: number;
+  // Límite total de minutos de reproducción acumulados por la audiencia
+  playbackLimitMinutes?: number;
 }
 
 export interface AdvertisingPlanFormData {
