@@ -70,6 +70,7 @@ export interface LivesActivePlan extends BaseActivePlan {
   livesUsed: number;
   startDate?: Timestamp;
   endDate?: Timestamp;
+  maxConcurrentViewers?: number;
 }
 
 // ========== UNION TYPE ==========
@@ -117,6 +118,7 @@ export interface CreateVideoActivePlanInput extends BaseActivePlanInput {
 export interface CreateLivesActivePlanInput extends BaseActivePlanInput {
   planType: 'lives';
   livesDurationMinutes: number;
+  maxConcurrentViewers?: number;
 }
 
 export type CreateActivePlanInput =
