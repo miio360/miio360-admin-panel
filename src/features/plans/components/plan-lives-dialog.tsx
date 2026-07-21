@@ -35,30 +35,64 @@ export function PlanLivesDialog({
 
   const form = useForm<LivesPlanFormData>({
     defaultValues: {
+      name: '',
       title: '',
       description: '',
+      pricePublic: 0,
+      priceNet: 0,
       price: 0,
-      isActive: true,
+      maxMinutesPerMonth: 1,
       livesDurationMinutes: 1,
+      maxConcurrentViewers: 99,
+      features: ['clean_signal'],
+      triggerPushOnStart: false,
+      isActive: true,
+      isInitial: false,
     },
   });
 
+  const pricePublic = form.watch('pricePublic');
+
+  useEffect(() => {
+    if (pricePublic !== undefined && !isNaN(pricePublic)) {
+      form.setValue('priceNet', pricePublic);
+    }
+  }, [pricePublic, form]);
+
   useEffect(() => {
     if (plan) {
+      const planFeatures = plan.features ?? [];
+      const features = planFeatures.includes('clean_signal') ? planFeatures : ['clean_signal', ...planFeatures];
       form.reset({
-        title: plan.title,
-        description: plan.description,
-        price: plan.price,
+        name: plan.name || plan.title || '',
+        title: plan.title || plan.name || '',
+        description: plan.description || '',
+        pricePublic: plan.pricePublic ?? plan.price ?? 0,
+        priceNet: plan.priceNet ?? 0,
+        price: plan.price ?? plan.pricePublic ?? 0,
+        maxMinutesPerMonth: plan.maxMinutesPerMonth ?? plan.livesDurationMinutes ?? 1,
+        livesDurationMinutes: plan.livesDurationMinutes ?? plan.maxMinutesPerMonth ?? 1,
+        maxConcurrentViewers: plan.maxConcurrentViewers ?? 99,
+        features,
+        triggerPushOnStart: plan.triggerPushOnStart ?? false,
         isActive: plan.isActive,
-        livesDurationMinutes: plan.livesDurationMinutes,
+        isInitial: plan.isInitial ?? false,
       });
     } else {
       form.reset({
+        name: '',
         title: '',
         description: '',
+        pricePublic: 0,
+        priceNet: 0,
         price: 0,
-        isActive: true,
+        maxMinutesPerMonth: 1,
         livesDurationMinutes: 1,
+        maxConcurrentViewers: 99,
+        features: ['clean_signal'],
+        triggerPushOnStart: false,
+        isActive: true,
+        isInitial: false,
       });
     }
   }, [plan, form]);
@@ -74,10 +108,23 @@ export function PlanLivesDialog({
     try {
       setIsSubmitting(true);
       setError(null);
+
+      const features = data.features ?? [];
+      const finalFeatures = features.includes('clean_signal') ? features : ['clean_signal', ...features];
+
+      // Duplicar campos redundantes para seguridad extra antes de enviar
+      const payload: LivesPlanFormData = {
+        ...data,
+        title: data.name,
+        price: data.pricePublic,
+        livesDurationMinutes: data.maxMinutesPerMonth,
+        features: finalFeatures,
+      };
+
       if (isEditing && plan) {
-        await planService.update(plan.id, data);
+        await planService.update(plan.id, payload, user.id, 'lives');
       } else {
-        await planService.createLivesPlan(data, user.id);
+        await planService.createLivesPlan(payload, user.id);
       }
       handleClose();
       onSuccess();

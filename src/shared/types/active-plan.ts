@@ -57,6 +57,9 @@ export interface VideoActivePlan extends BaseActivePlan {
 
   // Minutos de reproducción acumulados por la audiencia (para límites de plan)
   viewsDurationSum?: number;
+
+  // Límite total de minutos de reproducción acumulados por la audiencia
+  playbackLimitMinutes?: number;
 }
 
 // ========== LIVES ACTIVE PLAN ==========
@@ -65,6 +68,8 @@ export interface LivesActivePlan extends BaseActivePlan {
   planType: 'lives';
   livesDurationMinutes: number;
   livesUsed: number;
+  startDate?: Timestamp;
+  endDate?: Timestamp;
 }
 
 // ========== UNION TYPE ==========
@@ -106,6 +111,7 @@ export interface CreateVideoActivePlanInput extends BaseActivePlanInput {
   videoCount?: number;
   maxDurationPerVideoSeconds?: number;
   totalDurationSeconds?: number;
+  playbackLimitMinutes?: number;
 }
 
 export interface CreateLivesActivePlanInput extends BaseActivePlanInput {
